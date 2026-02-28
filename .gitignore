@@ -1,0 +1,16 @@
+node_modules/
+dist/
+packages/*/node_modules/
+packages/*/dist/
+*.log
+*.tsbuildinfo
+.DS_Store
+
+.env
+
+.vscode/
+.zed/
+.idea/
+*.swp
+*.swo
+*~
