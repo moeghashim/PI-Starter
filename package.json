@@ -1,6 +1,7 @@
 {
 	"name": "pi-starter",
 	"private": true,
+	"license": "MIT",
 	"type": "module",
 	"workspaces": [
 		"packages/*"
