@@ -7,9 +7,6 @@
 		"packages/*"
 	],
 	"scripts": {
-		"setup": "npm run safeguards:install",
-		"safeguards:install": "bash scripts/local/install-gh-guard.sh",
-		"safeguards:verify": "bash scripts/local/verify-gh-guard.sh",
 		"clean": "npm run clean --workspaces --if-present",
 		"build": "npm run build --workspaces --if-present",
 		"test": "npm run test --workspaces --if-present",

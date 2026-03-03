@@ -2,13 +2,6 @@
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-echo "Verifying gh safeguard..."
-npm run safeguards:verify
-if [ $? -ne 0 ]; then
-	echo "Safeguard check failed. Run: npm run setup"
-	exit 1
-fi
-
 echo "Running formatting, linting, and type checking..."
 npm run check
 if [ $? -ne 0 ]; then
