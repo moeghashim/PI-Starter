@@ -1,0 +1,10 @@
+# /pickup
+
+Purpose: rehydrate context quickly before doing implementation work.
+
+Checklist:
+1. Read `AGENTS.md` and any relevant docs under `docs/`.
+2. Run `git status -sb` and summarize working tree state.
+3. Identify current branch and related PR/issue context.
+4. Run or review the latest `npm run check`, `npm test`, and `npm run agent:check` results.
+5. List the next 2-3 concrete actions before editing.

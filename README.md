@@ -6,6 +6,7 @@ Monorepo template following the pi-mono style:
 - Strict TypeScript
 - `npm run check` gates formatting, linting, and type checking
 - Optional max-lines-per-file check
+- Codex-first agent starter layer with vendored guardrail scripts
 
 Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono).
 
@@ -22,6 +23,25 @@ Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono).
 npm install
 npm run check
 npm test
+npm run agent:check
+```
+
+## Agent Layer
+
+- `agent/manifest.json` pins upstream source and vendored files.
+- `scripts/agent-sync.mjs` syncs or verifies allowlisted upstream files.
+- `scripts/committer` provides safe path-scoped commits.
+- `scripts/docs-list.ts` validates docs front matter (`summary`, `read_when`) and prints a docs index.
+- `.codex/prompts/` contains codex-first prompts: `/pickup`, `/handoff`, `/fix`, `/landpr`.
+
+### Agent Commands
+
+```bash
+npm run docs:list
+npm run agent:verify-sync
+npm run agent:sync
+npm run agent:check
+npm run commit:selective -- "chore: message" "path/to/file"
 ```
 
 ## Packages

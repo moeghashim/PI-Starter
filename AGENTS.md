@@ -21,5 +21,11 @@
 - After code changes (not docs changes): `npm run check`
 - Fix all errors, warnings, and infos before committing.
 
+## Agent Workflow
+- Agent workflow docs live in `docs/agent-workflow.md` and command index in `docs/commands.md`.
+- Run `npm run docs:list` whenever docs are added or updated.
+- Run `npm run agent:check` before handoff to validate docs front matter, AGENTS structure, and vendored sync integrity.
+- Use `npm run commit:selective -- "type(scope): summary" "path/one" "path/two"` for path-scoped commits.
+
 ## Git
 - Never commit unless explicitly requested.

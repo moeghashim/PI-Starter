@@ -31,5 +31,11 @@ jobs:
       - name: Check
         run: npm run check
 
+      - name: Docs List
+        run: npm run docs:list
+
+      - name: Agent Check
+        run: npm run agent:check
+
       - name: Test
         run: npm test
