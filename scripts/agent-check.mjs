@@ -8,6 +8,7 @@ const REQUIRED_PATHS = [
 	"docs/README.md",
 	"docs/agent-workflow.md",
 	"docs/commands.md",
+	"progress.md",
 	".codex/prompts/pickup.md",
 	".codex/prompts/handoff.md",
 	".codex/prompts/fix.md",
@@ -49,7 +50,14 @@ if (!existsSync("package.json")) {
 }
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
-const requiredScripts = ["docs:list", "agent:verify-sync", "agent:sync", "agent:check", "commit:selective"];
+const requiredScripts = [
+	"docs:list",
+	"agent:verify-sync",
+	"agent:sync",
+	"agent:check",
+	"commit:selective",
+	"commit:with-progress",
+];
 for (const scriptName of requiredScripts) {
 	if (!packageJson.scripts || !packageJson.scripts[scriptName]) {
 		fail(`package.json missing required script: ${scriptName}`);

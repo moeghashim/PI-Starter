@@ -31,8 +31,12 @@ npm run agent:check
 - `agent/manifest.json` pins upstream source and vendored files.
 - `scripts/agent-sync.mjs` syncs or verifies allowlisted upstream files.
 - `scripts/committer` provides safe path-scoped commits.
+- `scripts/commit-with-progress.mjs` wraps path-scoped commits and appends a required learning entry to `progress.md`.
+- `scripts/progress-log.mjs` appends structured learning entries to `progress.md`.
+- `scripts/progress-append-only-check.mjs` enforces append-only `progress.md` changes in pre-commit.
 - `scripts/docs-list.ts` validates docs front matter (`summary`, `read_when`) and prints a docs index.
 - `.codex/prompts/` contains codex-first prompts: `/pickup`, `/handoff`, `/fix`, `/landpr`.
+- `progress.md` is an append-only learning log for commit and deploy events.
 
 ### Agent Commands
 
@@ -42,6 +46,8 @@ npm run agent:verify-sync
 npm run agent:sync
 npm run agent:check
 npm run commit:selective -- "chore: message" "path/to/file"
+npm run commit:with-progress -- "chore: message" --learning "What changed and why it matters." -- "path/to/file"
+npm run release:patch -- --learning "What we learned from this release."
 ```
 
 ## Packages

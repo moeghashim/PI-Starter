@@ -23,14 +23,17 @@
 
 ## Agent Workflow
 - Agent workflow docs live in `docs/agent-workflow.md` and command index in `docs/commands.md`.
+- At task start, review recent entries in `progress.md` to understand prior learnings.
 - Run `npm run docs:list` whenever docs are added or updated.
 - Run `npm run agent:check` before handoff to validate docs front matter, AGENTS structure, and vendored sync integrity.
 - Use `npm run commit:selective -- "type(scope): summary" "path/one" "path/two"` for path-scoped commits.
+- For agent-requested commits, use `npm run commit:with-progress -- "type(scope): summary" --learning "what was learned" -- "path/one" "path/two"` so `progress.md` is appended in the same commit.
 
 ## Git
 - Never commit unless explicitly requested.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
 - Do not replace commit messages with prompt text.
+- `progress.md` is append-only: only add new entries at the end; never edit prior entries.
 - For substantial agent-generated changes, include a reproducibility prompt:
   - Prefer adding it to the PR description.
   - If there is no PR, add a `Repro-Prompt:` trailer in the commit message body.

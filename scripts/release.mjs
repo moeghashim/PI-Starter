@@ -1,17 +1,63 @@
 #!/usr/bin/env node
 
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const bump = process.argv[2];
-if (!["patch", "minor", "major"].includes(bump)) {
-	console.error("Usage: node scripts/release.mjs <patch|minor|major>");
-	process.exit(1);
+const VALID_BUMPS = new Set(["patch", "minor", "major"]);
+
+function usage() {
+	console.error('Usage: node scripts/release.mjs <patch|minor|major> --learning "<text>"');
 }
+
+function parseArgs(argv) {
+	const bump = argv[0];
+	if (!VALID_BUMPS.has(bump)) {
+		usage();
+		process.exit(1);
+	}
+
+	let learning = "";
+	let index = 1;
+	while (index < argv.length) {
+		const arg = argv[index];
+		if (arg === "--learning") {
+			const value = argv[index + 1];
+			if (value === undefined || value.trim().length === 0) {
+				usage();
+				console.error("Release aborted: --learning requires a non-empty value.");
+				process.exit(1);
+			}
+			learning = value.trim();
+			index += 2;
+			continue;
+		}
+
+		usage();
+		console.error(`Release aborted: unknown argument "${arg}".`);
+		process.exit(1);
+	}
+
+	if (learning.length === 0) {
+		usage();
+		console.error("Release aborted: --learning is required.");
+		process.exit(1);
+	}
+
+	return { bump, learning };
+}
+
+const { bump, learning } = parseArgs(process.argv.slice(2));
 
 function run(command) {
 	execSync(command, { stdio: "inherit", encoding: "utf8" });
+}
+
+function runArgs(command, args) {
+	const result = spawnSync(command, args, { stdio: "inherit" });
+	if (result.status !== 0) {
+		process.exit(result.status ?? 1);
+	}
 }
 
 function ensureCleanGitTree() {
@@ -60,6 +106,18 @@ run(`npm run version:${bump}`);
 
 const version = readVersion();
 moveUnreleasedToVersion(version);
+runArgs("node", [
+	"scripts/progress-log.mjs",
+	"append",
+	"--trigger",
+	"deploy",
+	"--learning",
+	learning,
+	"--bump",
+	bump,
+	"--version",
+	version,
+]);
 
 run("git add .");
 run(`git commit -m "Release v${version}"`);

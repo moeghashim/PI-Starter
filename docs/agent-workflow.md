@@ -11,14 +11,16 @@ read_when:
 ## Start
 
 1. Read `AGENTS.md` and the relevant docs in this folder.
-2. Run `npm run docs:list` to confirm docs metadata is valid.
-3. Use `/pickup` from `.codex/prompts/pickup.md` to rehydrate context.
+2. Review recent entries in `progress.md` and capture relevant learnings for the task.
+3. Run `npm run docs:list` to confirm docs metadata is valid.
+4. Use `/pickup` from `.codex/prompts/pickup.md` to rehydrate context.
 
 ## Execute
 
 1. Keep edits scoped and explicit.
-2. Prefer `npm run commit:selective -- "<message>" "<path>" ...` for path-scoped commits when committing is requested.
-3. Keep public package APIs re-exported through `src/index.ts`.
+2. Prefer `npm run commit:with-progress -- "<message>" --learning "<learning>" -- "<path>" ...` for agent-requested commits so `progress.md` is appended in the same commit.
+3. Use `npm run commit:selective -- "<message>" "<path>" ...` when a commit is intentionally not part of the learning-log flow.
+4. Keep public package APIs re-exported through `src/index.ts`.
 
 ## Validate
 

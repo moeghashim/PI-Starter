@@ -15,4 +15,11 @@ for file in $STAGED_FILES; do
 	fi
 done
 
+echo "Checking progress log append-only policy..."
+node scripts/progress-append-only-check.mjs
+if [ $? -ne 0 ]; then
+	echo "progress.md append-only check failed."
+	exit 1
+fi
+
 echo "All pre-commit checks passed!"
