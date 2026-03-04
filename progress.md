@@ -47,3 +47,13 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Actor: Ja3ood <moeghashim@users.noreply.github.com>
 - Changed Paths:
   - packages/core/CHANGELOG.md
+## 2026-03-04T22:52:26.690Z
+- Trigger: commit
+- Learning: Starter releases should not require registry credentials by default; publish must be explicit to avoid blocked deploy flows.
+- Context: feat(release): make npm publish opt-in for starter
+- Branch: main
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - scripts/release.mjs
+  - README.md
+  - CONTRIBUTING.md

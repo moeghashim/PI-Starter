@@ -7,7 +7,7 @@ import { join } from "node:path";
 const VALID_BUMPS = new Set(["patch", "minor", "major"]);
 
 function usage() {
-	console.error('Usage: node scripts/release.mjs <patch|minor|major> --learning "<text>"');
+	console.error('Usage: node scripts/release.mjs <patch|minor|major> --learning "<text>" [--publish]');
 }
 
 function parseArgs(argv) {
@@ -18,6 +18,7 @@ function parseArgs(argv) {
 	}
 
 	let learning = "";
+	let publish = false;
 	let index = 1;
 	while (index < argv.length) {
 		const arg = argv[index];
@@ -32,6 +33,11 @@ function parseArgs(argv) {
 			index += 2;
 			continue;
 		}
+		if (arg === "--publish") {
+			publish = true;
+			index += 1;
+			continue;
+		}
 
 		usage();
 		console.error(`Release aborted: unknown argument "${arg}".`);
@@ -44,10 +50,10 @@ function parseArgs(argv) {
 		process.exit(1);
 	}
 
-	return { bump, learning };
+	return { bump, learning, publish };
 }
 
-const { bump, learning } = parseArgs(process.argv.slice(2));
+const { bump, learning, publish } = parseArgs(process.argv.slice(2));
 
 function run(command) {
 	execSync(command, { stdio: "inherit", encoding: "utf8" });
@@ -64,6 +70,15 @@ function ensureCleanGitTree() {
 	const status = execSync("git status --porcelain", { encoding: "utf8" });
 	if (status.trim()) {
 		console.error("Release aborted: uncommitted changes detected.");
+		process.exit(1);
+	}
+}
+
+function ensureNpmAuth() {
+	try {
+		execSync("npm whoami", { stdio: "ignore", encoding: "utf8" });
+	} catch {
+		console.error("Release aborted: --publish requires npm authentication. Run `npm login` first.");
 		process.exit(1);
 	}
 }
@@ -102,6 +117,9 @@ function addUnreleasedSection() {
 }
 
 ensureCleanGitTree();
+if (publish) {
+	ensureNpmAuth();
+}
 run(`npm run version:${bump}`);
 
 const version = readVersion();
@@ -126,7 +144,11 @@ run(`git tag v${version}`);
 run("npm run build");
 run("npm run check");
 run("npm test");
-run("npm publish -ws --access public");
+if (publish) {
+	run("npm publish -ws --access public");
+} else {
+	console.log("Skipping npm publish by default for starter releases. Pass --publish to publish packages.");
+}
 
 addUnreleasedSection();
 run("git add .");

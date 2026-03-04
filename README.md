@@ -48,7 +48,10 @@ npm run agent:check
 npm run commit:selective -- "chore: message" "path/to/file"
 npm run commit:with-progress -- "chore: message" --learning "What changed and why it matters." -- "path/to/file"
 npm run release:patch -- --learning "What we learned from this release."
+npm run release:patch -- --learning "What we learned from this release." --publish
 ```
+
+`npm run release:*` skips `npm publish` by default in this starter. Add `--publish` when you explicitly want to publish packages.
 
 ## Packages
 
