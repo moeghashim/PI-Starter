@@ -29,3 +29,8 @@
 
 ## Git
 - Never commit unless explicitly requested.
+- Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
+- Do not replace commit messages with prompt text.
+- For substantial agent-generated changes, include a reproducibility prompt:
+  - Prefer adding it to the PR description.
+  - If there is no PR, add a `Repro-Prompt:` trailer in the commit message body.
