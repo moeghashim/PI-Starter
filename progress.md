@@ -134,3 +134,40 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Actor: Ja3ood <moeghashim@users.noreply.github.com>
 - Changed Paths:
   - README.md
+## 2026-04-08T02:04:33.332Z
+- Trigger: commit
+- Learning: Husky should install only in local Git workspaces; gating prepare on CI, Vercel, HUSKY=0, and missing .git keeps deploy installs clean without weakening local pre-commit checks.
+- Context: chore(husky): skip hook install in deploys
+- Branch: main
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - package.json
+  - scripts/prepare.mjs
+## 2026-04-08T02:04:53.989Z
+- Trigger: commit
+- Learning: Husky should install only in local Git workspaces; gating prepare on CI, Vercel, HUSKY=0, and missing .git keeps deploy installs clean without weakening local pre-commit checks.
+- Context: chore(husky): skip hook install in deploys
+- Branch: main
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - package.json
+  - scripts/prepare.mjs
+## 2026-04-08T02:13:10.618Z
+- Trigger: commit
+- Learning: The deployable Next workspace must declare its own TypeScript and Node type dependencies so production installs and Vercel builds succeed when the app is built from its workspace root.
+- Context: fix(web): add local TypeScript build deps
+- Branch: main
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - apps/web/package.json
+  - package-lock.json
+## 2026-04-17T22:18:55.735Z
+- Trigger: commit
+- Learning: GitHub Actions should own the required quality gate while Vercel Git integration remains a packaging-only deploy step, with Next type validation skipped only on Vercel builds.
+- Context: chore(ci): gate Vercel deploys with GitHub checks
+- Branch: codex/github-ci-vercel-gates
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - apps/web/next.config.ts
+  - docs/deploying-to-vercel.md

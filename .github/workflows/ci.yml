@@ -1,24 +1,34 @@
 name: CI
+
 on:
+  pull_request:
+    branches:
+      - main
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-check-test:
+  required-checks:
+    name: Required checks
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -27,14 +37,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check
+      - name: Check formatting, linting, and types
         run: npm run check
 
-      - name: Docs List
+      - name: List docs
         run: npm run docs:list
 
-      - name: Agent Check
-        run: npm run agent:check
-
-      - name: Test
+      - name: Run tests
         run: npm test
+
+      - name: Run agent guardrails
+        run: npm run agent:check
