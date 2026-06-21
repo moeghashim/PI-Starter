@@ -9,5 +9,6 @@ Workflow:
 4. If the slice cannot be executed or validated immediately, shrink it until it can.
 5. Implement only that first slice, using thin seams or minimal adapters where needed.
 6. Validate it immediately with at least one executable integration or end-to-end path.
-7. Stop after the first working slice instead of broadening scope in the same pass.
-8. Summarize what works now, what is intentionally thin or stubbed, and the next 2-3 slices to build after feedback.
+7. If the slice touches React or Next.js code, run `npm run react:doctor:changed`.
+8. Stop after the first working slice instead of broadening scope in the same pass.
+9. Summarize what works now, what is intentionally thin or stubbed, and the next 2-3 slices to build after feedback.

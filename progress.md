@@ -236,3 +236,27 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - README.md
   - docs/agent-workflow.md
   - scripts/release.mjs
+## 2026-06-21T04:02:50.934Z
+- Trigger: commit
+- Learning: React Doctor works best as a pinned local scanner with telemetry disabled, a narrow Next PostCSS override until stable Next carries the upstream fix, and repo guardrails that validate both React diagnostics and vendored skill front matter.
+- Context: feat(agent): add React Doctor guardrails
+- Branch: codex/react-doctor-guardrails
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - .codex/prompts/build-feature.md
+  - .codex/prompts/fix.md
+  - .codex/prompts/ship.md
+  - .codex/prompts/react-doctor.md
+  - .github/workflows/ci.yml
+  - AGENTS.md
+  - README.md
+  - apps/web/package.json
+  - biome.json
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - docs/commands.md
+  - doctor.config.ts
+  - package-lock.json
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/validate-skills.mjs

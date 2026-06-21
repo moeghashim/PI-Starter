@@ -15,9 +15,13 @@
 		"preflight:native-deps": "node scripts/preflight-native-deps.mjs",
 		"check": "npm run preflight:native-deps && biome check --write --error-on-warnings . && node scripts/check-file-length.mjs && tsgo --noEmit && npm run check --workspaces --if-present",
 		"doctor": "node scripts/doctor.mjs",
+		"react:doctor": "react-doctor . --verbose --no-telemetry",
+		"react:doctor:changed": "react-doctor . --verbose --scope changed --blocking error --no-telemetry",
+		"react:doctor:ci": "react-doctor . --json --json-compact --blocking error --no-telemetry",
 		"docs:list": "node scripts/docs-list.mjs",
 		"agent:verify-sync": "node scripts/agent-sync.mjs verify",
 		"agent:sync": "node scripts/agent-sync.mjs sync",
+		"skills:validate": "node scripts/validate-skills.mjs",
 		"skills:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.json",
 		"skills:sync": "node scripts/agent-sync.mjs sync --manifest agent/skills-manifest.json",
 		"skills:addy:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.addyosmani.json",
@@ -43,8 +47,14 @@
 		"@types/node": "^22.10.5",
 		"@typescript/native-preview": "7.0.0-dev.20260120.1",
 		"husky": "^9.1.7",
-		"tsx": "^4.20.3",
+		"react-doctor": "0.5.8",
+		"tsx": "^4.22.4",
 		"typescript": "^5.9.2"
+	},
+	"overrides": {
+		"next": {
+			"postcss": "8.5.10"
+		}
 	},
 	"engines": {
 		"node": "22.x"

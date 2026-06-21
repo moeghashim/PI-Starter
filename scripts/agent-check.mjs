@@ -15,11 +15,14 @@ const REQUIRED_PATHS = [
 	"docs/commands.md",
 	"docs/deploying-to-vercel.md",
 	"progress.md",
+	"doctor.config.ts",
+	"scripts/validate-skills.mjs",
 	".codex/prompts/pickup.md",
 	".codex/prompts/handoff.md",
 	".codex/prompts/build-feature.md",
 	".codex/prompts/fix.md",
 	".codex/prompts/ship.md",
+	".codex/prompts/react-doctor.md",
 ];
 
 const REQUIRED_AGENTS_SNIPPETS = [
@@ -29,6 +32,8 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"docs/commands.md",
 	"npm run docs:list",
 	"npm run agent:check",
+	"npm run react:doctor:changed",
+	"npm run skills:validate",
 	"npm run skills:verify-sync",
 	"npm run skills:addy:verify-sync",
 	"npm run skills:matt:verify-sync",
@@ -66,12 +71,16 @@ const requiredScripts = [
 	"docs:list",
 	"agent:verify-sync",
 	"agent:sync",
+	"skills:validate",
 	"skills:verify-sync",
 	"skills:sync",
 	"skills:addy:verify-sync",
 	"skills:addy:sync",
 	"skills:matt:verify-sync",
 	"skills:matt:sync",
+	"react:doctor",
+	"react:doctor:changed",
+	"react:doctor:ci",
 	"agent:check",
 	"commit:selective",
 	"commit:with-progress",
@@ -83,6 +92,7 @@ for (const scriptName of requiredScripts) {
 }
 
 execSync("npm run docs:list", { stdio: "inherit" });
+execSync("npm run skills:validate", { stdio: "inherit" });
 execSync("npm run agent:verify-sync", { stdio: "inherit" });
 execSync("npm run skills:verify-sync", { stdio: "inherit" });
 execSync("npm run skills:addy:verify-sync", { stdio: "inherit" });

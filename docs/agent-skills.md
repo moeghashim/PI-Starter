@@ -4,6 +4,7 @@ read_when:
   - Working on React, Next.js, UI review, or interaction patterns in this starter.
   - Working on context setup, testing strategy, review rigor, security checks, or ADRs in this starter.
   - Working on architecture review, refactoring, domain vocabulary, or testable module interfaces.
+  - Running React Doctor or deciding how React Doctor findings should interact with local React rules.
   - Updating vendored skills from `vercel-labs/agent-skills`, `addyosmani/agent-skills`, or `mattpocock/skills`.
   - Deciding whether a new upstream skill belongs in the default starter layer.
 ---
@@ -13,6 +14,19 @@ read_when:
 PI Starter vendors three small upstream skill subsets so repo-local workflows can reference stable, pinned guidance without inheriting an entire external workflow.
 
 ## Pinned Upstream
+
+### React Doctor
+
+- Source repo: `https://github.com/millionco/react-doctor`
+- Package: `react-doctor`
+- Local config: `doctor.config.ts`
+- Full scan: `npm run react:doctor`
+- Changed-scope scan: `npm run react:doctor:changed`
+- CI scan: `npm run react:doctor:ci`
+
+React Doctor is a deterministic scanner, not a vendored skill pack. Keep its package version pinned in `package.json`, keep telemetry disabled through local scripts and config, and prefer patched dependency upgrades over suppressing security findings.
+
+The root `package.json` currently includes a temporary scoped npm override for `next > postcss@8.5.10` to match the upstream Next canary fix for `GHSA-qx2v-qp2m-jg93`. Remove this override after stable Next declares `postcss >=8.5.10`.
 
 ### Vercel UI Pack
 
@@ -78,6 +92,7 @@ PI Starter vendors three small upstream skill subsets so repo-local workflows ca
 | Need | Prefer |
 | --- | --- |
 | React, Next.js, UI, interaction, transitions, composition | Vercel UI pack |
+| React Doctor scan output, React dependency advisories, changed-scope React regression checks | React Doctor |
 | Session setup, test discipline, review rubric, security, ADR workflow | Addy process pack |
 | Architecture review, module depth, seams, testable interfaces, domain vocabulary | Matt architecture pack |
 | A task crosses multiple domains | Load the smallest relevant skill from each pack |
@@ -88,6 +103,7 @@ The starter keeps its own canonical workflow docs in `docs/` and its own deploym
 
 We intentionally do not vendor every upstream skill into the default starter. The following are currently excluded on purpose:
 
+- `react-doctor` agent install output: the scanner is installed as a pinned npm dev dependency and configured locally instead
 - `deploy-to-vercel`: broad operational workflow that overlaps with this starter's local deployment doc
 - `vercel-cli-with-tokens`: token-handling workflow that should stay opt-in
 - `react-native-skills`: outside the default web-first starter scope
@@ -107,8 +123,9 @@ We intentionally do not vendor every upstream skill into the default starter. Th
    - `npm run skills:verify-sync` for Vercel
    - `npm run skills:addy:verify-sync` for Addy
    - `npm run skills:matt:verify-sync` for Matt
-5. Run `npm run docs:list` if this doc or other docs changed.
-6. Run `npm run agent:check` before handoff or ship.
+5. Run `npm run skills:validate` after skill file changes.
+6. Run `npm run docs:list` if this doc or other docs changed.
+7. Run `npm run agent:check` before handoff or ship.
 
 ## Multi-Machine Note
 

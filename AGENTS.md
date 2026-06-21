@@ -21,6 +21,7 @@
 - In `apps/web`, do not import `useEffect` directly.
 - Prefer render-time derivation, event handlers, and framework data loading over effects.
 - `useMountEffect` is the only allowed mount-only escape hatch for synchronizing with an external system.
+- After React changes in `apps/web`, run `npm run react:doctor:changed` and fix new errors or security findings before handoff.
 
 ## Commands
 - After code changes (not docs changes): `npm run check`
@@ -38,6 +39,7 @@
 - At task start, review recent entries in `progress.md` to understand prior learnings.
 - Treat `progress.md` as part of the starter contract for forks; keep it tracked, preserve the append-only history, and continue the log in derived repos.
 - Run `npm run docs:list` whenever docs are added or updated.
+- Run `npm run skills:validate` after changing vendored skill files.
 - Run `npm run skills:verify-sync` after changing vendored Vercel skills or their pinned manifest.
 - Run `npm run skills:addy:verify-sync` after changing vendored Addy Osmani skills or their pinned manifest.
 - Run `npm run skills:matt:verify-sync` after changing vendored Matt Pocock skills or their pinned manifest.

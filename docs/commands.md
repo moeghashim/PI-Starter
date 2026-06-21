@@ -13,6 +13,7 @@ Prompts are stored under `.codex/prompts/`.
 - `/handoff`: Structured handoff notes for the next agent.
 - `/build-feature`: Tracer-bullet workflow for net-new features, starting with one tiny end-to-end slice.
 - `/fix`: End-to-end issue fix workflow with tests and checks.
+- `/react-doctor`: React Doctor scan, triage, and validation workflow for React code.
 - `/ship`: End-to-end solo shipping workflow with validation plus deploy/release follow-through.
 
 Use these prompts as repo-local defaults for codex-first automation.

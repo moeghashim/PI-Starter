@@ -49,5 +49,8 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run React Doctor scan
+        run: npm run react:doctor:ci
+
       - name: Run agent guardrails
         run: npm run agent:check
