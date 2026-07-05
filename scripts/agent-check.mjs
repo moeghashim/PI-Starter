@@ -8,6 +8,9 @@ const REQUIRED_PATHS = [
 	"agent/skills-manifest.json",
 	"agent/skills-manifest.addyosmani.json",
 	"agent/skills-manifest.mattpocock.json",
+	"agent/skills-manifest.chromedevtools.json",
+	".mcp.json",
+	".no-mistakes.yaml",
 	"docs/README.md",
 	"docs/agent-workflow.md",
 	"docs/agent-skills.md",
@@ -32,6 +35,8 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"npm run skills:verify-sync",
 	"npm run skills:addy:verify-sync",
 	"npm run skills:matt:verify-sync",
+	"npm run skills:chrome:verify-sync",
+	"git push no-mistakes",
 	"useMountEffect",
 	"CLAUDE.md",
 ];
@@ -86,6 +91,8 @@ const requiredScripts = [
 	"skills:addy:sync",
 	"skills:matt:verify-sync",
 	"skills:matt:sync",
+	"skills:chrome:verify-sync",
+	"skills:chrome:sync",
 	"agent:check",
 	"commit:selective",
 	"commit:with-progress",
@@ -101,5 +108,6 @@ execSync("npm run agent:verify-sync", { stdio: "inherit" });
 execSync("npm run skills:verify-sync", { stdio: "inherit" });
 execSync("npm run skills:addy:verify-sync", { stdio: "inherit" });
 execSync("npm run skills:matt:verify-sync", { stdio: "inherit" });
+execSync("npm run skills:chrome:verify-sync", { stdio: "inherit" });
 
 console.log("agent-check: passed.");

@@ -1,0 +1,5 @@
+# Keep push-time gate commands deterministic instead of relying on agent auto-detection.
+commands:
+  test: "npm ci && npm test"
+  lint: "npm ci && npm run check && npm run agent:check"
+  format: "npx biome format --write ."

@@ -248,3 +248,25 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/agent-workflow.md
   - scripts/agent-check.mjs
   - CLAUDE.md
+## 2026-07-05T11:33:37.909Z
+- Trigger: commit
+- Learning: Push-time gates and memory debugging skills need pinned repo-local manifests, configs, and agent:check wiring so forks inherit deterministic validation.
+- Context: feat(agent): add gated integration tooling
+- Branch: codex/no-mistakes-memory-leak-integrations
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .codex/prompts/ship.md
+  - AGENTS.md
+  - README.md
+  - docs/README.md
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - docs/commands.md
+  - docs/adrs/2026-07-05-push-time-validation-via-no-mistakes-gate.md
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/agent-sync.mjs
+  - .mcp.json
+  - .no-mistakes.yaml
+  - agent/skills-manifest.chromedevtools.json
+  - agent/skills/chromedevtools

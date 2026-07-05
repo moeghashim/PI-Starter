@@ -134,6 +134,33 @@ function computeDirectoryHash(files) {
 	return hash.digest("hex");
 }
 
+function applyRewrites(entry, relativePath, content) {
+	const rewrites = Array.isArray(entry.rewrites) ? entry.rewrites : [];
+	const matchingRewrites = rewrites.filter((rewrite) => rewrite.path === relativePath);
+	if (matchingRewrites.length === 0) {
+		return content;
+	}
+
+	let text = content.toString("utf8");
+	for (const rewrite of matchingRewrites) {
+		if (typeof rewrite.search !== "string" || typeof rewrite.replace !== "string") {
+			throw new Error(`${entry.localPath}: rewrite for ${relativePath} must include search and replace strings`);
+		}
+		if (!text.includes(rewrite.search)) {
+			throw new Error(`${entry.localPath}: rewrite search text not found in ${relativePath}`);
+		}
+		text = text.replaceAll(rewrite.search, rewrite.replace);
+	}
+	return Buffer.from(text);
+}
+
+function applyDirectoryRewrites(entry, files) {
+	return files.map((file) => ({
+		relativePath: file.relativePath,
+		content: applyRewrites(entry, file.relativePath, file.content),
+	}));
+}
+
 function listLocalFiles(rootPath) {
 	if (!existsSync(rootPath)) {
 		return [];
@@ -170,11 +197,15 @@ function removeEmptyDirectories(rootPath) {
 }
 
 async function syncFileEntry(manifest, entry) {
-	const upstreamContent = await fetchUpstream({
-		sourceRepo: manifest.sourceRepo,
-		pinnedCommit: manifest.pinnedCommit,
-		upstreamPath: entry.upstreamPath,
-	});
+	const upstreamContent = applyRewrites(
+		entry,
+		entry.upstreamPath,
+		await fetchUpstream({
+			sourceRepo: manifest.sourceRepo,
+			pinnedCommit: manifest.pinnedCommit,
+			upstreamPath: entry.upstreamPath,
+		}),
+	);
 	const expectedHash = sha256(upstreamContent);
 	entry.sha256 = expectedHash;
 
@@ -196,13 +227,16 @@ async function syncFileEntry(manifest, entry) {
 }
 
 async function syncDirectoryEntry(manifest, entry, treeCache) {
-	const files = await fetchDirectorySnapshot(
-		{
-			sourceRepo: manifest.sourceRepo,
-			pinnedCommit: manifest.pinnedCommit,
-			upstreamPath: entry.upstreamPath,
-		},
-		treeCache,
+	const files = applyDirectoryRewrites(
+		entry,
+		await fetchDirectorySnapshot(
+			{
+				sourceRepo: manifest.sourceRepo,
+				pinnedCommit: manifest.pinnedCommit,
+				upstreamPath: entry.upstreamPath,
+			},
+			treeCache,
+		),
 	);
 	entry.sha256 = computeDirectoryHash(files);
 
@@ -277,13 +311,16 @@ async function verify(manifest) {
 
 	for (const entry of manifest.entries) {
 		if ((entry.type ?? "file") === DIRECTORY_ENTRY_TYPE) {
-			const upstreamFiles = await fetchDirectorySnapshot(
-				{
-					sourceRepo: manifest.sourceRepo,
-					pinnedCommit: manifest.pinnedCommit,
-					upstreamPath: entry.upstreamPath,
-				},
-				treeCache,
+			const upstreamFiles = applyDirectoryRewrites(
+				entry,
+				await fetchDirectorySnapshot(
+					{
+						sourceRepo: manifest.sourceRepo,
+						pinnedCommit: manifest.pinnedCommit,
+						upstreamPath: entry.upstreamPath,
+					},
+					treeCache,
+				),
 			);
 			const upstreamHash = computeDirectoryHash(upstreamFiles);
 			if (entry.sha256 !== upstreamHash) {
@@ -325,11 +362,15 @@ async function verify(manifest) {
 			continue;
 		}
 
-		const upstreamContent = await fetchUpstream({
-			sourceRepo: manifest.sourceRepo,
-			pinnedCommit: manifest.pinnedCommit,
-			upstreamPath: entry.upstreamPath,
-		});
+		const upstreamContent = applyRewrites(
+			entry,
+			entry.upstreamPath,
+			await fetchUpstream({
+				sourceRepo: manifest.sourceRepo,
+				pinnedCommit: manifest.pinnedCommit,
+				upstreamPath: entry.upstreamPath,
+			}),
+		);
 		const upstreamHash = sha256(upstreamContent);
 		const localHash = sha256(readFileSync(localPath));
 
