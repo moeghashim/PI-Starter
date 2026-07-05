@@ -270,3 +270,14 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - .no-mistakes.yaml
   - agent/skills-manifest.chromedevtools.json
   - agent/skills/chromedevtools
+
+## 2026-07-05T12:00:00.000Z
+- Trigger: commit
+- Learning: agent-sync directory verification calls api.github.com, which rate-limits unauthenticated CI runners to 60/hour and returns HTTP 403; sending GITHUB_TOKEN via githubHeaders and wiring it into the agent guardrails step keeps skills:verify-sync deterministic in CI.
+- Context: fix(agent): authenticate agent-sync GitHub requests in CI
+- Branch: codex/no-mistakes-memory-leak-integrations
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - scripts/agent-sync.mjs
+  - .github/workflows/ci.yml
+  - progress.md

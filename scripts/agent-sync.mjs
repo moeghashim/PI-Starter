@@ -39,6 +39,15 @@ function resolveRepoPath(targetPath, label) {
 	throw new Error(`${label} must stay within the repository root: ${targetPath}`);
 }
 
+function githubHeaders(extra = {}) {
+	const headers = { "user-agent": "pi-starter-agent-sync", ...extra };
+	const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+	if (token) {
+		headers.authorization = `Bearer ${token}`;
+	}
+	return headers;
+}
+
 function parseGitHubRepo(sourceRepo) {
 	const normalized = sourceRepo.replace(/\.git$/, "");
 	const match = normalized.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/);
@@ -63,7 +72,7 @@ function readManifest(manifestPath) {
 async function fetchUpstream({ sourceRepo, pinnedCommit, upstreamPath }) {
 	const { owner, repo } = parseGitHubRepo(sourceRepo);
 	const url = `https://raw.githubusercontent.com/${owner}/${repo}/${pinnedCommit}/${upstreamPath}`;
-	const response = await fetch(url);
+	const response = await fetch(url, { headers: githubHeaders() });
 	if (!response.ok) {
 		throw new Error(`Failed to fetch ${upstreamPath}: HTTP ${response.status}`);
 	}
@@ -72,10 +81,7 @@ async function fetchUpstream({ sourceRepo, pinnedCommit, upstreamPath }) {
 
 async function fetchGitHubJson(url) {
 	const response = await fetch(url, {
-		headers: {
-			accept: "application/vnd.github+json",
-			"user-agent": "pi-starter-agent-sync",
-		},
+		headers: githubHeaders({ accept: "application/vnd.github+json" }),
 	});
 	if (!response.ok) {
 		throw new Error(`Failed to fetch ${url}: HTTP ${response.status}`);
