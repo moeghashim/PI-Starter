@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 0
 
       - name: Audit changed code
-        uses: fallow-rs/fallow@v3.9.1
+        uses: fallow-rs/fallow@3f6d4a5f817525d322365d64953940ff47175bf2 # v3.9.1
         with:
           command: audit
           gate: new-only
