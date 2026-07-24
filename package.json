@@ -12,6 +12,7 @@
 		"clean": "npm run clean --workspaces --if-present",
 		"build": "npm run build --workspaces --if-present",
 		"test": "npm run test --workspaces --if-present",
+		"fallow:audit": "fallow audit --changed-since origin/main",
 		"preflight:native-deps": "node scripts/preflight-native-deps.mjs",
 		"check": "npm run preflight:native-deps && biome check --write --error-on-warnings . && node scripts/check-file-length.mjs && tsgo --noEmit && npm run check --workspaces --if-present",
 		"doctor": "node scripts/doctor.mjs",
@@ -44,6 +45,7 @@
 		"@biomejs/biome": "2.3.5",
 		"@types/node": "^22.10.5",
 		"@typescript/native-preview": "7.0.0-dev.20260120.1",
+		"fallow": "3.9.1",
 		"husky": "^9.1.7",
 		"tsx": "^4.20.3",
 		"typescript": "^5.9.2"

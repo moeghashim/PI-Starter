@@ -17,6 +17,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  fallow-audit:
+    name: Fallow audit
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Audit changed code
+        uses: fallow-rs/fallow@v3.9.1
+        with:
+          command: audit
+          gate: new-only
+          fail-on-issues: true
+
   required-checks:
     name: Required checks
     strategy:

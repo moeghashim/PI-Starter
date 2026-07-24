@@ -9,6 +9,7 @@ const REQUIRED_PATHS = [
 	"agent/skills-manifest.addyosmani.json",
 	"agent/skills-manifest.mattpocock.json",
 	"agent/skills-manifest.chromedevtools.json",
+	".fallowrc.json",
 	".mcp.json",
 	".no-mistakes.yaml",
 	"docs/README.md",
@@ -32,6 +33,7 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"docs/commands.md",
 	"npm run docs:list",
 	"npm run agent:check",
+	"npm run fallow:audit",
 	"npm run skills:verify-sync",
 	"npm run skills:addy:verify-sync",
 	"npm run skills:matt:verify-sync",
@@ -94,6 +96,7 @@ const requiredScripts = [
 	"skills:chrome:verify-sync",
 	"skills:chrome:sync",
 	"agent:check",
+	"fallow:audit",
 	"commit:selective",
 	"commit:with-progress",
 ];

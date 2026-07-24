@@ -24,6 +24,7 @@
 
 ## Commands
 - After code changes (not docs changes): `npm run check`
+- Before handoff or ship, run `npm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
 - Keep `node_modules` machine-local. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, run `npm install` or `npm run reinstall:clean` before using native-tooling commands.
 

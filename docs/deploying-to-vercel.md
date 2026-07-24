@@ -24,7 +24,7 @@ Vercel builds are deploy packaging only. When Vercel sets `VERCEL=1`, `apps/web/
 
 Next.js 16 does not run linting during `next build`; keep linting and type checking in CI with `npm run check`.
 
-GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and on pushes to `main`. Protect `main` by requiring the `Required checks` status check before merge.
+GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, plus a Fallow new-code audit on pull requests. Protect `main` by requiring the `Required checks` and `Fallow audit` status checks before merge.
 
 ## Environment Variables
 
@@ -40,11 +40,12 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 
 1. Run `npm run check`
 2. Run `npm test`
-3. Run `npm run agent:check`
-4. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
-5. Wait for `Required checks` to pass, then merge to `main`
-6. If the change includes database work, run the project-specific database deploy or migration command
-7. Let Vercel Git integration build and deploy `apps/web`
-8. Verify the deployed app and database are compatible
+3. Run `npm run fallow:audit`
+4. Run `npm run agent:check`
+5. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
+6. Wait for `Required checks` and `Fallow audit` to pass, then merge to `main`
+7. If the change includes database work, run the project-specific database deploy or migration command
+8. Let Vercel Git integration build and deploy `apps/web`
+9. Verify the deployed app and database are compatible
 
 This starter does not require a custom `vercel.json`.

@@ -1,0 +1,15 @@
+{
+	"$schema": "./node_modules/fallow/schema.json",
+	"entry": [
+		"apps/web/lib/use-mount-effect.ts",
+		"scripts/progress-append-only-check.mjs",
+		"scripts/progress-log.mjs"
+	],
+	"ignorePatterns": ["agent/skills/**", "agent/upstream/**"],
+	"health": {
+		"ignore": ["scripts/agent-sync.mjs"]
+	},
+	"audit": {
+		"gate": "new-only"
+	}
+}
