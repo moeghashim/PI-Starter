@@ -8,6 +8,7 @@ Monorepo starter for solo maintainers shipping both deployable apps and publisha
 - Biome formatting/linting (tabs, indentWidth 3, lineWidth 120)
 - Strict TypeScript
 - `npm run check` gates formatting, linting, and type checking
+- Fallow changed-code auditing for dead code, duplication, circular dependencies, and complexity regressions
 - Optional max-lines-per-file check
 - Codex-first agent starter layer with vendored guardrail scripts
 - Curated vendored Vercel agent skills for React and UI work
@@ -16,7 +17,7 @@ Monorepo starter for solo maintainers shipping both deployable apps and publisha
 - Vendored Chrome DevTools memory-leak debugging skill
 - no-mistakes push gate for validated PR creation
 
-Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/agent-scripts](https://github.com/steipete/agent-scripts), [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [mattpocock/skills](https://github.com/mattpocock/skills), [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp), and [no-mistakes](https://github.com/kunchenguid/no-mistakes).
+Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/agent-scripts](https://github.com/steipete/agent-scripts), [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [mattpocock/skills](https://github.com/mattpocock/skills), [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp), [Fallow](https://github.com/fallow-rs/fallow), and [no-mistakes](https://github.com/kunchenguid/no-mistakes).
 
 ## Agent Rules
 
@@ -35,6 +36,7 @@ npm run doctor
 npm install
 npm run check
 npm test
+npm run fallow:audit
 npm run agent:check
 ```
 
@@ -54,7 +56,7 @@ When work is committed on a feature branch, push with `git push no-mistakes` ins
 
 `apps/web` is the default app target. Vercel should use `apps/web` as the root directory. No custom `vercel.json` is required for the starter.
 
-GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`; Vercel Git integration should remain responsible for deployment packaging only.
+GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; Vercel Git integration should remain responsible for deployment packaging only.
 
 ```bash
 npm run dev -w @pi-starter/web
@@ -89,6 +91,7 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `.codex/prompts/` contains codex-first prompts: `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.
 - `.no-mistakes.yaml` pins the push-gate pipeline commands.
+- `.fallowrc.json` declares intentional indirect entry points and keeps pull-request auditing scoped to new findings.
 - `progress.md` is an append-only learning log for solo commits, releases, and deploys.
 - `docs/agent-skills.md` explains which upstream skills are vendored and how to update them.
 - `docs/architecture-decisions.md` defines the local ADR convention used when architectural choices should outlive the current session.
@@ -122,6 +125,7 @@ npm run skills:chrome:sync
 npm run skills:verify-sync:all
 npm run skills:sync:all
 npm run agent:check
+npm run fallow:audit
 npm run reinstall:clean
 npm run commit:selective -- "chore: message" "path/to/file"
 npm run commit:with-progress -- "chore: message" --learning "What changed and why it matters." -- "path/to/file"
@@ -136,6 +140,7 @@ npm run release:patch -- --learning "What we learned from this release." --publi
 Tooling and vendored skills this starter builds on:
 
 - [no-mistakes](https://github.com/kunchenguid/no-mistakes) - AI-gated push proxy. All feature branch pushes go through `git push no-mistakes`, which validates the branch in a disposable worktree and opens the PR only when green. Pipeline commands are pinned in [`.no-mistakes.yaml`](./.no-mistakes.yaml).
+- [Fallow](https://github.com/fallow-rs/fallow) - pinned Rust-native analysis for unused code, circular dependencies, duplication, and complexity. `npm run fallow:audit` gates only findings introduced relative to `origin/main`; GitHub Actions performs the equivalent pull-request-aware audit.
 - [memory-leak-debugging skill](https://github.com/ChromeDevTools/chrome-devtools-mcp/tree/main/skills/memory-leak-debugging) from the Chrome DevTools team - vendored agent skill for diagnosing frontend and Node.js memory leaks with heap snapshots and [memlab](https://github.com/facebook/memlab). It requires the [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) server configured in [`.mcp.json`](./.mcp.json).
 
 ## Workspaces

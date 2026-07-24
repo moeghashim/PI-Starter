@@ -9,5 +9,5 @@ Workflow:
 4. Consult `agent/skills/addyosmani/test-driven-development` and `agent/skills/addyosmani/security-and-hardening` when the issue changes behavior or touches a trust boundary.
 5. Implement the smallest safe fix.
 6. Add or update regression tests.
-7. Run `npm run check`, `npm test`, and `npm run agent:check`.
+7. Run `npm run check`, `npm test`, `npm run fallow:audit`, and `npm run agent:check`.
 8. Summarize behavior change, repro coverage, tests added, and residual risks.

@@ -281,3 +281,20 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - scripts/agent-sync.mjs
   - .github/workflows/ci.yml
   - progress.md
+## 2026-07-24T04:28:00.676Z
+- Trigger: commit
+- Learning: A pinned Fallow audit can gate only newly introduced code-health findings when PI Starter declares intentional indirect entry points and supplies origin/main explicitly outside pull-request CI.
+- Context: feat(tooling): add Fallow audit gate
+- Branch: codex/fallow-audit
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .fallowrc.json
+  - .github/workflows/ci.yml
+  - .no-mistakes.yaml
+  - AGENTS.md
+  - README.md
+  - docs/agent-workflow.md
+  - docs/deploying-to-vercel.md
+  - package.json
+  - package-lock.json
+  - scripts/agent-check.mjs

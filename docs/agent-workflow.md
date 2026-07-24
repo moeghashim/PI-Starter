@@ -30,7 +30,8 @@ read_when:
 
 1. Run `npm run check` for code quality.
 2. Run `npm test` for test coverage.
-3. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across all skill packs.
+3. Run `npm run fallow:audit` to reject newly introduced dead code, duplication, and complexity findings relative to `origin/main`.
+4. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across all skill packs.
 
 ## Ship
 
