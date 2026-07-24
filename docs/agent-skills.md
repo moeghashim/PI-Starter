@@ -119,7 +119,7 @@ We intentionally do not vendor every upstream skill into the default starter. Th
 ## Update Flow
 
 1. Review the relevant upstream `skills/` tree and decide whether the curated subset should change.
-2. Update the matching manifest with the new pinned commit or curated-scope changes.
+2. Update the matching manifest with the new pinned commit or curated-scope changes. Manifest entries may declare `rewrites` (exact `search`/`replace` strings scoped to a `path`) to adapt upstream file references to this repo's layout; rewrites are applied before hashing, so the pinned `sha256` covers the rewritten content.
 3. Run the matching sync command:
    - `npm run skills:sync` for Vercel
    - `npm run skills:addy:sync` for Addy
@@ -132,6 +132,8 @@ We intentionally do not vendor every upstream skill into the default starter. Th
    - `npm run skills:chrome:verify-sync` for Chrome DevTools
 5. Run `npm run docs:list` if this doc or other docs changed.
 6. Run `npm run agent:check` before handoff or ship.
+
+Sync and verify commands fetch from the GitHub API. When `GITHUB_TOKEN` or `GH_TOKEN` is set, requests are authenticated; set one in CI, where unauthenticated runners hit the 60-requests-per-hour rate limit.
 
 ## Multi-Machine Note
 

@@ -56,7 +56,7 @@ When work is committed on a feature branch, push with `git push no-mistakes` ins
 
 `apps/web` is the default app target. Vercel should use `apps/web` as the root directory. No custom `vercel.json` is required for the starter.
 
-GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`; Vercel Git integration should remain responsible for deployment packaging only.
+GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; Vercel Git integration should remain responsible for deployment packaging only.
 
 ```bash
 npm run dev -w @pi-starter/web

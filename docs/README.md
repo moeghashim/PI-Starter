@@ -21,7 +21,7 @@ Validation is enforced by `npm run docs:list`.
 ## Current Docs
 
 - `docs/agent-workflow.md`: codex-first agent workflow and guardrails.
-- `docs/agent-skills.md`: curated vendored Vercel, Addy Osmani, and Matt Pocock skills plus the update policy.
+- `docs/agent-skills.md`: curated vendored Vercel, Addy Osmani, Matt Pocock, and Chrome DevTools skills plus the update policy.
 - `docs/architecture-decisions.md`: ADR template and local conventions for recording durable technical decisions.
 - `docs/commands.md`: in-repo command prompt index.
 - `docs/deploying-to-vercel.md`: minimal Vercel deployment path for `apps/web`.
