@@ -11,7 +11,7 @@ read_when:
 ## Start
 
 1. Read `AGENTS.md` and the relevant docs in this folder. `CLAUDE.md` is a compatibility symlink, not a separate instruction source.
-2. If the task touches React, Next.js, UI review, interaction patterns, test strategy, review rigor, security, architecture review, refactoring, or ADR decisions, read `docs/agent-skills.md`.
+2. If the task touches React, Next.js, UI review, interaction patterns, test strategy, review rigor, security, architecture review, refactoring, ADR decisions, or memory-leak debugging, read `docs/agent-skills.md`.
 3. Review recent entries in `progress.md` and capture relevant learnings for the task.
 4. Run `npm run docs:list` to confirm docs metadata is valid.
 5. Use `/pickup` from `.codex/prompts/pickup.md` to rehydrate context.
@@ -30,13 +30,14 @@ read_when:
 
 1. Run `npm run check` for code quality.
 2. Run `npm test` for test coverage.
-3. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across both skill packs.
+3. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across all skill packs.
 
 ## Ship
 
 1. Use `/ship` for the solo finalization flow.
-2. For app deploys, push `main` and let Vercel deploy `apps/web`.
-3. For package releases, run the package release command you need. Release commands validate before committing and tagging, skip package publishing unless `--publish` is passed, and skip pushing `main` plus the release tag unless `--push` is passed.
+2. Push committed feature branches with `git push no-mistakes`; do not push directly to `origin`.
+3. For app deploys, let the no-mistakes gate open the PR and let Vercel deploy `apps/web` after the protected branch merges.
+4. For package releases, run the package release command you need. Release commands validate before committing and tagging, skip package publishing unless `--publish` is passed, and skip pushing `main` plus the release tag unless `--push` is passed.
 
 ## Handoff
 

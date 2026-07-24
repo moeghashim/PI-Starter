@@ -248,3 +248,36 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/agent-workflow.md
   - scripts/agent-check.mjs
   - CLAUDE.md
+## 2026-07-05T11:33:37.909Z
+- Trigger: commit
+- Learning: Push-time gates and memory debugging skills need pinned repo-local manifests, configs, and agent:check wiring so forks inherit deterministic validation.
+- Context: feat(agent): add gated integration tooling
+- Branch: codex/no-mistakes-memory-leak-integrations
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .codex/prompts/ship.md
+  - AGENTS.md
+  - README.md
+  - docs/README.md
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - docs/commands.md
+  - docs/adrs/2026-07-05-push-time-validation-via-no-mistakes-gate.md
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/agent-sync.mjs
+  - .mcp.json
+  - .no-mistakes.yaml
+  - agent/skills-manifest.chromedevtools.json
+  - agent/skills/chromedevtools
+
+## 2026-07-05T12:00:00.000Z
+- Trigger: commit
+- Learning: agent-sync directory verification calls api.github.com, which rate-limits unauthenticated CI runners to 60/hour and returns HTTP 403; sending GITHUB_TOKEN via githubHeaders and wiring it into the agent guardrails step keeps skills:verify-sync deterministic in CI.
+- Context: fix(agent): authenticate agent-sync GitHub requests in CI
+- Branch: codex/no-mistakes-memory-leak-integrations
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - scripts/agent-sync.mjs
+  - .github/workflows/ci.yml
+  - progress.md

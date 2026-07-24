@@ -13,6 +13,6 @@ Prompts are stored under `.codex/prompts/`.
 - `/handoff`: Structured handoff notes for the next agent.
 - `/build-feature`: Tracer-bullet workflow for net-new features, starting with one tiny end-to-end slice.
 - `/fix`: End-to-end issue fix workflow with tests and checks.
-- `/ship`: End-to-end solo shipping workflow with validation plus deploy/release follow-through.
+- `/ship`: End-to-end solo shipping workflow through `git push no-mistakes` plus deploy/release follow-through.
 
 Use these prompts as repo-local defaults for codex-first automation.

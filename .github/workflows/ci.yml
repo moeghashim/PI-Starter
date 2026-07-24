@@ -51,3 +51,5 @@ jobs:
 
       - name: Run agent guardrails
         run: npm run agent:check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

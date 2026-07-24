@@ -25,3 +25,4 @@ Validation is enforced by `npm run docs:list`.
 - `docs/architecture-decisions.md`: ADR template and local conventions for recording durable technical decisions.
 - `docs/commands.md`: in-repo command prompt index.
 - `docs/deploying-to-vercel.md`: minimal Vercel deployment path for `apps/web`.
+- `docs/adrs/`: accepted architecture and workflow decisions.

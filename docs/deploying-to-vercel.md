@@ -41,8 +41,8 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 1. Run `npm run check`
 2. Run `npm test`
 3. Run `npm run agent:check`
-4. Open a pull request and wait for `Required checks` to pass
-5. Merge to `main`
+4. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
+5. Wait for `Required checks` to pass, then merge to `main`
 6. If the change includes database work, run the project-specific database deploy or migration command
 7. Let Vercel Git integration build and deploy `apps/web`
 8. Verify the deployed app and database are compatible

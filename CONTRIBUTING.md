@@ -19,5 +19,6 @@
 - Release scripts skip `npm publish` by default in this starter; add `--publish` only when you intentionally want to publish packages.
 - In `apps/web`, do not import `useEffect` directly; use render-time derivation, event handlers, framework data loading, or `useMountEffect`.
 - Keep commit messages as clear summaries (do not use prompt-only commit subjects).
+- Push feature branches with `git push no-mistakes`; do not push directly to `origin`. The gate validates the branch and opens the pull request.
 - For substantial agent-generated changes, include a `Repro-Prompt:` commit trailer.
 - Vendored Vercel skills are pinned through `agent/skills-manifest.json`; use `npm run skills:sync` and `npm run skills:verify-sync` when updating them.
