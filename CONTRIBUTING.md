@@ -4,6 +4,7 @@
 - Run doctor: `npm run doctor`
 - Install: `npm install`
 - Check: `npm run check`
+- Apply formatting/lint fixes explicitly: `npm run fix`, then review the diff.
 - Test: `npm test`
 - Reinstall when moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native Node: `npm run reinstall:clean`
 
@@ -20,5 +21,7 @@
 - In `apps/web`, do not import `useEffect` directly; use render-time derivation, event handlers, framework data loading, or `useMountEffect`.
 - Keep commit messages as clear summaries (do not use prompt-only commit subjects).
 - Push feature branches with `git push no-mistakes`; do not push directly to `origin`. The gate validates the branch and opens the pull request.
+- The pre-commit hook validates the working tree without re-staging files. For partial commits, review `git diff --cached` as well: unstaged changes can affect validation even though they are excluded from the commit.
+- Releases require clean `main` matching the fetched `origin/main`. Version bumps preserve locked dependencies. Release validation runs on the bumped tree before commits and tags are created.
 - For substantial agent-generated changes, include a `Repro-Prompt:` commit trailer.
 - Vendored Vercel skills are pinned through `agent/skills-manifest.json`; use `npm run skills:sync` and `npm run skills:verify-sync` when updating them.

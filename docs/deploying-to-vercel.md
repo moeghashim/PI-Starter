@@ -9,7 +9,18 @@ read_when:
 
 Use Vercel Git integration as the default deployment path for this starter.
 
-This document remains the canonical PI Starter deployment baseline even if you vendor additional upstream Vercel deployment skills later.
+This document remains the canonical PI Starter Vercel deployment baseline even if you vendor additional upstream Vercel deployment skills later.
+
+For Cloudflare Workers hosting, use `docs/deploying-to-cloudflare.md` instead. The provider paths remain intentionally separate.
+
+## Hosting Selection
+
+Choose exactly one default host for a fork:
+
+- Vercel: follow this document and keep Vercel Git integration responsible for deploy packaging.
+- Cloudflare: follow `docs/deploying-to-cloudflare.md` and keep Workers Builds or Wrangler responsible for deploy packaging.
+
+There is intentionally no generic root `deploy` script. Do not point Vercel at Cloudflare commands or Cloudflare at Vercel project settings.
 
 ## Project Settings
 
@@ -49,3 +60,5 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 9. Verify the deployed app and database are compatible
 
 This starter does not require a custom `vercel.json`.
+
+The Cloudflare-specific `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts` files are not used by Vercel.

@@ -18,6 +18,7 @@ const REQUIRED_PATHS = [
 	"docs/architecture-decisions.md",
 	"docs/commands.md",
 	"docs/deploying-to-vercel.md",
+	"docs/deploying-to-cloudflare.md",
 	"progress.md",
 	".codex/prompts/pickup.md",
 	".codex/prompts/handoff.md",

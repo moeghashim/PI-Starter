@@ -1,8 +1,8 @@
 const appCards = [
 	{
-		title: "Start a Vercel app",
+		title: "Choose one host",
 		description:
-			"Use apps/web as the default deploy target. Keep the project root on the monorepo and point Vercel at apps/web.",
+			"Use Vercel Git integration or Cloudflare Workers with OpenNext. Provider-specific settings stay separate.",
 		accent: "Deploy from main",
 	},
 	{
@@ -30,12 +30,18 @@ export default function HomePage() {
 					Publish the package when it matters.
 				</h1>
 				<p className="hero-copy">
-					PI-Starter now defaults to a Vercel-ready Next.js app, a shared package workspace, and agent guidance
-					designed for one maintainer shipping directly from main.
+					PI-Starter includes a deployable Next.js app, a shared package workspace, and agent guidance designed for
+					one maintainer shipping directly from main.
 				</p>
 				<div className="hero-actions">
 					<a className="primary-action" href="https://vercel.com/new">
 						Deploy on Vercel
+					</a>
+					<a
+						className="secondary-action"
+						href="https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/"
+					>
+						Deploy on Cloudflare
 					</a>
 					<a className="secondary-action" href="https://github.com/moeghashim/PI-Starter">
 						View the template

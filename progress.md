@@ -298,3 +298,37 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - package.json
   - package-lock.json
   - scripts/agent-check.mjs
+## 2026-09-07T09:08:14.905Z
+- Trigger: commit
+- Learning: Provider packaging needs its own CI check; validation must preserve staging, and releases must retain lockfile resolutions and validate the bumped tree before creating artifacts.
+- Context: feat(starter): add Cloudflare hosting and safer workflows Repro-Prompt: Rebuild the Cloudflare Workers hosting option from the preserved WIP on current main, then implement read-only checks, staging-safe hooks, lockfile-preserving releases, release branch and validation safeguards, Cloudflare CI packaging, and regression tests. Signed-off-by: Moe Ghashim <mohanadgh@gmail.com>
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .codex/prompts/ship.md
+  - .github/workflows/ci.yml
+  - .gitignore
+  - .husky/pre-commit
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - README.md
+  - apps/web/app/layout.tsx
+  - apps/web/app/page.tsx
+  - apps/web/next.config.ts
+  - apps/web/package.json
+  - apps/web/tsconfig.json
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/open-next.config.ts
+  - apps/web/wrangler.jsonc
+  - biome.json
+  - docs/README.md
+  - docs/agent-workflow.md
+  - docs/deploying-to-vercel.md
+  - docs/deploying-to-cloudflare.md
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - package-lock.json
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/check-file-length.mjs
+  - scripts/release.mjs
+  - scripts/test/workflow.test.mjs

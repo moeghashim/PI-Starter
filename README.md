@@ -1,13 +1,14 @@
 # pi-starter
 
 Monorepo starter for solo maintainers shipping both deployable apps and publishable packages:
-- Vercel-ready Next.js app in `apps/web`
+- Vercel-ready or Cloudflare Workers-ready Next.js app in `apps/web`
 - Shared package workspace in `packages/core`
 - Append-only `progress.md` learning log for solo task memory
 - ESM TypeScript
 - Biome formatting/linting (tabs, indentWidth 3, lineWidth 120)
 - Strict TypeScript
 - `npm run check` gates formatting, linting, and type checking
+- `npm run fix` explicitly applies formatting and lint fixes for review
 - Fallow changed-code auditing for dead code, duplication, circular dependencies, and complexity regressions
 - Optional max-lines-per-file check
 - Codex-first agent starter layer with vendored guardrail scripts
@@ -52,17 +53,20 @@ no-mistakes init
 
 When work is committed on a feature branch, push with `git push no-mistakes` instead of pushing directly to `origin`. The gate validates the branch in a disposable worktree and opens the PR after the pinned pipeline passes.
 
-## Start A Vercel App
+## Host The Web App
 
-`apps/web` is the default app target. Vercel should use `apps/web` as the root directory. No custom `vercel.json` is required for the starter.
+`apps/web` is the default app target. Choose one default host for a fork and keep provider settings separate.
 
-GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; Vercel Git integration should remain responsible for deployment packaging only.
+- Vercel: use `apps/web` as the Vercel root directory and `npm run build` as the build command. No custom `vercel.json` is required.
+- Cloudflare: use the repository root in Workers Builds and `npm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts`.
+
+GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
 ```bash
 npm run dev -w @pi-starter/web
 ```
 
-See `docs/deploying-to-vercel.md` for the minimal Vercel setup.
+See `docs/deploying-to-vercel.md` and `docs/deploying-to-cloudflare.md` for provider-specific setup.
 
 ## Publish A Package
 
@@ -127,13 +131,17 @@ npm run skills:sync:all
 npm run agent:check
 npm run fallow:audit
 npm run reinstall:clean
+npm run preview:cloudflare
+npm run build:cloudflare
+npm run deploy:cloudflare
+npm run typegen:cloudflare
 npm run commit:selective -- "chore: message" "path/to/file"
 npm run commit:with-progress -- "chore: message" --learning "What changed and why it matters." -- "path/to/file"
 npm run release:patch -- --learning "What we learned from this release."
 npm run release:patch -- --learning "What we learned from this release." --publish --push
 ```
 
-`npm run release:*` validates the bumped release tree before creating the release commit and tag. It skips `npm publish` and `git push` by default in this starter. Add `--publish` when you explicitly want to publish packages, and add `--push` when you explicitly want to push `main` and the release tag.
+`npm run release:*` requires clean `main` matching the fetched `origin/main`, preserves locked dependencies, and validates the bumped tree before creating the release commit and tag. It skips `npm publish` and `git push` by default. Add `--publish` to publish packages and `--push` to push `main` and the tag atomically. Branch protection still applies; a rejected push leaves the local release for review.
 
 ## Resources
 
@@ -141,6 +149,7 @@ Tooling and vendored skills this starter builds on:
 
 - [no-mistakes](https://github.com/kunchenguid/no-mistakes) - AI-gated push proxy. All feature branch pushes go through `git push no-mistakes`, which validates the branch in a disposable worktree and opens the PR only when green. Pipeline commands are pinned in [`.no-mistakes.yaml`](./.no-mistakes.yaml).
 - [Fallow](https://github.com/fallow-rs/fallow) - pinned Rust-native analysis for unused code, circular dependencies, duplication, and complexity. `npm run fallow:audit` gates only findings introduced relative to `origin/main`; GitHub Actions performs the equivalent pull-request-aware audit.
+- [OpenNext Cloudflare](https://opennext.js.org/cloudflare) - packages the Next.js workspace for Cloudflare Workers while leaving Vercel configuration independent.
 - [memory-leak-debugging skill](https://github.com/ChromeDevTools/chrome-devtools-mcp/tree/main/skills/memory-leak-debugging) from the Chrome DevTools team - vendored agent skill for diagnosing frontend and Node.js memory leaks with heap snapshots and [memlab](https://github.com/facebook/memlab). It requires the [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) server configured in [`.mcp.json`](./.mcp.json).
 
 ## Workspaces
