@@ -396,3 +396,13 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Changed Paths:
   - progress.md
   - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T11:11:34.661Z
+- Trigger: commit
+- Learning: The DCO GitHub check rejects any commit lacking a Signed-off-by trailer that matches the author, and the gate's no-mistakes(...) fix commits were created unsigned. scripts/committer is vendored verbatim from upstream, so adding --signoff there fails agent:verify-sync; enforce sign-off through a Husky prepare-commit-msg hook that uses git interpret-trailers, and repair existing history with git rebase --signoff from the base commit.
+- Context: fix(git): add DCO sign-off hook and document the trailer rule
+- Branch: HEAD
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .husky/prepare-commit-msg
+  - AGENTS.md
+  - scripts/test/workflow.test.mjs

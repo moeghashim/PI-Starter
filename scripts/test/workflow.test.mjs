@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+	chmodSync,
+	copyFileSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -160,3 +169,25 @@ for (const failingCheck of ["agent:check", "fallow:audit"]) {
 		assert.equal(f.run("git", ["tag", "--list"]), "");
 	});
 }
+test("prepare-commit-msg adds a DCO sign-off without duplicating an existing one", (t) => {
+	const f = fixture(t);
+	const hooks = join(f.directory, "hooks");
+	mkdirSync(hooks);
+	copyFileSync(join(root, ".husky/prepare-commit-msg"), join(hooks, "prepare-commit-msg"));
+	chmodSync(join(hooks, "prepare-commit-msg"), 0o755);
+	f.run("git", ["config", "core.hooksPath", hooks]);
+	const signoff = /^Signed-off-by: Workflow Test <test@example.invalid>$/gm;
+	f.write("tracked.txt", "one\n");
+	f.run("git", ["add", "."]);
+	f.run("git", ["commit", "-m", "chore: unsigned"]);
+	assert.equal(f.run("git", ["log", "-1", "--format=%B"]).match(signoff).length, 1);
+	f.write("tracked.txt", "two\n");
+	f.run("git", ["commit", "-s", "-am", "chore: signed"]);
+	assert.equal(f.run("git", ["log", "-1", "--format=%B"]).match(signoff).length, 1);
+	const messageFile = join(f.directory, "COMMIT_EDITMSG");
+	writeFileSync(messageFile, "chore: template\n\n# Please enter the commit message.\n");
+	f.run("sh", [join(hooks, "prepare-commit-msg"), messageFile]);
+	const message = readFileSync(messageFile, "utf8");
+	assert.equal(message.match(signoff).length, 1);
+	assert.ok(message.indexOf("Signed-off-by") < message.indexOf("# Please"), message);
+});

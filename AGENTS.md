@@ -55,6 +55,7 @@
 - Never commit unless explicitly requested.
 - Push branches through `git push no-mistakes`, never directly to `origin`. The gate runs review, test, docs, and lint in a disposable worktree, forwards the branch only when everything passes, and opens the PR. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate already-committed work. Safe mechanical fixes are auto-applied; intent-level findings are escalated for human approval.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
+- Every commit must carry a `Signed-off-by:` trailer matching the author because the DCO check blocks unsigned PRs. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.
 - `progress.md` is append-only: only add new entries at the end; never edit prior entries.
 - For substantial agent-generated changes, add a `Repro-Prompt:` trailer in the commit message body.
