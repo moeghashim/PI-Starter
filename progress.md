@@ -357,3 +357,20 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - apps/web/wrangler.jsonc
   - docs/deploying-to-cloudflare.md
   - progress.md
+## 2026-09-08T10:21:35.503Z
+- Trigger: review-fix
+- Learning: `wrangler types` has no flag to suppress the `GlobalProps` entrypoint import; it appears whenever config `main` resolves on disk, so generation through `experimental_generateTypes` from a same-directory temp config without `main` is the deterministic path. Generate with the wrapper and keep the regression test comparing both build states against the committed file.
+- Context: Make Cloudflare binding type generation deterministic regardless of OpenNext build output and align README, Vercel, and Cloudflare CI descriptions on the `Cloudflare build` job.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .gitignore
+  - README.md
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/package.json
+  - apps/web/scripts/cloudflare-typegen.mjs
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs

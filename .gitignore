@@ -2,6 +2,7 @@ node_modules/
 .next/
 .open-next/
 .wrangler/
+.wrangler-typegen-*.jsonc
 dist/
 packages/*/node_modules/
 packages/*/dist/

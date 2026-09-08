@@ -60,7 +60,7 @@ When work is committed on a feature branch, push with `git push no-mistakes` ins
 - Vercel: use `apps/web` as the Vercel root directory and `npm run build` as the build command. No custom `vercel.json` is required.
 - Cloudflare: use the repository root in Workers Builds and `npm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts`.
 
-GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
+GitHub Actions runs the required `Required checks` gate and the `Cloudflare build` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
 ```bash
 npm run dev -w @pi-starter/web
