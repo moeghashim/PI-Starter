@@ -387,3 +387,12 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/deploying-to-cloudflare.md
   - progress.md
   - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T10:41:06.955Z
+- Trigger: review-fix
+- Learning: Test cleanup assertions must not scan the shared OS tmpdir, because concurrent gate worktrees or a developer running `npm run typegen:cloudflare` create and remove `pi-cloudflare-typegen-config-*` entries between snapshots. Node's `os.tmpdir()` honors `TMPDIR`, so pass a per-fixture `tmp` directory through the child environment and assert only that directory is empty afterward; disabling the wrapper's `rmSync` still fails the test, which proves the child honors the override.
+- Context: Make the Cloudflare typegen leak check hermetic by scoping temporary config directories to a per-test TMPDIR.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs

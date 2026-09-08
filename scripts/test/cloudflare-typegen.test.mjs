@@ -9,16 +9,18 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const webRoot = join(root, "apps/web");
 const typegenScript = join(webRoot, "scripts/cloudflare-typegen.mjs");
-const ISOLATED_CONFIG_PREFIX = "pi-cloudflare-typegen-config-";
+const FIXTURE_TMP_DIRECTORY = "tmp";
 
 function generate(directory, outputName, extraEnv = {}) {
 	const outputPath = join(directory, outputName);
+	const fixtureTmpDirectory = join(directory, FIXTURE_TMP_DIRECTORY);
+	mkdirSync(fixtureTmpDirectory, { recursive: true });
 	execFileSync(
 		process.execPath,
 		[typegenScript, "--config", join(directory, "wrangler.jsonc"), "--output", outputPath],
 		{
 			cwd: webRoot,
-			env: { ...process.env, WRANGLER_SEND_METRICS: "false", ...extraEnv },
+			env: { ...process.env, TMPDIR: fixtureTmpDirectory, WRANGLER_SEND_METRICS: "false", ...extraEnv },
 			stdio: ["ignore", "pipe", "pipe"],
 		},
 	);
@@ -31,14 +33,9 @@ function createFixtureDirectory(t) {
 	return directory;
 }
 
-function listIsolatedConfigDirectories() {
-	return readdirSync(tmpdir()).filter((name) => name.startsWith(ISOLATED_CONFIG_PREFIX));
-}
-
 test("cloudflare typegen output is identical with and without OpenNext build output", (t) => {
 	const directory = createFixtureDirectory(t);
 	copyFileSync(join(webRoot, "wrangler.jsonc"), join(directory, "wrangler.jsonc"));
-	const isolatedDirectoriesBefore = listIsolatedConfigDirectories();
 
 	const withoutBuildOutput = generate(directory, "without-build.d.ts");
 
@@ -57,11 +54,12 @@ test("cloudflare typegen output is identical with and without OpenNext build out
 	assert.equal(withoutBuildOutput, readFileSync(join(webRoot, "cloudflare-env.d.ts"), "utf8"));
 	assert.deepEqual(readdirSync(directory).sort(), [
 		".open-next",
+		FIXTURE_TMP_DIRECTORY,
 		"with-build.d.ts",
 		"without-build.d.ts",
 		"wrangler.jsonc",
 	]);
-	assert.deepEqual(listIsolatedConfigDirectories(), isolatedDirectoriesBefore);
+	assert.deepEqual(readdirSync(join(directory, FIXTURE_TMP_DIRECTORY)), []);
 });
 
 test("cloudflare typegen ignores local secret files and process environment", (t) => {
