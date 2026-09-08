@@ -92,6 +92,8 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `scripts/progress-append-only-check.mjs` enforces append-only `progress.md` changes in pre-commit.
 - `scripts/docs-list.mjs` validates docs front matter (`summary`, `read_when`) and prints a docs index without depending on `tsx`.
 - `scripts/native-deps.mjs` and `scripts/preflight-native-deps.mjs` fail fast when native dependencies do not match the current machine.
+- `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, and Cloudflare binding type generation.
+- `apps/web/scripts/cloudflare-typegen.mjs` regenerates `apps/web/cloudflare-env.d.ts` from `apps/web/wrangler.jsonc` through `npm run typegen:cloudflare`.
 - `.codex/prompts/` contains codex-first prompts: `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.
 - `.no-mistakes.yaml` pins the push-gate pipeline commands.

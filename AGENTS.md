@@ -27,6 +27,7 @@
 - `npm run check` does not apply source fixes. Use `npm run fix` explicitly, then review its changes.
 - Before handoff or ship, run `npm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
+- After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`.
 - Keep `node_modules` machine-local. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, run `npm install` or `npm run reinstall:clean` before using native-tooling commands.
 
 ## Database Deployments

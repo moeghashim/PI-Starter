@@ -2,6 +2,7 @@
 summary: "Minimal Vercel deployment path for the default Next.js app workspace"
 read_when:
   - Setting up the starter on Vercel for the first time.
+  - Choosing between Vercel and Cloudflare Workers for `apps/web`.
   - Shipping changes from `apps/web`.
 ---
 

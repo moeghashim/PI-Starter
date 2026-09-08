@@ -104,11 +104,11 @@ PI Starter vendors four small upstream skill subsets so repo-local workflows can
 
 ## What Stays Local
 
-The starter keeps its own canonical workflow docs in `docs/` and its own deployment baseline in `docs/deploying-to-vercel.md`.
+The starter keeps its own canonical workflow docs in `docs/` and its own deployment baselines in `docs/deploying-to-vercel.md` and `docs/deploying-to-cloudflare.md`.
 
 We intentionally do not vendor every upstream skill into the default starter. The following are currently excluded on purpose:
 
-- `deploy-to-vercel`: broad operational workflow that overlaps with this starter's local deployment doc
+- `deploy-to-vercel`: broad operational workflow that overlaps with this starter's Vercel deployment doc
 - `vercel-cli-with-tokens`: token-handling workflow that should stay opt-in
 - `react-native-skills`: outside the default web-first starter scope
 - most Addy slash-command, persona, and hook files: useful upstream, but not part of this starter's repo-local default layer

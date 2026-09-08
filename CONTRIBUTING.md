@@ -5,7 +5,7 @@
 - Install: `npm install`
 - Check: `npm run check`
 - Apply formatting/lint fixes explicitly: `npm run fix`, then review the diff.
-- Test: `npm test`
+- Test: `npm test` (runs the root regression tests in `scripts/test/` before workspace tests)
 - Reinstall when moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native Node: `npm run reinstall:clean`
 
 ## Rules
@@ -23,6 +23,7 @@
 - Push feature branches with `git push no-mistakes`; do not push directly to `origin`. The gate validates the branch and opens the pull request.
 - The pre-commit hook validates the working tree without re-staging files. For partial commits, review `git diff --cached` as well: unstaged changes can affect validation even though they are excluded from the commit.
 - Releases require clean `main` matching the fetched `origin/main`. Version bumps preserve locked dependencies. Release validation runs on the bumped tree before commits and tags are created.
+- After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`; `npm test` fails when the committed file drifts.
 - For substantial agent-generated changes, include a `Repro-Prompt:` commit trailer.
 - Vendored Vercel skills are pinned through `agent/skills-manifest.json`; use `npm run skills:sync` and `npm run skills:verify-sync` when updating them.
 
