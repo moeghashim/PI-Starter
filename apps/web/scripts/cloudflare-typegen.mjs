@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { randomUUID } from "node:crypto";
-import { rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { experimental_generateTypes, experimental_readRawConfig } from "wrangler";
 
@@ -22,13 +22,18 @@ const outputPath = resolve(values.output);
 
 const { rawConfig } = experimental_readRawConfig({ config: configPath });
 const { main: _entrypoint, ...bindingsOnlyConfig } = rawConfig;
-const tempConfigPath = join(dirname(configPath), `.wrangler-typegen-${randomUUID()}.jsonc`);
-writeFileSync(tempConfigPath, JSON.stringify(bindingsOnlyConfig));
+
+process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV = "false";
+process.env.CLOUDFLARE_INCLUDE_PROCESS_ENV = "false";
+
+const isolatedDirectory = mkdtempSync(join(tmpdir(), "pi-cloudflare-typegen-config-"));
+const isolatedConfigPath = join(isolatedDirectory, "wrangler.json");
+writeFileSync(isolatedConfigPath, JSON.stringify(bindingsOnlyConfig));
 
 let generated;
 try {
 	generated = await experimental_generateTypes({
-		config: tempConfigPath,
+		config: isolatedConfigPath,
 		envInterface: ENV_INTERFACE,
 		includeEnv: true,
 		includeRuntime: false,
@@ -36,7 +41,7 @@ try {
 		path: outputPath,
 	});
 } finally {
-	rmSync(tempConfigPath, { force: true });
+	rmSync(isolatedDirectory, { recursive: true, force: true });
 }
 
 if (generated.env === null) {

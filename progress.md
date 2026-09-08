@@ -374,3 +374,16 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/deploying-to-vercel.md
   - progress.md
   - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T10:30:22.000Z
+- Trigger: review-fix
+- Learning: Wrangler type generation infers secrets through `getVarsForDev`, which reads `.dev.vars` and, by default, `.env` files beside the config plus `process.env` when `CLOUDFLARE_INCLUDE_PROCESS_ENV` is set, so a typegen config placed beside `wrangler.jsonc` silently types local secret names into the committed declaration file. Generate from a temporary config in an isolated `tmpdir` directory with `CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV` and `CLOUDFLARE_INCLUDE_PROCESS_ENV` forced to `false`, and keep regression tests with synthetic secret fixtures plus fixture bindings and `vars` so isolation does not drop declared config.
+- Context: Make tracked Cloudflare binding types independent of local .dev.vars, .env, and process environment secrets while preserving config-declared bindings and vars.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .gitignore
+  - apps/web/scripts/cloudflare-typegen.mjs
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - docs/deploying-to-cloudflare.md
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs
