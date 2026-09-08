@@ -66,7 +66,7 @@ Regenerate binding types after changing `apps/web/wrangler.jsonc`:
 npm run typegen:cloudflare
 ```
 
-The generated `apps/web/cloudflare-env.d.ts` omits runtime types, so binding names such as `Fetcher`, `KVNamespace`, and `D1Database` resolve through `@cloudflare/workers-types`, which `apps/web/tsconfig.json` lists in `types` and `apps/web/package.json` pins alongside Wrangler. Bump both together when Wrangler moves to a newer runtime baseline.
+The generated `apps/web/cloudflare-env.d.ts` omits runtime types, so binding names such as `Fetcher`, `KVNamespace`, and `D1Database` resolve through `@cloudflare/workers-types`, which `apps/web/tsconfig.json` lists in `types` and `apps/web/package.json` pins alongside Wrangler. The `compatibility_date` in `apps/web/wrangler.jsonc` matches the `workerd` release bundled with the pinned Wrangler, so local preview runs the same runtime baseline as production. Bump Wrangler, `@cloudflare/workers-types`, and `compatibility_date` together when moving to a newer runtime baseline.
 
 ## Build Quality Gates
 

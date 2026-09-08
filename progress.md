@@ -347,3 +347,13 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - package-lock.json
   - progress.md
   - scripts/release.mjs
+## 2026-09-08T10:07:13.933Z
+- Trigger: review-fix
+- Learning: Keep `compatibility_date` at or below the `workerd` release bundled with the pinned Wrangler; wrangler dev only rejects dates in the future relative to today, so a date newer than the local runtime silently previews on an older baseline instead of failing. The generated `cloudflare-env.d.ts` hash is content-based and does not change with the date, and `wrangler types` must run without `.open-next` present or it injects a `GlobalProps` import of the build output.
+- Context: Align Cloudflare compatibility_date with pinned workerd 2026-07-22 and verify local preview serves.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <moe@bannaa.co>
+- Changed Paths:
+  - apps/web/wrangler.jsonc
+  - docs/deploying-to-cloudflare.md
+  - progress.md
