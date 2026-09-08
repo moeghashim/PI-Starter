@@ -332,3 +332,18 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - scripts/check-file-length.mjs
   - scripts/release.mjs
   - scripts/test/workflow.test.mjs
+## 2026-09-08T09:56:38.000Z
+- Trigger: review-fix
+- Learning: Root overrides must be re-locked after editing; `npm install --package-lock-only` treats a stale nested entry as satisfied, so verify with `npm ls <pkg>`. Pinned sharp 0.35 is required by advisory GHSA-f88m-g3jw-g9cj and Next image optimization was verified on it. Wrangler typegen without runtime types needs `@cloudflare/workers-types` in tsconfig `types`, otherwise skipLibCheck hides unresolved binding types.
+- Context: Address review findings on Cloudflare hosting refresh: lockfile glob override resolution, Cloudflare runtime types, release guard output, shipping checklist, and documented dependency overrides.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <moe@bannaa.co>
+- Changed Paths:
+  - CONTRIBUTING.md
+  - apps/web/package.json
+  - apps/web/tsconfig.json
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - package-lock.json
+  - progress.md
+  - scripts/release.mjs

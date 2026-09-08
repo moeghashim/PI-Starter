@@ -101,13 +101,15 @@ function ensureNpmAuth() {
 function ensureReleaseBranch() {
 	const branch = execSync("git branch --show-current", { encoding: "utf8" }).trim();
 	if (branch !== "main") {
-		throw new Error("Release aborted: switch to main before releasing.");
+		console.error("Release aborted: switch to main before releasing.");
+		process.exit(1);
 	}
 	run("git fetch origin main");
 	const head = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
 	const upstream = execSync("git rev-parse FETCH_HEAD", { encoding: "utf8" }).trim();
 	if (head !== upstream) {
-		throw new Error("Release aborted: main must match origin/main. Reconcile local and remote commits first.");
+		console.error("Release aborted: main must match origin/main. Reconcile local and remote commits first.");
+		process.exit(1);
 	}
 }
 

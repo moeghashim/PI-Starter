@@ -35,6 +35,8 @@ Vercel builds are deploy packaging only. When Vercel sets `VERCEL=1`, `apps/web/
 
 Next.js 16 does not run linting during `next build`; keep linting and type checking in CI with `npm run check`.
 
+Image optimization runs on `sharp@0.35.3` through the root `package.json` override rather than the `sharp@^0.34.5` range Next.js declares. `CONTRIBUTING.md` records the advisory behind that pin and the verification that Next.js image output is unaffected.
+
 GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, plus a Fallow new-code audit on pull requests. Protect `main` by requiring the `Required checks` and `Fallow audit` status checks before merge.
 
 ## Environment Variables

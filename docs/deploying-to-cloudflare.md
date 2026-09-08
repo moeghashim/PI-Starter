@@ -66,6 +66,8 @@ Regenerate binding types after changing `apps/web/wrangler.jsonc`:
 npm run typegen:cloudflare
 ```
 
+The generated `apps/web/cloudflare-env.d.ts` omits runtime types, so binding names such as `Fetcher`, `KVNamespace`, and `D1Database` resolve through `@cloudflare/workers-types`, which `apps/web/tsconfig.json` lists in `types` and `apps/web/package.json` pins alongside Wrangler. Bump both together when Wrangler moves to a newer runtime baseline.
+
 ## Build Quality Gates
 
 Cloudflare deploys are packaging steps. Workers Builds automatically sets `WORKERS_CI=1`, so `apps/web/next.config.ts` skips duplicate production TypeScript validation after GitHub Actions has checked the branch.
@@ -93,7 +95,7 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 3. Run `npm run fallow:audit`
 4. Run `npm run agent:check`
 5. Push the committed feature branch with `git push no-mistakes`
-6. Wait for `Required checks` and `Fallow audit`, then merge to `main`
+6. Wait for `Required checks`, `Fallow audit`, and `Cloudflare build`, then merge to `main`
 7. Run any required database deployment
 8. Let Workers Builds run `npm run deploy:cloudflare`, or deploy manually
 9. Verify the deployed app and database are compatible
