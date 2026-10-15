@@ -63,12 +63,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Next.js types
+        run: npm exec -w @pi-starter/web -- next typegen
+
       - name: Audit changed code
         uses: fallow-rs/fallow@3f6d4a5f817525d322365d64953940ff47175bf2 # v3.9.1
         with:
           command: audit
           gate: new-only
           fail-on-issues: true
+          # Re-resolve generated types instead of restoring stale missing-import results.
+          no-cache: true
 
   required-checks:
     name: Required checks

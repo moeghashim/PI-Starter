@@ -8,6 +8,15 @@ const root = new URL("../../", import.meta.url);
 const gate = parse(readFileSync(new URL(".no-mistakes.yaml", root), "utf8"));
 const workflow = parse(readFileSync(new URL(".github/workflows/ci.yml", root), "utf8"));
 
+test("Fallow CI prepares generated Next.js types before auditing a clean checkout", () => {
+	const steps = workflow.jobs["fallow-audit"].steps;
+	const install = steps.findIndex((step) => step.run === "npm ci");
+	const typegen = steps.findIndex((step) => step.run === "npm exec -w @pi-starter/web -- next typegen");
+	const audit = steps.findIndex((step) => step.uses?.startsWith("fallow-rs/fallow@"));
+	assert.ok(install >= 0 && typegen > install && audit > typegen);
+	assert.equal(steps[audit].with["no-cache"], true);
+});
+
 test("gate commands reach npm with Node 22 on PATH and no nvm", () => {
 	for (const command of [gate.commands.test, gate.commands.lint]) {
 		// Replace npm at the shell boundary to avoid installing during this test.

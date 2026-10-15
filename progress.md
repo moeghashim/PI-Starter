@@ -434,3 +434,12 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Changed Paths:
   - CONTRIBUTING.md
   - progress.md
+## 2026-10-15T18:17:07.724Z
+- Trigger: commit
+- Learning: Fallow CI needs Next.js typegen before auditing next-env.d.ts. A cached unresolved-import result can persist after generation, so disable the CI audit cache. Verified failure before typegen and success after typegen with no cache in a clean clone; workflow regression tests, checks, full tests, Fallow audit, and agent guardrails passed.
+- Context: fix(ci): generate Next.js types before Fallow audit Repro-Prompt: Fix PR 7 Fallow CI failure on missing generated Next.js types, verify a clean checkout, then commit and push.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - scripts/test/gate-config.test.mjs
