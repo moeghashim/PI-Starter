@@ -2,6 +2,7 @@
 summary: "Minimal Vercel deployment path for the default Next.js app workspace"
 read_when:
   - Setting up the starter on Vercel for the first time.
+  - Choosing between Vercel and Cloudflare Workers for `apps/web`.
   - Shipping changes from `apps/web`.
 ---
 
@@ -9,7 +10,18 @@ read_when:
 
 Use Vercel Git integration as the default deployment path for this starter.
 
-This document remains the canonical PI Starter deployment baseline even if you vendor additional upstream Vercel deployment skills later.
+This document remains the canonical PI Starter Vercel deployment baseline even if you vendor additional upstream Vercel deployment skills later.
+
+For Cloudflare Workers hosting, use `docs/deploying-to-cloudflare.md` instead. The provider paths remain intentionally separate.
+
+## Hosting Selection
+
+Choose exactly one default host for a fork:
+
+- Vercel: follow this document and keep Vercel Git integration responsible for deploy packaging.
+- Cloudflare: follow `docs/deploying-to-cloudflare.md` and keep Workers Builds or Wrangler responsible for deploy packaging.
+
+There is intentionally no generic root `deploy` script. Do not point Vercel at Cloudflare commands or Cloudflare at Vercel project settings.
 
 ## Project Settings
 
@@ -24,7 +36,9 @@ Vercel builds are deploy packaging only. When Vercel sets `VERCEL=1`, `apps/web/
 
 Next.js 16 does not run linting during `next build`; keep linting and type checking in CI with `npm run check`.
 
-GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, plus a Fallow new-code audit on pull requests. Protect `main` by requiring the `Required checks` and `Fallow audit` status checks before merge.
+Image optimization uses the patched Sharp range declared by Next.js 16.4.1 (`^0.35.5`); no Next.js-specific Sharp override is needed. Recheck the lockfile with `npm audit` when upgrading dependencies.
+
+GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Vercel forks only need to protect `main` by requiring the `Required checks` and `Fallow audit` status checks before merge.
 
 ## Environment Variables
 
@@ -49,3 +63,5 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 9. Verify the deployed app and database are compatible
 
 This starter does not require a custom `vercel.json`.
+
+The Cloudflare-specific `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts` files are not used by Vercel.

@@ -24,8 +24,10 @@
 
 ## Commands
 - After code changes (not docs changes): `npm run check`
+- `npm run check` does not apply source fixes. Use `npm run fix` explicitly, then review its changes.
 - Before handoff or ship, run `npm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
+- After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`.
 - Keep `node_modules` machine-local. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, run `npm install` or `npm run reinstall:clean` before using native-tooling commands.
 
 ## Database Deployments
@@ -53,6 +55,7 @@
 - Never commit unless explicitly requested.
 - Push branches through `git push no-mistakes`, never directly to `origin`. The gate runs review, test, docs, and lint in a disposable worktree, forwards the branch only when everything passes, and opens the PR. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate already-committed work. Safe mechanical fixes are auto-applied; intent-level findings are escalated for human approval.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
+- Every commit must carry a `Signed-off-by:` trailer matching the author because the DCO check blocks unsigned PRs. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.
 - `progress.md` is append-only: only add new entries at the end; never edit prior entries.
 - For substantial agent-generated changes, add a `Repro-Prompt:` trailer in the commit message body.

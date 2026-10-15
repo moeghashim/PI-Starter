@@ -28,7 +28,7 @@ read_when:
 
 ## Validate
 
-1. Run `npm run check` for code quality.
+1. Run `npm run check` for read-only code quality validation. Use `npm run fix` explicitly to apply fixes, then review the diff.
 2. Run `npm test` for test coverage.
 3. Run `npm run fallow:audit` to reject newly introduced dead code, duplication, and complexity findings relative to `origin/main`.
 4. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across all skill packs.
@@ -37,8 +37,8 @@ read_when:
 
 1. Use `/ship` for the solo finalization flow.
 2. Push committed feature branches with `git push no-mistakes`; do not push directly to `origin`.
-3. For app deploys, let the no-mistakes gate open the PR and let Vercel deploy `apps/web` after the protected branch merges.
-4. For package releases, run the package release command you need. Release commands validate before committing and tagging, skip package publishing unless `--publish` is passed, and skip pushing `main` plus the release tag unless `--push` is passed.
+3. For app deploys, choose `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md`. Let the no-mistakes gate open the PR and the selected provider deploy after the protected branch merges. Cloudflare changes must pass `Cloudflare build` in CI.
+4. For package releases, start on clean `main` matching the fetched `origin/main`. Release commands preserve the lockfile and validate the bumped tree with build, check, tests, agent checks, and Fallow before committing and tagging. Publishing requires `--publish`; pushing requires `--push`, which atomically pushes the release branch and tag. Protected-branch rejection leaves the local release available for review; do not bypass protection.
 
 ## Handoff
 

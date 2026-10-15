@@ -17,7 +17,7 @@ const sansFont = Space_Grotesk({
 
 export const metadata: Metadata = {
 	title: "PI-Starter",
-	description: "Solo-maintainer starter for Vercel apps, shared packages, and agent workflows.",
+	description: "Solo-maintainer starter for Vercel or Cloudflare apps, shared packages, and agent workflows.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

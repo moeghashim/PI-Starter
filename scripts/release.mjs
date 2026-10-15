@@ -98,6 +98,21 @@ function ensureNpmAuth() {
 	}
 }
 
+function ensureReleaseBranch() {
+	const branch = execSync("git branch --show-current", { encoding: "utf8" }).trim();
+	if (branch !== "main") {
+		console.error("Release aborted: switch to main before releasing.");
+		process.exit(1);
+	}
+	run("git fetch origin main");
+	const head = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+	const upstream = execSync("git rev-parse FETCH_HEAD", { encoding: "utf8" }).trim();
+	if (head !== upstream) {
+		console.error("Release aborted: main must match origin/main. Reconcile local and remote commits first.");
+		process.exit(1);
+	}
+}
+
 function changelogPaths() {
 	return readdirSync("packages")
 		.map((packageName) => join("packages", packageName, "CHANGELOG.md"))
@@ -132,6 +147,7 @@ function addUnreleasedSection() {
 }
 
 ensureCleanGitTree();
+ensureReleaseBranch();
 if (publish) {
 	ensureNpmAuth();
 }
@@ -155,6 +171,8 @@ runArgs("node", [
 run("npm run build");
 run("npm run check");
 run("npm test");
+run("npm run agent:check");
+run("npm run fallow:audit");
 
 run("git add .");
 run(`git commit -m "Release v${version}"`);
@@ -172,8 +190,7 @@ addUnreleasedSection();
 run("git add .");
 run('git commit -m "Add [Unreleased] section for next cycle"');
 if (push) {
-	run("git push origin main");
-	run(`git push origin v${version}`);
+	run(`git push --atomic origin HEAD:refs/heads/main refs/tags/v${version}`);
 } else {
 	console.log("Skipping git push by default for starter releases. Pass --push to push main and the release tag.");
 }

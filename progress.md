@@ -298,3 +298,148 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - package.json
   - package-lock.json
   - scripts/agent-check.mjs
+## 2026-09-07T09:08:14.905Z
+- Trigger: commit
+- Learning: Provider packaging needs its own CI check; validation must preserve staging, and releases must retain lockfile resolutions and validate the bumped tree before creating artifacts.
+- Context: feat(starter): add Cloudflare hosting and safer workflows Repro-Prompt: Rebuild the Cloudflare Workers hosting option from the preserved WIP on current main, then implement read-only checks, staging-safe hooks, lockfile-preserving releases, release branch and validation safeguards, Cloudflare CI packaging, and regression tests. Signed-off-by: Moe Ghashim <mohanadgh@gmail.com>
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .codex/prompts/ship.md
+  - .github/workflows/ci.yml
+  - .gitignore
+  - .husky/pre-commit
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - README.md
+  - apps/web/app/layout.tsx
+  - apps/web/app/page.tsx
+  - apps/web/next.config.ts
+  - apps/web/package.json
+  - apps/web/tsconfig.json
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/open-next.config.ts
+  - apps/web/wrangler.jsonc
+  - biome.json
+  - docs/README.md
+  - docs/agent-workflow.md
+  - docs/deploying-to-vercel.md
+  - docs/deploying-to-cloudflare.md
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - package-lock.json
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/check-file-length.mjs
+  - scripts/release.mjs
+  - scripts/test/workflow.test.mjs
+## 2026-09-08T09:56:38.000Z
+- Trigger: review-fix
+- Learning: Root overrides must be re-locked after editing; `npm install --package-lock-only` treats a stale nested entry as satisfied, so verify with `npm ls <pkg>`. Pinned sharp 0.35 is required by advisory GHSA-f88m-g3jw-g9cj and Next image optimization was verified on it. Wrangler typegen without runtime types needs `@cloudflare/workers-types` in tsconfig `types`, otherwise skipLibCheck hides unresolved binding types.
+- Context: Address review findings on Cloudflare hosting refresh: lockfile glob override resolution, Cloudflare runtime types, release guard output, shipping checklist, and documented dependency overrides.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <moe@bannaa.co>
+- Changed Paths:
+  - CONTRIBUTING.md
+  - apps/web/package.json
+  - apps/web/tsconfig.json
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - package-lock.json
+  - progress.md
+  - scripts/release.mjs
+## 2026-09-08T10:07:13.933Z
+- Trigger: review-fix
+- Learning: Keep `compatibility_date` at or below the `workerd` release bundled with the pinned Wrangler; wrangler dev only rejects dates in the future relative to today, so a date newer than the local runtime silently previews on an older baseline instead of failing. The generated `cloudflare-env.d.ts` hash is content-based and does not change with the date, and `wrangler types` must run without `.open-next` present or it injects a `GlobalProps` import of the build output.
+- Context: Align Cloudflare compatibility_date with pinned workerd 2026-07-22 and verify local preview serves.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <moe@bannaa.co>
+- Changed Paths:
+  - apps/web/wrangler.jsonc
+  - docs/deploying-to-cloudflare.md
+  - progress.md
+## 2026-09-08T10:21:35.503Z
+- Trigger: review-fix
+- Learning: `wrangler types` has no flag to suppress the `GlobalProps` entrypoint import; it appears whenever config `main` resolves on disk, so generation through `experimental_generateTypes` from a same-directory temp config without `main` is the deterministic path. Generate with the wrapper and keep the regression test comparing both build states against the committed file.
+- Context: Make Cloudflare binding type generation deterministic regardless of OpenNext build output and align README, Vercel, and Cloudflare CI descriptions on the `Cloudflare build` job.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .gitignore
+  - README.md
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/package.json
+  - apps/web/scripts/cloudflare-typegen.mjs
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T10:30:22.000Z
+- Trigger: review-fix
+- Learning: Wrangler type generation infers secrets through `getVarsForDev`, which reads `.dev.vars` and, by default, `.env` files beside the config plus `process.env` when `CLOUDFLARE_INCLUDE_PROCESS_ENV` is set, so a typegen config placed beside `wrangler.jsonc` silently types local secret names into the committed declaration file. Generate from a temporary config in an isolated `tmpdir` directory with `CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV` and `CLOUDFLARE_INCLUDE_PROCESS_ENV` forced to `false`, and keep regression tests with synthetic secret fixtures plus fixture bindings and `vars` so isolation does not drop declared config.
+- Context: Make tracked Cloudflare binding types independent of local .dev.vars, .env, and process environment secrets while preserving config-declared bindings and vars.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .gitignore
+  - apps/web/scripts/cloudflare-typegen.mjs
+  - docs/adrs/2026-07-27-cloudflare-workers-hosting-option.md
+  - docs/deploying-to-cloudflare.md
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T10:41:06.955Z
+- Trigger: review-fix
+- Learning: Test cleanup assertions must not scan the shared OS tmpdir, because concurrent gate worktrees or a developer running `npm run typegen:cloudflare` create and remove `pi-cloudflare-typegen-config-*` entries between snapshots. Node's `os.tmpdir()` honors `TMPDIR`, so pass a per-fixture `tmp` directory through the child environment and assert only that directory is empty afterward; disabling the wrapper's `rmSync` still fails the test, which proves the child honors the override.
+- Context: Make the Cloudflare typegen leak check hermetic by scoping temporary config directories to a per-test TMPDIR.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - progress.md
+  - scripts/test/cloudflare-typegen.test.mjs
+## 2026-09-08T11:11:34.661Z
+- Trigger: commit
+- Learning: The DCO GitHub check rejects any commit lacking a Signed-off-by trailer that matches the author, and the gate's no-mistakes(...) fix commits were created unsigned. scripts/committer is vendored verbatim from upstream, so adding --signoff there fails agent:verify-sync; enforce sign-off through a Husky prepare-commit-msg hook that uses git interpret-trailers, and repair existing history with git rebase --signoff from the base commit.
+- Context: fix(git): add DCO sign-off hook and document the trailer rule
+- Branch: HEAD
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .husky/prepare-commit-msg
+  - AGENTS.md
+  - scripts/test/workflow.test.mjs
+## 2026-10-15T15:35:05.698Z
+- Trigger: commit
+- Learning: Branch protection needs a stable non-matrix aggregate status. Next 16.4.1 removes the need for older Sharp and PostCSS overrides; gate commands should use the configured Node 22 PATH without assuming a version manager. Regression tests, checks, builds, audit, and local Cloudflare preview passed.
+- Context: fix(ci): restore required checks and refresh hosting dependencies Repro-Prompt: Address PR 7 review findings: provide the exact required CI status, eliminate audited dependency vulnerabilities, and remove the gate dependency on nvm while retaining Node 22 validation.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - .no-mistakes.yaml
+  - CONTRIBUTING.md
+  - README.md
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/next-env.d.ts
+  - apps/web/package.json
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - package-lock.json
+  - package.json
+  - scripts/test/gate-config.test.mjs
+## 2026-10-15T15:48:12.489Z
+- Trigger: commit
+- Learning: Gate worktrees set a per-worktree core.hooksPath to the bare repository's sample hooks directory, so the Husky prepare-commit-msg hook never runs and gate-created fix commits land without the Signed-off-by trailer the DCO check requires. Point the worktree config at .husky before committing and sign with git commit -s. The @node-minify/core glob override is scoped on purpose: @node-minify/core@9.0.2 pins the deprecated glob@10.3.3 inside the GHSA-5j98-mcp5-4vw2 range, while @opennextjs/cloudflare needs root glob@13.0.6, so npm ls glob is expected to report both 13.0.6 and 12.0.0.
+- Context: no-mistakes(review): document scoped glob override and expected two-version tree
+- Branch: HEAD
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - CONTRIBUTING.md
+  - progress.md
+## 2026-10-15T18:17:07.724Z
+- Trigger: commit
+- Learning: Fallow CI needs Next.js typegen before auditing next-env.d.ts. A cached unresolved-import result can persist after generation, so disable the CI audit cache. Verified failure before typegen and success after typegen with no cache in a clean clone; workflow regression tests, checks, full tests, Fallow audit, and agent guardrails passed.
+- Context: fix(ci): generate Next.js types before Fallow audit Repro-Prompt: Fix PR 7 Fallow CI failure on missing generated Next.js types, verify a clean checkout, then commit and push.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - scripts/test/gate-config.test.mjs

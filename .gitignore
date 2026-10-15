@@ -1,5 +1,7 @@
 node_modules/
 .next/
+.open-next/
+.wrangler/
 dist/
 packages/*/node_modules/
 packages/*/dist/
@@ -9,6 +11,7 @@ apps/*/node_modules/
 .DS_Store
 
 .env
+.dev.vars*
 
 .vscode/
 .zed/
