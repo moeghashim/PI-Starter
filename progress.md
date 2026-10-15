@@ -425,3 +425,12 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - package-lock.json
   - package.json
   - scripts/test/gate-config.test.mjs
+## 2026-10-15T15:48:12.489Z
+- Trigger: commit
+- Learning: Gate worktrees set a per-worktree core.hooksPath to the bare repository's sample hooks directory, so the Husky prepare-commit-msg hook never runs and gate-created fix commits land without the Signed-off-by trailer the DCO check requires. Point the worktree config at .husky before committing and sign with git commit -s. The @node-minify/core glob override is scoped on purpose: @node-minify/core@9.0.2 pins the deprecated glob@10.3.3 inside the GHSA-5j98-mcp5-4vw2 range, while @opennextjs/cloudflare needs root glob@13.0.6, so npm ls glob is expected to report both 13.0.6 and 12.0.0.
+- Context: no-mistakes(review): document scoped glob override and expected two-version tree
+- Branch: HEAD
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - CONTRIBUTING.md
+  - progress.md
