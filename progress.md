@@ -406,3 +406,22 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - .husky/prepare-commit-msg
   - AGENTS.md
   - scripts/test/workflow.test.mjs
+## 2026-10-15T15:35:05.698Z
+- Trigger: commit
+- Learning: Branch protection needs a stable non-matrix aggregate status. Next 16.4.1 removes the need for older Sharp and PostCSS overrides; gate commands should use the configured Node 22 PATH without assuming a version manager. Regression tests, checks, builds, audit, and local Cloudflare preview passed.
+- Context: fix(ci): restore required checks and refresh hosting dependencies Repro-Prompt: Address PR 7 review findings: provide the exact required CI status, eliminate audited dependency vulnerabilities, and remove the gate dependency on nvm while retaining Node 22 validation.
+- Branch: codex/cloudflare-workers-hosting-refresh
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - .no-mistakes.yaml
+  - CONTRIBUTING.md
+  - README.md
+  - apps/web/cloudflare-env.d.ts
+  - apps/web/next-env.d.ts
+  - apps/web/package.json
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - package-lock.json
+  - package.json
+  - scripts/test/gate-config.test.mjs

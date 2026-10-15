@@ -1,9 +1,7 @@
 # Keep push-time gate commands deterministic instead of relying on agent auto-detection.
-# The gate shell does not load the developer's profile, so select the Node pinned in
-# .nvmrc explicitly; scripts/preflight-native-deps.mjs fails on any other major.
-# Prepend the resolved bin directory instead of calling `nvm use`: under bash/sh nvm
-# swaps an existing nvm PATH segment in place, which can leave another Node ahead of it.
+# Put the Node version from .nvmrc on the gate daemon's PATH using any manager.
+# npm run check enforces that version; the gate must not assume nvm is installed.
 commands:
-  test: ". \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" --no-use && PATH=\"$(dirname \"$(nvm which --silent)\"):$PATH\" && npm ci && npm test"
-  lint: ". \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" --no-use && PATH=\"$(dirname \"$(nvm which --silent)\"):$PATH\" && npm ci && npm run check && npm run agent:check && npm run fallow:audit"
+  test: "npm ci && npm test"
+  lint: "npm ci && npm run check && npm run agent:check && npm run fallow:audit"
   format: "npx biome format --write ."
