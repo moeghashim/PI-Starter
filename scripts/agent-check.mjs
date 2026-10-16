@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, readlinkSync } from "node:fs";
 
-const REQUIRED_PATHS = [
+const MANIFEST_PATHS = [
 	"agent/manifest.json",
 	"agent/skills-manifest.json",
 	"agent/skills-manifest.addyosmani.json",
 	"agent/skills-manifest.mattpocock.json",
 	"agent/skills-manifest.chromedevtools.json",
+];
+
+const REQUIRED_PATHS = [
+	...MANIFEST_PATHS,
 	".fallowrc.json",
 	".mcp.json",
 	".no-mistakes.yaml",
@@ -97,6 +101,7 @@ const requiredScripts = [
 	"skills:chrome:verify-sync",
 	"skills:chrome:sync",
 	"agent:check",
+	"agent:verify-upstream",
 	"fallow:audit",
 	"commit:selective",
 	"commit:with-progress",
@@ -108,10 +113,12 @@ for (const scriptName of requiredScripts) {
 }
 
 execSync("npm run docs:list", { stdio: "inherit" });
-execSync("npm run agent:verify-sync", { stdio: "inherit" });
-execSync("npm run skills:verify-sync", { stdio: "inherit" });
-execSync("npm run skills:addy:verify-sync", { stdio: "inherit" });
-execSync("npm run skills:matt:verify-sync", { stdio: "inherit" });
-execSync("npm run skills:chrome:verify-sync", { stdio: "inherit" });
+
+// Offline integrity only. Upstream provenance runs separately through `npm run agent:verify-upstream`.
+for (const manifestPath of MANIFEST_PATHS) {
+	execFileSync(process.execPath, ["scripts/agent-sync.mjs", "verify-local", "--manifest", manifestPath], {
+		stdio: "inherit",
+	});
+}
 
 console.log("agent-check: passed.");

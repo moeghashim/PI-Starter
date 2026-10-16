@@ -133,6 +133,7 @@ npm run skills:chrome:sync
 npm run skills:verify-sync:all
 npm run skills:sync:all
 npm run agent:check
+npm run agent:verify-upstream
 npm run fallow:audit
 npm run reinstall:clean
 npm run preview:cloudflare

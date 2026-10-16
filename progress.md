@@ -443,3 +443,21 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Changed Paths:
   - .github/workflows/ci.yml
   - scripts/test/gate-config.test.mjs
+## 2026-10-16T09:42:43.893Z
+- Trigger: commit
+- Learning: Vendored skill integrity can be checked offline by hashing local files against manifest sha256 values, while upstream provenance stays a separate networked check run once in CI so local agent:check never depends on GitHub availability.
+- Context: feat(agent): verify vendored skills offline in agent:check agent:check now hashes vendored files against manifest sha256 values with no network access. Upstream provenance moves to agent:verify-upstream, which CI runs once per push on Ubuntu. Adds regression tests for the progress append-only check, sync-versions, docs-list front matter, committer, and the offline verifier. Removes the unused scripts/docs-list.ts duplicate. Repro-Prompt: Implement offline skill integrity checks, regression tests for repository automation, and remove the duplicate docs-list.ts. Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+- Branch: codex/offline-skill-verify
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - AGENTS.md
+  - README.md
+  - agent/manifest.json
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/agent-sync.mjs
+  - scripts/docs-list.ts
+  - scripts/test/automation.test.mjs

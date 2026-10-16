@@ -35,6 +35,7 @@
 		"skills:verify-sync:all": "npm run skills:verify-sync && npm run skills:addy:verify-sync && npm run skills:matt:verify-sync && npm run skills:chrome:verify-sync",
 		"skills:sync:all": "npm run skills:sync && npm run skills:addy:sync && npm run skills:matt:sync && npm run skills:chrome:sync",
 		"agent:check": "node scripts/agent-check.mjs",
+		"agent:verify-upstream": "npm run agent:verify-sync && npm run skills:verify-sync:all",
 		"commit:selective": "bash scripts/committer",
 		"commit:with-progress": "node scripts/commit-with-progress.mjs",
 		"reinstall:clean": "node scripts/reinstall-clean.mjs",
