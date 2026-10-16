@@ -142,7 +142,7 @@ Two checks protect vendored files:
 
 Treat manifest diffs as security-relevant in review, since integrity alone trusts whatever hash the manifest records.
 
-Sync and verify commands fetch from the GitHub API. When `GITHUB_TOKEN` or `GH_TOKEN` is set, requests are authenticated; set one in CI, where unauthenticated runners hit the 60-requests-per-hour rate limit.
+The `sync` and `verify-sync` commands fetch from the GitHub API; `agent:check` does not. When `GITHUB_TOKEN` or `GH_TOKEN` is set, requests are authenticated; set one in CI, where unauthenticated runners hit the 60-requests-per-hour rate limit.
 
 ## Multi-Machine Note
 
