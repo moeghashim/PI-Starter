@@ -46,7 +46,8 @@
 - Run `npm run skills:addy:verify-sync` after changing vendored Addy Osmani skills or their pinned manifest.
 - Run `npm run skills:matt:verify-sync` after changing vendored Matt Pocock skills or their pinned manifest.
 - Run `npm run skills:chrome:verify-sync` after changing vendored Chrome DevTools skills or their pinned manifest.
-- Run `npm run agent:check` before handoff to validate docs front matter, AGENTS structure, and vendored sync integrity.
+- Run `npm run agent:check` before handoff to validate docs front matter, AGENTS structure, and vendored file integrity. It runs offline by hashing vendored files against their manifests.
+- Run `npm run agent:verify-upstream` after editing any skill manifest to confirm the pinned hashes still match upstream. CI runs it on every push.
 - Use `npm run commit:selective -- "type(scope): summary" "path/one" "path/two"` for path-scoped commits.
 - For agent-requested commits, use `npm run commit:with-progress -- "type(scope): summary" --learning "what was learned" -- "path/one" "path/two"` so `progress.md` is appended in the same commit.
 - The `memory-leak-debugging` skill requires the `chrome-devtools` MCP server configured in `.mcp.json` for heap-snapshot capture, and `memlab` via `npx memlab` for analysis. Without the MCP server, only the memlab and fallback-script analysis steps are usable. Never read raw `.heapsnapshot` files directly.

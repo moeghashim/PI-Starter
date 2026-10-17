@@ -19,7 +19,7 @@ const DEFAULT_MANIFEST_PATH = resolve("agent/manifest.json");
 const DIRECTORY_ENTRY_TYPE = "directory";
 
 function usage() {
-	console.log("Usage: node scripts/agent-sync.mjs <sync|verify> [--manifest path]");
+	console.log("Usage: node scripts/agent-sync.mjs <sync|verify|verify-local> [--manifest path]");
 }
 
 function sha256(content) {
@@ -404,9 +404,48 @@ async function verify(manifest) {
 	console.log("agent-sync verify passed: managed files match pinned upstream commit.");
 }
 
+function readLocalDirectorySnapshot(localRoot) {
+	return listLocalFiles(localRoot)
+		.map((filePath) => ({ relativePath: relative(localRoot, filePath), content: readFileSync(filePath) }))
+		.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+}
+
+// Offline integrity check: vendored files on disk must hash to the pinned manifest values.
+// Provenance (manifest hashes matching the pinned upstream commit) is checked by `verify`.
+function verifyLocal(manifest, manifestPath) {
+	const mismatches = [];
+
+	for (const entry of manifest.entries) {
+		const localPath = resolveRepoPath(entry.localPath, `Manifest localPath for ${entry.upstreamPath}`);
+		const isDirectory = (entry.type ?? "file") === DIRECTORY_ENTRY_TYPE;
+		if (!existsSync(localPath)) {
+			mismatches.push(`${entry.localPath}: ${isDirectory ? "directory" : "file"} missing`);
+			continue;
+		}
+
+		const localHash = isDirectory
+			? computeDirectoryHash(readLocalDirectorySnapshot(localPath))
+			: sha256(readFileSync(localPath));
+		if (localHash !== entry.sha256) {
+			mismatches.push(`${entry.localPath}: local content does not match the manifest sha256`);
+		}
+	}
+
+	const label = relative(REPO_ROOT, manifestPath);
+	if (mismatches.length > 0) {
+		console.error(`agent-sync verify-local failed for ${label}:`);
+		for (const mismatch of mismatches) {
+			console.error(`- ${mismatch}`);
+		}
+		process.exit(1);
+	}
+
+	console.log(`agent-sync verify-local passed: ${label} matches vendored files.`);
+}
+
 function parseArgs(argv) {
 	const mode = argv[2];
-	if (mode !== "sync" && mode !== "verify") {
+	if (mode !== "sync" && mode !== "verify" && mode !== "verify-local") {
 		usage();
 		process.exit(1);
 	}
@@ -438,6 +477,11 @@ async function main() {
 
 	if (mode === "sync") {
 		await sync(manifest, manifestPath);
+		return;
+	}
+
+	if (mode === "verify-local") {
+		verifyLocal(manifest, manifestPath);
 		return;
 	}
 

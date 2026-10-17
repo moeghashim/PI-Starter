@@ -87,14 +87,14 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `agent/skills-manifest.addyosmani.json` pins a curated Addy Osmani skills subset vendored under `agent/skills/addyosmani/`.
 - `agent/skills-manifest.mattpocock.json` pins a curated Matt Pocock skills subset vendored under `agent/skills/mattpocock/`.
 - `agent/skills-manifest.chromedevtools.json` pins the Chrome DevTools memory-leak skill vendored under `agent/skills/chromedevtools/`.
-- `scripts/agent-sync.mjs` syncs or verifies allowlisted upstream files.
+- `scripts/agent-sync.mjs` syncs allowlisted upstream files, verifies them against the pinned upstream commit, or verifies them offline against the manifest hashes (`verify-local`). See `docs/agent-skills.md` for how `agent:check` and `agent:verify-upstream` use these modes.
 - `scripts/committer` provides safe path-scoped commits.
 - `scripts/commit-with-progress.mjs` wraps path-scoped commits and appends a required learning entry to `progress.md`.
 - `scripts/progress-log.mjs` appends structured learning entries to `progress.md`.
 - `scripts/progress-append-only-check.mjs` enforces append-only `progress.md` changes in pre-commit.
 - `scripts/docs-list.mjs` validates docs front matter (`summary`, `read_when`) and prints a docs index without depending on `tsx`.
 - `scripts/native-deps.mjs` and `scripts/preflight-native-deps.mjs` fail fast when native dependencies do not match the current machine.
-- `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, and Cloudflare binding type generation.
+- `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, Cloudflare binding type generation, the CI gate configuration, and repository automation (the `progress.md` append-only check, `scripts/sync-versions.js`, docs front-matter validation, `scripts/committer`, and the offline vendored-file verifier).
 - `apps/web/scripts/cloudflare-typegen.mjs` regenerates `apps/web/cloudflare-env.d.ts` from `apps/web/wrangler.jsonc` through `npm run typegen:cloudflare`.
 - `.codex/prompts/` contains codex-first prompts: `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.
@@ -133,6 +133,7 @@ npm run skills:chrome:sync
 npm run skills:verify-sync:all
 npm run skills:sync:all
 npm run agent:check
+npm run agent:verify-upstream
 npm run fallow:audit
 npm run reinstall:clean
 npm run preview:cloudflare

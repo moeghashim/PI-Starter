@@ -16,7 +16,6 @@
     }
   ],
   "localOverrides": [
-    "scripts/docs-list.ts",
     "scripts/docs-list.mjs",
     "scripts/native-deps.mjs",
     "scripts/preflight-native-deps.mjs",

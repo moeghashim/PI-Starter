@@ -133,10 +133,19 @@ We intentionally do not vendor every upstream skill into the default starter. Th
 5. Run `npm run docs:list` if this doc or other docs changed.
 6. Run `npm run agent:check` before handoff or ship.
 
-Sync and verify commands fetch from the GitHub API. When `GITHUB_TOKEN` or `GH_TOKEN` is set, requests are authenticated; set one in CI, where unauthenticated runners hit the 60-requests-per-hour rate limit.
+## Integrity Versus Provenance
+
+Two checks protect vendored files:
+
+- Integrity: `npm run agent:check` runs `node scripts/agent-sync.mjs verify-local` for every manifest. It hashes the files on disk and compares them to each manifest `sha256`, with no network access. Editing a vendored file without updating its manifest fails this check.
+- Provenance: `npm run agent:verify-upstream` runs every `verify-sync` command. It fetches the pinned upstream commit and confirms each manifest `sha256` still matches upstream. This catches a manifest hash edited to match tampered local files. CI runs it once per push on Ubuntu.
+
+Treat manifest diffs as security-relevant in review, since integrity alone trusts whatever hash the manifest records.
+
+The `sync` and `verify-sync` commands fetch from the GitHub API; `agent:check` does not. When `GITHUB_TOKEN` or `GH_TOKEN` is set, requests are authenticated; set one in CI, where unauthenticated runners hit the 60-requests-per-hour rate limit.
 
 ## Multi-Machine Note
 
-`docs:list`, `skills:sync`, `skills:verify-sync`, `skills:addy:sync`, `skills:addy:verify-sync`, `skills:matt:sync`, `skills:matt:verify-sync`, `skills:chrome:sync`, and `skills:chrome:verify-sync` are Node-only and should work even when native packages need reinstalling.
+`docs:list`, `agent:check`, `skills:sync`, `skills:verify-sync`, `skills:addy:sync`, `skills:addy:verify-sync`, `skills:matt:sync`, `skills:matt:verify-sync`, `skills:chrome:sync`, and `skills:chrome:verify-sync` are Node-only and should work even when native packages need reinstalling.
 
 `npm run check` still depends on native packages such as Biome, esbuild, and the TypeScript native preview build. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, reinstall dependencies on that machine before running `npm run check`.

@@ -31,7 +31,7 @@ read_when:
 1. Run `npm run check` for read-only code quality validation. Use `npm run fix` explicitly to apply fixes, then review the diff.
 2. Run `npm test` for test coverage.
 3. Run `npm run fallow:audit` to reject newly introduced dead code, duplication, and complexity findings relative to `origin/main`.
-4. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored sync across all skill packs.
+4. Run `npm run agent:check` before ship or handoff to validate docs, AGENTS structure, and vendored file integrity across all skill packs. It runs offline; CI also runs `npm run agent:verify-upstream` to confirm manifests still match their pinned upstream commits.
 
 ## Ship
 
