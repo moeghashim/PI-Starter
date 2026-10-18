@@ -461,3 +461,48 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - scripts/agent-sync.mjs
   - scripts/docs-list.ts
   - scripts/test/automation.test.mjs
+## 2026-10-04T20:24:13.424Z
+- Trigger: commit
+- Learning: Harnesses only discover skills at .agents/skills/<name>/SKILL.md or .claude/skills, so vendor-nested agent/skills paths and repo-local .codex/prompts never loaded on their own. Keep one flat skill directory with .claude/skills as a symlink, record pack membership only in the manifests, and vendor upstream skills together with the skills they call by name (improve-codebase-architecture needs codebase-design, domain-modeling, and grilling).
+- Context: feat(agent): move skills to native .agents/skills layout and re-pin Matt pack
+- Branch: feat/native-skill-layout
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .agents
+  - .claude
+  - agent
+  - .codex
+  - .fallowrc.json
+  - AGENTS.md
+  - README.md
+  - CONTRIBUTING.md
+  - docs
+  - scripts/agent-check.mjs
+## 2026-10-18T09:42:35.660Z
+- Trigger: commit
+- Learning: Agent harnesses only load skills from .agents/skills or .claude/skills, so vendored skills belong in one flat directory with pack membership recorded in manifests. Upstream skill packs move fast and delete files, so re-pin all manifests together and drop rewrites that no longer match. Releases that push main directly bypass required checks; preparing a release branch and tagging only after merge keeps every main commit gated.
+- Context: feat(setup): native skills, Node 24, TypeScript 7, and PR-based releases Move skills to .agents/skills with a .claude/skills link so Codex and Claude Code load them, convert the workflow prompts into skills, and sync every vendored pack to its maker's latest commit. Vendor the five Addy skills the core pack references. Collapse twelve per-pack scripts into skills:sync, skills:verify, and agent:verify-upstream. Move to Node 24 LTS and the TypeScript 7 compiler, keeping apps/web on TypeScript 5 for Next.js. Tighten tsconfig and Biome, quote the core test glob, pin the MCP server, add Dependabot, pin CI actions by SHA, add job timeouts, and run the full Next.js build once per PR. Release through pull requests: release:<bump> prepares a signed commit on a release branch, and release:tag tags main after the merge. Repro-Prompt: Review the whole setup without assuming anything is good, optimize for efficiency and best practices, sync upstream skill updates, vendor referenced Addy skills, and release through pull requests. Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+- Branch: codex/setup-hardening
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .agents
+  - .claude/skills
+  - .codex
+  - .fallowrc.json
+  - .github
+  - .mcp.json
+  - .nvmrc
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - README.md
+  - agent
+  - apps/web/app/page.tsx
+  - apps/web/package.json
+  - biome.json
+  - docs
+  - package-lock.json
+  - package.json
+  - packages/core/package.json
+  - progress.md
+  - scripts
+  - tsconfig.base.json

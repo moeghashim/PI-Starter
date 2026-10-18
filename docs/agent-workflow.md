@@ -1,5 +1,5 @@
 ---
-summary: "Codex-first workflow for pickup, execution, handoff, and guardrail checks"
+summary: "Skill-driven workflow for pickup, execution, handoff, and guardrail checks"
 read_when:
   - Starting work in a fresh session.
   - Handing off work to another agent or engineer.
@@ -14,12 +14,12 @@ read_when:
 2. If the task touches React, Next.js, UI review, interaction patterns, test strategy, review rigor, security, architecture review, refactoring, ADR decisions, or memory-leak debugging, read `docs/agent-skills.md`.
 3. Review recent entries in `progress.md` and capture relevant learnings for the task.
 4. Run `npm run docs:list` to confirm docs metadata is valid.
-5. Use `/pickup` from `.codex/prompts/pickup.md` to rehydrate context.
+5. Use the `/pickup` skill to rehydrate context.
 
 ## Execute
 
-1. Use `/fix` from `.codex/prompts/fix.md` for bugs and regressions.
-2. Use `/build-feature` from `.codex/prompts/build-feature.md` for net-new features, starting with the smallest user-visible vertical slice.
+1. Use the `/fix` skill for bugs and regressions.
+2. Use the `/build-feature` skill for net-new features, starting with the smallest user-visible vertical slice.
 3. Validate that first slice immediately and stop for feedback before expanding to the next slice.
 4. Keep edits scoped and explicit.
 5. Prefer `npm run commit:with-progress -- "<message>" --learning "<learning>" -- "<path>" ...` for agent-requested commits so `progress.md` is appended in the same commit.
@@ -38,7 +38,7 @@ read_when:
 1. Use `/ship` for the solo finalization flow.
 2. Push committed feature branches with `git push no-mistakes`; do not push directly to `origin`.
 3. For app deploys, choose `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md`. Let the no-mistakes gate open the PR and the selected provider deploy after the protected branch merges. Cloudflare changes must pass `Cloudflare build` in CI.
-4. For package releases, start on clean `main` matching the fetched `origin/main`. Release commands preserve the lockfile and validate the bumped tree with build, check, tests, agent checks, and Fallow before committing and tagging. Publishing requires `--publish`; pushing requires `--push`, which atomically pushes the release branch and tag. Protected-branch rejection leaves the local release available for review; do not bypass protection.
+4. For package releases: Releases go through a pull request like any other change. On clean `main` matching `origin/main`, `npm run release:<patch|minor|major> -- --learning "..."` bumps versions on a `release/vX.Y.Z` branch, refuses a version whose tag already exists, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit. Push that branch with `git push no-mistakes`. After the pull request merges, update `main` and run `npm run release:tag` to tag the merge and push only the tag; add `-- --publish` to publish packages. See `docs/adrs/2026-10-18-release-through-pull-requests.md`.
 
 ## Handoff
 

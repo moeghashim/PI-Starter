@@ -127,10 +127,10 @@ test("committer commits only the listed paths and leaves other staged work out",
 test("agent-sync verify-local passes offline and detects edited, extra, and missing vendored files", (t) => {
 	const s = sandbox(t);
 	const manifest = "agent/skills-manifest.mattpocock.json";
-	const vendored = "agent/skills/mattpocock/domain-model";
+	const vendored = ".agents/skills/domain-modeling";
 	s.copy("scripts/agent-sync.mjs");
 	s.copy(manifest);
-	s.copy("agent/skills/mattpocock");
+	s.copy(".agents/skills");
 	const verify = () => s.node("scripts/agent-sync.mjs", "verify-local", "--manifest", manifest);
 
 	assert.equal(verify().status, 0, verify().stderr);
@@ -138,14 +138,14 @@ test("agent-sync verify-local passes offline and detects edited, extra, and miss
 	const skillFile = join(s.cwd, vendored, "SKILL.md");
 	const original = readFileSync(skillFile);
 	writeFileSync(skillFile, `${original}\ninjected instruction\n`);
-	assert.match(verify().stderr, /domain-model: local content does not match/);
+	assert.match(verify().stderr, /domain-modeling: local content does not match/);
 	writeFileSync(skillFile, original);
 
 	s.put(`${vendored}/extra.md`, "unexpected\n");
-	assert.match(verify().stderr, /domain-model: local content does not match/);
+	assert.match(verify().stderr, /domain-modeling: local content does not match/);
 	rmSync(join(s.cwd, vendored, "extra.md"));
 	assert.equal(verify().status, 0);
 
 	rmSync(join(s.cwd, vendored), { recursive: true });
-	assert.match(verify().stderr, /domain-model: directory missing/);
+	assert.match(verify().stderr, /domain-modeling: directory missing/);
 });

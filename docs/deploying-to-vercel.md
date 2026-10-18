@@ -38,7 +38,7 @@ Next.js 16 does not run linting during `next build`; keep linting and type check
 
 Image optimization uses the patched Sharp range declared by Next.js 16.4.1 (`^0.35.5`); no Next.js-specific Sharp override is needed. Recheck the lockfile with `npm audit` when upgrading dependencies.
 
-GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, runs `npm run agent:verify-upstream` on the Ubuntu runner, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Vercel forks only need to protect `main` by requiring the `Required checks` and `Fallow audit` status checks before merge.
+GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, runs `npm run agent:verify-upstream` on the Ubuntu runner, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`.
 
 ## Environment Variables
 
@@ -52,15 +52,12 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 
 ## Solo Shipping Flow
 
-1. Run `npm run check`
-2. Run `npm test`
-3. Run `npm run fallow:audit`
-4. Run `npm run agent:check`
-5. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
-6. Wait for `Required checks` and `Fallow audit` to pass, then merge to `main`
-7. If the change includes database work, run the project-specific database deploy or migration command
-8. Let Vercel Git integration build and deploy `apps/web`
-9. Verify the deployed app and database are compatible
+1. Run the validation steps in `docs/agent-workflow.md`
+2. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
+3. Wait for `Required checks` and `DCO` to pass, then merge to `main`
+4. If the change includes database work, run the project-specific database deploy or migration command
+5. Let Vercel Git integration build and deploy `apps/web`
+6. Verify the deployed app and database are compatible
 
 This starter does not require a custom `vercel.json`.
 

@@ -17,7 +17,7 @@ test("Fallow CI prepares generated Next.js types before auditing a clean checkou
 	assert.equal(steps[audit].with["no-cache"], true);
 });
 
-test("gate commands reach npm with Node 22 on PATH and no nvm", () => {
+test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
 	for (const command of [gate.commands.test, gate.commands.lint]) {
 		// Replace npm at the shell boundary to avoid installing during this test.
 		const result = spawnSync("sh", ["-c", `npm() { exit 42; }; ${command}`], {

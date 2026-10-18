@@ -15,11 +15,13 @@ import {
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 const REPO_ROOT = resolve(process.cwd());
-const DEFAULT_MANIFEST_PATH = resolve("agent/manifest.json");
+const MANIFEST_DIRECTORY = resolve("agent");
+const MANIFEST_FILE_PATTERN = /^(manifest|skills-manifest(\.[a-z0-9-]+)?)\.json$/;
 const DIRECTORY_ENTRY_TYPE = "directory";
 
 function usage() {
-	console.log("Usage: node scripts/agent-sync.mjs <sync|verify|verify-local> [--manifest path]");
+	console.log("Usage: node scripts/agent-sync.mjs <sync|verify|verify-local> [--manifest path]...");
+	console.log("Without --manifest, every manifest in agent/ is processed.");
 }
 
 function sha256(content) {
@@ -311,7 +313,7 @@ async function sync(manifest, manifestPath) {
 	console.log(`agent-sync: manifest updated at ${manifest.pinnedCommit}.`);
 }
 
-async function verify(manifest) {
+async function verify(manifest, manifestPath) {
 	const mismatches = [];
 	const treeCache = new Map();
 
@@ -393,15 +395,20 @@ async function verify(manifest) {
 		}
 	}
 
-	if (mismatches.length > 0) {
-		console.error("agent-sync verify failed:");
-		for (const mismatch of mismatches) {
-			console.error(`- ${mismatch}`);
-		}
-		process.exit(1);
-	}
+	return report("verify", manifestPath, mismatches, "matches its pinned upstream commit");
+}
 
-	console.log("agent-sync verify passed: managed files match pinned upstream commit.");
+function report(mode, manifestPath, mismatches, successMessage) {
+	const label = relative(REPO_ROOT, manifestPath);
+	if (mismatches.length === 0) {
+		console.log(`agent-sync ${mode} passed: ${label} ${successMessage}.`);
+		return true;
+	}
+	console.error(`agent-sync ${mode} failed for ${label}:`);
+	for (const mismatch of mismatches) {
+		console.error(`- ${mismatch}`);
+	}
+	return false;
 }
 
 function readLocalDirectorySnapshot(localRoot) {
@@ -431,16 +438,14 @@ function verifyLocal(manifest, manifestPath) {
 		}
 	}
 
-	const label = relative(REPO_ROOT, manifestPath);
-	if (mismatches.length > 0) {
-		console.error(`agent-sync verify-local failed for ${label}:`);
-		for (const mismatch of mismatches) {
-			console.error(`- ${mismatch}`);
-		}
-		process.exit(1);
-	}
+	return report("verify-local", manifestPath, mismatches, "matches vendored files");
+}
 
-	console.log(`agent-sync verify-local passed: ${label} matches vendored files.`);
+function defaultManifestPaths() {
+	return readdirSync(MANIFEST_DIRECTORY)
+		.filter((name) => MANIFEST_FILE_PATTERN.test(name))
+		.sort()
+		.map((name) => join(MANIFEST_DIRECTORY, name));
 }
 
 function parseArgs(argv) {
@@ -450,7 +455,7 @@ function parseArgs(argv) {
 		process.exit(1);
 	}
 
-	let manifestPath = DEFAULT_MANIFEST_PATH;
+	const manifestPaths = [];
 	for (let index = 3; index < argv.length; index += 1) {
 		if (argv[index] !== "--manifest") {
 			throw new Error(`Unknown argument: ${argv[index]}`);
@@ -459,15 +464,14 @@ function parseArgs(argv) {
 		if (!providedPath) {
 			throw new Error("Expected a path after --manifest");
 		}
-		manifestPath = resolveRepoPath(providedPath, "Manifest path");
+		manifestPaths.push(resolveRepoPath(providedPath, "Manifest path"));
 		index += 1;
 	}
 
-	return { mode, manifestPath };
+	return { mode, manifestPaths: manifestPaths.length > 0 ? manifestPaths : defaultManifestPaths() };
 }
 
-async function main() {
-	const { mode, manifestPath } = parseArgs(process.argv);
+async function runManifest(mode, manifestPath) {
 	const manifest = readManifest(manifestPath);
 	for (const entry of manifest.entries) {
 		if (!entry.upstreamPath || !entry.localPath || !entry.strategy) {
@@ -477,15 +481,23 @@ async function main() {
 
 	if (mode === "sync") {
 		await sync(manifest, manifestPath);
-		return;
+		return true;
 	}
-
 	if (mode === "verify-local") {
-		verifyLocal(manifest, manifestPath);
-		return;
+		return verifyLocal(manifest, manifestPath);
 	}
+	return await verify(manifest, manifestPath);
+}
 
-	await verify(manifest);
+async function main() {
+	const { mode, manifestPaths } = parseArgs(process.argv);
+	let passed = true;
+	for (const manifestPath of manifestPaths) {
+		passed = (await runManifest(mode, manifestPath)) && passed;
+	}
+	if (!passed) {
+		process.exitCode = 1;
+	}
 }
 
 main().catch((error) => {

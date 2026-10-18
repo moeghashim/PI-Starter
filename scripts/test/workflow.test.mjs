@@ -110,13 +110,16 @@ function releaseFixture(t, failingCheck = "agent:check") {
 		"record.cjs",
 		`require('node:fs').appendFileSync('calls.txt', process.argv[2]+'\\n'); process.exit(process.argv[2] === ${JSON.stringify(failingCheck)} ? 1 : 0);`,
 	);
+	f.write("packages/core/CHANGELOG.md", "# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-01-01\n");
 	f.write("scripts/progress-log.mjs", "// Fixture progress logger.\n");
-	copyFileSync(join(root, "scripts/release.mjs"), join(f.directory, "scripts/release.mjs"));
+	for (const script of ["release.mjs", "release-lib.mjs", "release-tag.mjs"]) {
+		copyFileSync(join(root, "scripts", script), join(f.directory, "scripts", script));
+	}
 	f.run("git", ["add", "."]);
 	f.run("git", ["commit", "-m", "fixture"]);
 	f.run("git", ["init", "--bare", "-b", "main", "remote.git"]);
 	f.run("git", ["config", "status.showUntrackedFiles", "normal"]);
-	f.write(".git/info/exclude", "remote.git/\n");
+	f.write(".git/info/exclude", "remote.git/\ncalls.txt\n");
 	f.run("git", ["remote", "add", "origin", join(f.directory, "remote.git")]);
 	f.run("git", ["push", "origin", "main"]);
 	return f;
@@ -128,6 +131,10 @@ function attemptRelease(f) {
 		env: f.env,
 		encoding: "utf8",
 	});
+}
+
+function attemptTag(f) {
+	return spawnSync(process.execPath, ["scripts/release-tag.mjs"], { cwd: f.directory, env: f.env, encoding: "utf8" });
 }
 
 test("release rejects feature branches and unpublished main commits before bumping", (t) => {
@@ -169,6 +176,50 @@ for (const failingCheck of ["agent:check", "fallow:audit"]) {
 		assert.equal(f.run("git", ["tag", "--list"]), "");
 	});
 }
+test("release prepares one signed commit on a release branch without touching main or tags", (t) => {
+	const f = releaseFixture(t, null);
+	const mainHead = f.run("git", ["rev-parse", "main"]);
+	const result = attemptRelease(f);
+	assert.equal(result.status, 0, result.stderr);
+	assert.equal(f.run("git", ["branch", "--show-current"]), "release/v1.0.1");
+	assert.equal(f.run("git", ["rev-list", "--count", "main..HEAD"]), "1");
+	assert.equal(f.run("git", ["log", "-1", "--format=%s"]), "chore(release): v1.0.1");
+	assert.match(f.run("git", ["log", "-1", "--format=%b"]), /^Signed-off-by: Workflow Test <test@example\.invalid>$/m);
+	assert.match(
+		readFileSync(join(f.directory, "packages/core/CHANGELOG.md"), "utf8"),
+		/## \[Unreleased\]\n\n## \[1\.0\.1\] - \d{4}-\d{2}-\d{2}\n\n## \[1\.0\.0\]/,
+	);
+	assert.equal(f.run("git", ["rev-parse", "main"]), mainHead);
+	assert.equal(f.run("git", ["tag", "--list"]), "");
+	assert.equal(f.run("git", ["status", "--porcelain"]), "");
+});
+
+test("release refuses a version whose tag already exists on the remote", (t) => {
+	const f = releaseFixture(t, null);
+	f.run("git", ["tag", "v1.0.1"]);
+	f.run("git", ["push", "origin", "v1.0.1"]);
+	f.run("git", ["tag", "-d", "v1.0.1"]);
+	const result = attemptRelease(f);
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /tag v1\.0\.1 already exists/);
+	assert.equal(f.run("git", ["log", "-1", "--format=%s"]), "fixture");
+});
+
+test("release:tag tags merged main once, pushes only the tag, and refuses unmerged releases", (t) => {
+	const f = releaseFixture(t, null);
+	assert.match(attemptTag(f).stderr, /no "chore\(release\): v1\.0\.1" commit/);
+	assert.equal(attemptRelease(f).status, 0);
+	f.run("git", ["switch", "main"]);
+	f.run("git", ["merge", "--ff-only", "release/v1.0.1"]);
+	f.run("git", ["push", "origin", "main"]);
+	const tagged = attemptTag(f);
+	assert.equal(tagged.status, 0, tagged.stderr);
+	assert.equal(f.run("git", ["ls-remote", "--tags", "origin"]).split("\n").length, 2);
+	assert.match(f.run("git", ["ls-remote", "--tags", "origin"]), /refs\/tags\/v1\.0\.1$/m);
+	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), f.run("git", ["rev-parse", "main"]));
+	assert.match(attemptTag(f).stderr, /v1\.0\.1 already exists/);
+});
+
 test("prepare-commit-msg adds a DCO sign-off without duplicating an existing one", (t) => {
 	const f = fixture(t);
 	const hooks = join(f.directory, "hooks");

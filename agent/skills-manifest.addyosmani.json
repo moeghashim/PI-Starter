@@ -1,41 +1,76 @@
 {
   "sourceRepo": "https://github.com/addyosmani/agent-skills",
-  "pinnedCommit": "a806c635fbabaaf8eca077a2cc1689ceb85fb393",
+  "pinnedCommit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
   "files": [
     {
       "type": "directory",
       "upstreamPath": "skills/context-engineering",
-      "localPath": "agent/skills/addyosmani/context-engineering",
+      "localPath": ".agents/skills/context-engineering",
       "strategy": "reference",
-      "sha256": "1d95e8f7147b7cc58e23987dc0d4d15f832f6da478dfb21da4320cfc59763596"
+      "sha256": "b1e300fbd83599919839ebbd9590e525b42ffb35c5872f97391c253c8838a72b"
     },
     {
       "type": "directory",
       "upstreamPath": "skills/test-driven-development",
-      "localPath": "agent/skills/addyosmani/test-driven-development",
+      "localPath": ".agents/skills/test-driven-development",
       "strategy": "reference",
-      "sha256": "0f1863f607eb48edc1d0a9be86db4f2198569c438d155c93cb136516bfca1c75"
+      "sha256": "8e592971cd79d2d6c3c9ae518a0209bab029370f5fb7cd46ffa1aa58637feeea"
     },
     {
       "type": "directory",
       "upstreamPath": "skills/code-review-and-quality",
-      "localPath": "agent/skills/addyosmani/code-review-and-quality",
+      "localPath": ".agents/skills/code-review-and-quality",
       "strategy": "reference",
-      "sha256": "1f0577b867a2a3e961c089fb9df157b1eae82387097698f23fda6f01d536ad1a"
+      "sha256": "26f0a617cc7f8c0a228e11e6e8259efe062895eb48b192a84f4df0c0bd9de9a7"
     },
     {
       "type": "directory",
       "upstreamPath": "skills/documentation-and-adrs",
-      "localPath": "agent/skills/addyosmani/documentation-and-adrs",
+      "localPath": ".agents/skills/documentation-and-adrs",
       "strategy": "reference",
-      "sha256": "b5d4bdfaffae2a0cfcba3497a5318c0b277db9eccd9733b2dd96ec7b17538605"
+      "sha256": "b43e8c7629cd4d5e92e4f8088f6b7932516da3ccb0a6acd13665db6962b4434f"
     },
     {
       "type": "directory",
       "upstreamPath": "skills/security-and-hardening",
-      "localPath": "agent/skills/addyosmani/security-and-hardening",
+      "localPath": ".agents/skills/security-and-hardening",
       "strategy": "reference",
-      "sha256": "567851f6ea5622ef70eaeac995e742803fe73eaf99914937232ecc114cae479f"
+      "sha256": "c9db6e9467c1fc34b081ba26c9472083867ec5259086243a3cd5522169c4d632"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/browser-testing-with-devtools",
+      "localPath": ".agents/skills/browser-testing-with-devtools",
+      "strategy": "reference",
+      "sha256": "9c666e3aa94060455cdcd5b5a6af2577924705f4fb928ef9ab901ce956251175"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/constraint-driven-development",
+      "localPath": ".agents/skills/constraint-driven-development",
+      "strategy": "reference",
+      "sha256": "abe6dbccbaa7bb79ec3abae7a367621cbf362845ffd04af3231fccb039d9b477"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/debugging-and-error-recovery",
+      "localPath": ".agents/skills/debugging-and-error-recovery",
+      "strategy": "reference",
+      "sha256": "d3edb071cc18027b4df7ee558178ece29073ec75803095a50c5d936352630ec7"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/observability-and-instrumentation",
+      "localPath": ".agents/skills/observability-and-instrumentation",
+      "strategy": "reference",
+      "sha256": "64793bf0f0acfb81a5726bfca1eb3cedb8776883760d602e4c656b0f9aeee4dd"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/performance-optimization",
+      "localPath": ".agents/skills/performance-optimization",
+      "strategy": "reference",
+      "sha256": "8ff7de52f190aa333dd6f97480f6c8fb4457a9e3d167a0542928cf8f07d4d83e"
     }
   ],
   "localOverrides": [
@@ -44,6 +79,10 @@
     "docs/README.md",
     "README.md",
     "AGENTS.md",
-    ".codex/prompts/**"
+    ".agents/skills/pickup/**",
+    ".agents/skills/handoff/**",
+    ".agents/skills/build-feature/**",
+    ".agents/skills/fix/**",
+    ".agents/skills/ship/**"
   ]
 }

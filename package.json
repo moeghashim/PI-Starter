@@ -3,7 +3,7 @@
 	"private": true,
 	"license": "MIT",
 	"type": "module",
-	"packageManager": "npm@11.6.2",
+	"packageManager": "npm@11.19.1",
 	"workspaces": [
 		"apps/*",
 		"packages/*"
@@ -18,24 +18,14 @@
 		"deploy:cloudflare": "npm run cf:deploy -w @pi-starter/web",
 		"typegen:cloudflare": "npm run cf:typegen -w @pi-starter/web",
 		"preflight:native-deps": "node scripts/preflight-native-deps.mjs",
-		"check": "npm run preflight:native-deps && biome check --error-on-warnings . && node scripts/check-file-length.mjs && tsgo --noEmit && npm run check --workspaces --if-present",
+		"check": "npm run preflight:native-deps && biome check --error-on-warnings . && node scripts/check-file-length.mjs && tsc --noEmit && npm run check --workspaces --if-present",
 		"fix": "npm run preflight:native-deps && biome check --write --error-on-warnings .",
 		"doctor": "node scripts/doctor.mjs",
 		"docs:list": "node scripts/docs-list.mjs",
-		"agent:verify-sync": "node scripts/agent-sync.mjs verify",
-		"agent:sync": "node scripts/agent-sync.mjs sync",
-		"skills:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.json",
-		"skills:sync": "node scripts/agent-sync.mjs sync --manifest agent/skills-manifest.json",
-		"skills:addy:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.addyosmani.json",
-		"skills:addy:sync": "node scripts/agent-sync.mjs sync --manifest agent/skills-manifest.addyosmani.json",
-		"skills:matt:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.mattpocock.json",
-		"skills:matt:sync": "node scripts/agent-sync.mjs sync --manifest agent/skills-manifest.mattpocock.json",
-		"skills:chrome:verify-sync": "node scripts/agent-sync.mjs verify --manifest agent/skills-manifest.chromedevtools.json",
-		"skills:chrome:sync": "node scripts/agent-sync.mjs sync --manifest agent/skills-manifest.chromedevtools.json",
-		"skills:verify-sync:all": "npm run skills:verify-sync && npm run skills:addy:verify-sync && npm run skills:matt:verify-sync && npm run skills:chrome:verify-sync",
-		"skills:sync:all": "npm run skills:sync && npm run skills:addy:sync && npm run skills:matt:sync && npm run skills:chrome:sync",
 		"agent:check": "node scripts/agent-check.mjs",
-		"agent:verify-upstream": "npm run agent:verify-sync && npm run skills:verify-sync:all",
+		"agent:verify-upstream": "node scripts/agent-sync.mjs verify",
+		"skills:sync": "node scripts/agent-sync.mjs sync",
+		"skills:verify": "node scripts/agent-sync.mjs verify-local",
 		"commit:selective": "bash scripts/committer",
 		"commit:with-progress": "node scripts/commit-with-progress.mjs",
 		"reinstall:clean": "node scripts/reinstall-clean.mjs",
@@ -45,16 +35,16 @@
 		"release:patch": "node scripts/release.mjs patch",
 		"release:minor": "node scripts/release.mjs minor",
 		"release:major": "node scripts/release.mjs major",
+		"release:tag": "node scripts/release-tag.mjs",
 		"prepare": "node scripts/prepare.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.5",
-		"@types/node": "^22.10.5",
-		"@typescript/native-preview": "7.0.0-dev.20260120.1",
+		"@types/node": "^24.19.2",
 		"fallow": "3.9.1",
 		"husky": "^9.1.7",
 		"tsx": "^4.23.1",
-		"typescript": "^5.9.2",
+		"typescript": "7.0.2",
 		"yaml": "2.9.1"
 	},
 	"overrides": {
@@ -63,6 +53,6 @@
 		}
 	},
 	"engines": {
-		"node": "22.x"
+		"node": "24.x"
 	}
 }
