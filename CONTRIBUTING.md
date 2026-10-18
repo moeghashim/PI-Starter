@@ -16,7 +16,7 @@
 - `progress.md` is append-only; only add new entries at the end.
 - Forks should keep `progress.md` tracked and continue appending learnings so the repo retains local project memory after forking.
 - For agent-requested commits, use `npm run commit:with-progress -- "<message>" --learning "<learning>" -- "<path>" ...`.
-- Prepare releases with `npm run release:patch -- --learning "What we learned from this release."`, push the `release/vX.Y.Z` branch through the gate, and after it merges run `npm run release:tag` on `main`.
+- Prepare releases with `npm run release:patch -- --learning "What we learned from this release."`, push the `release/vX.Y.Z` branch through the gate, and after it merges run `npm run release:tag` from any clean checkout.
 - `release:tag` skips `npm publish` by default; add `-- --publish` only when you intentionally want to publish packages.
 - In `apps/web`, do not import `useEffect` directly; use render-time derivation, event handlers, framework data loading, or `useMountEffect`.
 - Keep commit messages as clear summaries (do not use prompt-only commit subjects).

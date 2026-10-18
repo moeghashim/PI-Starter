@@ -38,7 +38,7 @@ read_when:
 1. Use `/ship` for the solo finalization flow.
 2. Push committed feature branches with `git push no-mistakes`; do not push directly to `origin`.
 3. For app deploys, choose `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md`. Let the no-mistakes gate open the PR and the selected provider deploy after the protected branch merges. Cloudflare changes must pass `Cloudflare build` in CI.
-4. For package releases: Releases go through a pull request like any other change. On clean `main` matching `origin/main`, `npm run release:<patch|minor|major> -- --learning "..."` bumps versions on a `release/vX.Y.Z` branch, refuses a version whose tag already exists, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit. Push that branch with `git push no-mistakes`. After the pull request merges, update `main` and run `npm run release:tag` to tag the merge and push only the tag; add `-- --publish` to publish packages. See `docs/adrs/2026-10-18-release-through-pull-requests.md`.
+4. For package releases, follow the release flow in `README.md`: prepare with `npm run release:<patch|minor|major> -- --learning "..."`, push the `release/vX.Y.Z` branch with `git push no-mistakes`, and after the pull request merges run `npm run release:tag`. The decision record is `docs/adrs/2026-10-18-release-through-pull-requests.md`.
 
 ## Handoff
 
