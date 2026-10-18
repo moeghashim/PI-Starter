@@ -21,12 +21,20 @@ export function publishablePackages() {
 }
 
 // Versions are lockstep (enforced by scripts/sync-versions.js), so any package carries the release version.
-export function readReleaseVersion() {
+function firstPackageManifest() {
 	const [first] = packageDirectories();
 	if (!first) {
 		throw new Error("No packages found under packages/.");
 	}
-	return JSON.parse(readFileSync(join(first, "package.json"), "utf8")).version;
+	return join(first, "package.json");
+}
+
+export function readReleaseVersion() {
+	return JSON.parse(readFileSync(firstPackageManifest(), "utf8")).version;
+}
+
+export function readReleaseVersionAt(ref) {
+	return JSON.parse(git("show", `${ref}:${firstPackageManifest()}`)).version;
 }
 
 export function git(...args) {
@@ -53,13 +61,13 @@ export function tagExistsLocally(tag) {
 	return refExists(`refs/tags/${tag}`);
 }
 
-function ensureCleanTree() {
+export function ensureCleanTree() {
 	if (git("status", "--porcelain") !== "") {
 		abort("uncommitted changes detected.");
 	}
 }
 
-function fetchOriginMain() {
+export function fetchOriginMain() {
 	run("git", ["fetch", "origin", "main", "--tags"]);
 }
 
@@ -72,14 +80,5 @@ export function ensureCleanMainMatchingOrigin() {
 	fetchOriginMain();
 	if (git("rev-parse", "HEAD") !== git("rev-parse", "FETCH_HEAD")) {
 		abort("main must match origin/main. Reconcile local and remote commits first.");
-	}
-}
-
-// Tags are created from a clean checkout of a commit that is already on origin/main.
-export function ensureCleanCommitOnOriginMain() {
-	ensureCleanTree();
-	fetchOriginMain();
-	if (spawnSync("git", ["merge-base", "--is-ancestor", "HEAD", "FETCH_HEAD"]).status !== 0) {
-		abort("HEAD must be a commit on origin/main. Update main or check out one of its commits first.");
 	}
 }
