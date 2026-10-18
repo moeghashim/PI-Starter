@@ -45,8 +45,12 @@ export function abort(message) {
 	process.exit(1);
 }
 
+export function refExists(ref) {
+	return spawnSync("git", ["rev-parse", "-q", "--verify", ref]).status === 0;
+}
+
 export function tagExistsLocally(tag) {
-	return spawnSync("git", ["rev-parse", "-q", "--verify", `refs/tags/${tag}`]).status === 0;
+	return refExists(`refs/tags/${tag}`);
 }
 
 // Releases start from, and tag, a clean main that matches origin/main.

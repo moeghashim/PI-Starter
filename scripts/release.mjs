@@ -11,6 +11,7 @@ import {
 	changelogPaths,
 	ensureCleanMainMatchingOrigin,
 	readReleaseVersion,
+	refExists,
 	run,
 	tagExistsLocally,
 } from "./release-lib.mjs";
@@ -39,6 +40,12 @@ function ensureTagIsFree(tag) {
 	const remote = spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`]);
 	if (remote.status === 0 || tagExistsLocally(tag)) {
 		abort(`tag ${tag} already exists. Choose a different bump or remove the stale tag first.`);
+	}
+}
+
+function ensureBranchIsFree(branch) {
+	if (refExists(`refs/heads/${branch}`)) {
+		abort(`branch ${branch} already exists. Delete it or finish that release first.`);
 	}
 }
 
@@ -80,11 +87,16 @@ ensureCleanMainMatchingOrigin();
 const version = bumpVersion(readReleaseVersion(), bump);
 const tag = `v${version}`;
 ensureTagIsFree(tag);
+const branch = `release/${tag}`;
+ensureBranchIsFree(branch);
 const changelogs = readUnreleasedChangelogs();
 
-const branch = `release/${tag}`;
 run("git", ["switch", "-c", branch]);
 run("npm", ["run", `version:${bump}`]);
+const bumped = readReleaseVersion();
+if (bumped !== version) {
+	abort(`npm run version:${bump} produced ${bumped}, expected ${version}.`);
+}
 startNewVersionSection(changelogs, version);
 run("node", [
 	"scripts/progress-log.mjs",

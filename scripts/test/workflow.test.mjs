@@ -97,7 +97,7 @@ test("version bump preserves external resolutions and installed dependencies", (
 	assert.equal(readFileSync(join(f.directory, "node_modules/fixture-core/preserve.txt"), "utf8"), "installed state");
 });
 
-function releaseFixture(t, failingCheck = "agent:check") {
+function releaseFixture(t, failingCheck = "agent:check", bumpedVersion = "1.0.1") {
 	const f = fixture(t);
 	const scripts = Object.fromEntries(
 		["version:patch", "build", "check", "test", "agent:check", "fallow:audit"].map((name) => [
@@ -115,7 +115,7 @@ function releaseFixture(t, failingCheck = "agent:check") {
 			"if (process.argv[2] === 'version:patch') {",
 			"  const path = 'packages/core/package.json';",
 			"  const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));",
-			"  fs.writeFileSync(path, JSON.stringify({ ...pkg, version: '1.0.1' }));",
+			`  fs.writeFileSync(path, JSON.stringify({ ...pkg, version: ${JSON.stringify(bumpedVersion)} }));`,
 			"}",
 			`process.exit(process.argv[2] === ${JSON.stringify(failingCheck)} ? 1 : 0);`,
 		].join("\n"),
@@ -216,6 +216,29 @@ test("release refuses a version whose tag already exists on the remote", (t) => 
 	assert.equal(f.run("git", ["branch", "--show-current"]), "main");
 	assert.equal(f.run("git", ["status", "--porcelain"]), "");
 	assert.equal(existsSync(join(f.directory, "calls.txt")), false);
+});
+
+test("release refuses a stale release branch before switching or bumping", (t) => {
+	const f = releaseFixture(t, null);
+	f.run("git", ["branch", "release/v1.0.1"]);
+	const result = attemptRelease(f);
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /branch release\/v1\.0\.1 already exists/);
+	assert.equal(f.run("git", ["branch", "--show-current"]), "main");
+	assert.equal(f.run("git", ["status", "--porcelain"]), "");
+	assert.equal(existsSync(join(f.directory, "calls.txt")), false);
+});
+
+test("release stops when the version scripts produce a different version than predicted", (t) => {
+	const f = releaseFixture(t, null, "1.0.1-beta.0");
+	const head = f.run("git", ["rev-parse", "HEAD"]);
+	const result = attemptRelease(f);
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /produced 1\.0\.1-beta\.0, expected 1\.0\.1/);
+	assert.equal(readFileSync(join(f.directory, "calls.txt"), "utf8").trim(), "version:patch");
+	assert.equal(f.run("git", ["rev-parse", "HEAD"]), head);
+	assert.equal(f.run("git", ["tag", "--list"]), "");
+	assert.equal(f.run("git", ["status", "--porcelain"]), "M packages/core/package.json");
 });
 
 test("release refuses a changelog without an Unreleased section before bumping", (t) => {
