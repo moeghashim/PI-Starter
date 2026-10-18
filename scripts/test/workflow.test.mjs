@@ -143,8 +143,33 @@ function attemptRelease(f) {
 	});
 }
 
-function attemptTag(f) {
-	return spawnSync(process.execPath, ["scripts/release-tag.mjs"], { cwd: f.directory, env: f.env, encoding: "utf8" });
+function attemptTag(f, ...args) {
+	return spawnSync(process.execPath, ["scripts/release-tag.mjs", ...args], {
+		cwd: f.directory,
+		env: f.env,
+		encoding: "utf8",
+	});
+}
+
+function mergePullRequest(f, number, branch, title) {
+	const subject = `Merge pull request #${number} from fixture/${branch}`;
+	f.run("git", ["merge", "--no-ff", "-m", subject, "-m", title, branch]);
+	return f.run("git", ["rev-parse", "HEAD"]);
+}
+
+function mergedReleaseFollowedByDependencyMerge(t) {
+	const f = releaseFixture(t, null);
+	assert.equal(attemptRelease(f).status, 0);
+	f.run("git", ["switch", "main"]);
+	const release = mergePullRequest(f, 1, "release/v1.0.1", "chore(release): v1.0.1");
+	f.run("git", ["switch", "-c", "dependabot/npm/fixture"]);
+	f.write("later.txt", "dependency bump\n");
+	f.run("git", ["add", "later.txt"]);
+	f.run("git", ["commit", "-qm", "chore(deps): bump fixture"]);
+	f.run("git", ["switch", "main"]);
+	mergePullRequest(f, 2, "dependabot/npm/fixture", "chore(deps): bump fixture");
+	f.run("git", ["push", "origin", "main"]);
+	return { f, release };
 }
 
 test("release rejects feature branches and unpublished main commits before bumping", (t) => {
@@ -256,7 +281,7 @@ test("release refuses a changelog without an Unreleased section before bumping",
 
 test("release:tag tags merged main once, pushes only the tag, and refuses unmerged releases", (t) => {
 	const f = releaseFixture(t, null);
-	assert.match(attemptTag(f).stderr, /HEAD is not the merged "chore\(release\): v1\.0\.0" commit/);
+	assert.match(attemptTag(f).stderr, /no "chore\(release\): v1\.0\.0" commit/);
 	assert.equal(attemptRelease(f).status, 0);
 	f.run("git", ["switch", "main"]);
 	f.run("git", ["merge", "--ff-only", "release/v1.0.1"]);
@@ -269,25 +294,28 @@ test("release:tag tags merged main once, pushes only the tag, and refuses unmerg
 	assert.match(attemptTag(f).stderr, /v1\.0\.1 already exists/);
 });
 
-test("release:tag tags a merge commit but refuses main that moved past the release", (t) => {
-	const f = releaseFixture(t, null);
-	assert.equal(attemptRelease(f).status, 0);
-	f.run("git", ["switch", "main"]);
-	f.run("git", ["merge", "--no-ff", "--no-edit", "release/v1.0.1"]);
-	const merge = f.run("git", ["rev-parse", "HEAD"]);
-	f.write("later.txt", "landed after the release\n");
-	f.run("git", ["add", "later.txt"]);
-	f.run("git", ["commit", "-qm", "chore: later change"]);
-	f.run("git", ["push", "origin", "main"]);
-	const moved = attemptTag(f);
-	assert.notEqual(moved.status, 0);
-	assert.match(moved.stderr, /HEAD is not the merged "chore\(release\): v1\.0\.1" commit/);
-	assert.equal(f.run("git", ["tag", "--list"]), "");
-	f.run("git", ["reset", "--hard", merge]);
-	f.run("git", ["push", "--force", "origin", "main"]);
+test("release:tag tags the release merge, not HEAD, after later merges land on main", (t) => {
+	const { f, release } = mergedReleaseFollowedByDependencyMerge(t);
+	const head = f.run("git", ["rev-parse", "HEAD"]);
+	assert.notEqual(head, release);
 	const tagged = attemptTag(f);
 	assert.equal(tagged.status, 0, tagged.stderr);
-	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), merge);
+	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), release);
+	assert.match(f.run("git", ["ls-remote", "--tags", "origin"]), /refs\/tags\/v1\.0\.1$/m);
+	assert.equal(f.run("git", ["rev-parse", "HEAD"]), head);
+});
+
+test("release:tag refuses --publish unless HEAD is the release commit", (t) => {
+	const { f, release } = mergedReleaseFollowedByDependencyMerge(t);
+	const refused = attemptTag(f, "--publish");
+	assert.notEqual(refused.status, 0);
+	const expected = `HEAD must be the release commit to --publish\\. Run \`git checkout ${release}\``;
+	assert.match(refused.stderr, new RegExp(expected));
+	assert.equal(f.run("git", ["tag", "--list"]), "");
+	f.run("git", ["checkout", "-q", release]);
+	const tagged = attemptTag(f);
+	assert.equal(tagged.status, 0, tagged.stderr);
+	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), release);
 });
 
 test("prepare-commit-msg adds a DCO sign-off without duplicating an existing one", (t) => {

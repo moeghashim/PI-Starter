@@ -21,7 +21,7 @@ Releases become ordinary pull requests.
 
 - `npm run release:<patch|minor|major> -- --learning "..."` runs on clean `main` matching `origin/main`. It bumps versions, refuses a version whose tag already exists, starts a new changelog section, appends a `progress.md` entry, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit on a `release/vX.Y.Z` branch.
 - The branch is pushed with `git push no-mistakes` and merges after `Required checks` and `DCO` pass.
-- After the merge, `npm run release:tag` on up-to-date `main` confirms the merged release commit exists, creates an annotated tag, and pushes only the tag. `-- --publish` additionally publishes the non-private packages.
+- After the merge, `npm run release:tag` on up-to-date `main` finds the merged release commit on `main`'s first-parent history, creates an annotated tag on that commit even if later merges have landed, and pushes only the tag. `-- --publish` additionally publishes the non-private packages and requires the checkout to be at that release commit, because npm publishes the working tree.
 
 ## Consequences
 

@@ -53,16 +53,33 @@ export function tagExistsLocally(tag) {
 	return refExists(`refs/tags/${tag}`);
 }
 
-// Releases start from, and tag, a clean main that matches origin/main.
-export function ensureCleanMainMatchingOrigin() {
+function ensureCleanTree() {
 	if (git("status", "--porcelain") !== "") {
 		abort("uncommitted changes detected.");
 	}
+}
+
+function fetchOriginMain() {
+	run("git", ["fetch", "origin", "main", "--tags"]);
+}
+
+// Releases start from a clean main that matches origin/main.
+export function ensureCleanMainMatchingOrigin() {
+	ensureCleanTree();
 	if (git("branch", "--show-current") !== "main") {
 		abort("switch to main before releasing.");
 	}
-	run("git", ["fetch", "origin", "main", "--tags"]);
+	fetchOriginMain();
 	if (git("rev-parse", "HEAD") !== git("rev-parse", "FETCH_HEAD")) {
 		abort("main must match origin/main. Reconcile local and remote commits first.");
+	}
+}
+
+// Tags are created from a clean checkout of a commit that is already on origin/main.
+export function ensureCleanCommitOnOriginMain() {
+	ensureCleanTree();
+	fetchOriginMain();
+	if (spawnSync("git", ["merge-base", "--is-ancestor", "HEAD", "FETCH_HEAD"]).status !== 0) {
+		abort("HEAD must be a commit on origin/main. Update main or check out one of its commits first.");
 	}
 }
