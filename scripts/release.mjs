@@ -42,13 +42,34 @@ function ensureTagIsFree(tag) {
 	}
 }
 
-function startNewVersionSection(version) {
-	const date = new Date().toISOString().split("T")[0];
-	for (const path of changelogPaths()) {
+function bumpVersion(current, bump) {
+	const parts = /^(\d+)\.(\d+)\.(\d+)$/.exec(current)?.slice(1).map(Number);
+	if (!parts) {
+		abort(`current version ${current} is not a plain major.minor.patch release version.`);
+	}
+	const [major, minor, patch] = parts;
+	if (bump === "major") {
+		return `${major + 1}.0.0`;
+	}
+	if (bump === "minor") {
+		return `${major}.${minor + 1}.0`;
+	}
+	return `${major}.${minor}.${patch + 1}`;
+}
+
+function readUnreleasedChangelogs() {
+	return changelogPaths().map((path) => {
 		const content = readFileSync(path, "utf8");
 		if (!content.includes(UNRELEASED_HEADING)) {
 			abort(`${path} has no "${UNRELEASED_HEADING}" section.`);
 		}
+		return { path, content };
+	});
+}
+
+function startNewVersionSection(changelogs, version) {
+	const date = new Date().toISOString().split("T")[0];
+	for (const { path, content } of changelogs) {
 		writeFileSync(path, content.replace(UNRELEASED_HEADING, `${UNRELEASED_HEADING}\n\n## [${version}] - ${date}`));
 	}
 }
@@ -56,14 +77,15 @@ function startNewVersionSection(version) {
 const { bump, learning } = parseArgs(process.argv.slice(2));
 ensureCleanMainMatchingOrigin();
 
-run("npm", ["run", `version:${bump}`]);
-const version = readReleaseVersion();
+const version = bumpVersion(readReleaseVersion(), bump);
 const tag = `v${version}`;
 ensureTagIsFree(tag);
+const changelogs = readUnreleasedChangelogs();
 
 const branch = `release/${tag}`;
 run("git", ["switch", "-c", branch]);
-startNewVersionSection(version);
+run("npm", ["run", `version:${bump}`]);
+startNewVersionSection(changelogs, version);
 run("node", [
 	"scripts/progress-log.mjs",
 	"append",

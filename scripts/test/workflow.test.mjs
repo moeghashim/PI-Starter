@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import {
 	chmodSync,
 	copyFileSync,
+	existsSync,
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
@@ -105,10 +106,19 @@ function releaseFixture(t, failingCheck = "agent:check") {
 		]),
 	);
 	f.write("package.json", JSON.stringify({ scripts }));
-	f.write("packages/core/package.json", JSON.stringify({ name: "fixture-core", version: "1.0.1", private: true }));
+	f.write("packages/core/package.json", JSON.stringify({ name: "fixture-core", version: "1.0.0", private: true }));
 	f.write(
 		"record.cjs",
-		`require('node:fs').appendFileSync('calls.txt', process.argv[2]+'\\n'); process.exit(process.argv[2] === ${JSON.stringify(failingCheck)} ? 1 : 0);`,
+		[
+			"const fs = require('node:fs');",
+			"fs.appendFileSync('calls.txt', process.argv[2] + '\\n');",
+			"if (process.argv[2] === 'version:patch') {",
+			"  const path = 'packages/core/package.json';",
+			"  const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));",
+			"  fs.writeFileSync(path, JSON.stringify({ ...pkg, version: '1.0.1' }));",
+			"}",
+			`process.exit(process.argv[2] === ${JSON.stringify(failingCheck)} ? 1 : 0);`,
+		].join("\n"),
 	);
 	f.write("packages/core/CHANGELOG.md", "# Changelog\n\n## [Unreleased]\n\n## [1.0.0] - 2026-01-01\n");
 	f.write("scripts/progress-log.mjs", "// Fixture progress logger.\n");
@@ -203,11 +213,27 @@ test("release refuses a version whose tag already exists on the remote", (t) => 
 	assert.notEqual(result.status, 0);
 	assert.match(result.stderr, /tag v1\.0\.1 already exists/);
 	assert.equal(f.run("git", ["log", "-1", "--format=%s"]), "fixture");
+	assert.equal(f.run("git", ["branch", "--show-current"]), "main");
+	assert.equal(f.run("git", ["status", "--porcelain"]), "");
+	assert.equal(existsSync(join(f.directory, "calls.txt")), false);
+});
+
+test("release refuses a changelog without an Unreleased section before bumping", (t) => {
+	const f = releaseFixture(t, null);
+	f.write("packages/core/CHANGELOG.md", "# Changelog\n\n## [1.0.0] - 2026-01-01\n");
+	f.run("git", ["commit", "-qam", "drop unreleased"]);
+	f.run("git", ["push", "origin", "main"]);
+	const result = attemptRelease(f);
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /has no "## \[Unreleased\]" section/);
+	assert.equal(f.run("git", ["branch", "--show-current"]), "main");
+	assert.equal(f.run("git", ["status", "--porcelain"]), "");
+	assert.equal(existsSync(join(f.directory, "calls.txt")), false);
 });
 
 test("release:tag tags merged main once, pushes only the tag, and refuses unmerged releases", (t) => {
 	const f = releaseFixture(t, null);
-	assert.match(attemptTag(f).stderr, /no "chore\(release\): v1\.0\.1" commit/);
+	assert.match(attemptTag(f).stderr, /no "chore\(release\): v1\.0\.0" commit/);
 	assert.equal(attemptRelease(f).status, 0);
 	f.run("git", ["switch", "main"]);
 	f.run("git", ["merge", "--ff-only", "release/v1.0.1"]);

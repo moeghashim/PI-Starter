@@ -93,6 +93,9 @@ for (const [linkPath, expectedTarget] of Object.entries(SKILL_LINKS)) {
 }
 
 for (const entry of readdirSync(SKILLS_DIR, { withFileTypes: true })) {
+	if (entry.name.startsWith(".")) {
+		continue;
+	}
 	const skillFile = `${SKILLS_DIR}/${entry.name}/SKILL.md`;
 	if (!entry.isDirectory() || !existsSync(skillFile)) {
 		fail(`${SKILLS_DIR}/${entry.name} must be a directory containing SKILL.md`);
