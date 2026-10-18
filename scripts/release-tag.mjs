@@ -28,9 +28,10 @@ const tag = `v${readReleaseVersion()}`;
 if (tagExistsLocally(tag)) {
 	abort(`${tag} already exists. Merge a release pull request from \`npm run release:<bump>\` first.`);
 }
-const releaseCommit = git("log", "--format=%H", "--fixed-strings", `--grep=chore(release): ${tag}`, "-n", "1", "HEAD");
+const subject = `chore(release): ${tag}`;
+const releaseCommit = git("log", "--no-walk", "--format=%H", "--fixed-strings", `--grep=${subject}`, "HEAD", "HEAD^@");
 if (releaseCommit === "") {
-	abort(`main has no "chore(release): ${tag}" commit. Merge the release pull request first.`);
+	abort(`HEAD is not the merged "${subject}" commit. Merge the release pull request and tag it before main moves on.`);
 }
 if (publish) {
 	const auth = spawnSync("npm", ["whoami"], { stdio: "ignore" });

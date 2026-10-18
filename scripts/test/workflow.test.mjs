@@ -256,7 +256,7 @@ test("release refuses a changelog without an Unreleased section before bumping",
 
 test("release:tag tags merged main once, pushes only the tag, and refuses unmerged releases", (t) => {
 	const f = releaseFixture(t, null);
-	assert.match(attemptTag(f).stderr, /no "chore\(release\): v1\.0\.0" commit/);
+	assert.match(attemptTag(f).stderr, /HEAD is not the merged "chore\(release\): v1\.0\.0" commit/);
 	assert.equal(attemptRelease(f).status, 0);
 	f.run("git", ["switch", "main"]);
 	f.run("git", ["merge", "--ff-only", "release/v1.0.1"]);
@@ -267,6 +267,27 @@ test("release:tag tags merged main once, pushes only the tag, and refuses unmerg
 	assert.match(f.run("git", ["ls-remote", "--tags", "origin"]), /refs\/tags\/v1\.0\.1$/m);
 	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), f.run("git", ["rev-parse", "main"]));
 	assert.match(attemptTag(f).stderr, /v1\.0\.1 already exists/);
+});
+
+test("release:tag tags a merge commit but refuses main that moved past the release", (t) => {
+	const f = releaseFixture(t, null);
+	assert.equal(attemptRelease(f).status, 0);
+	f.run("git", ["switch", "main"]);
+	f.run("git", ["merge", "--no-ff", "--no-edit", "release/v1.0.1"]);
+	const merge = f.run("git", ["rev-parse", "HEAD"]);
+	f.write("later.txt", "landed after the release\n");
+	f.run("git", ["add", "later.txt"]);
+	f.run("git", ["commit", "-qm", "chore: later change"]);
+	f.run("git", ["push", "origin", "main"]);
+	const moved = attemptTag(f);
+	assert.notEqual(moved.status, 0);
+	assert.match(moved.stderr, /HEAD is not the merged "chore\(release\): v1\.0\.1" commit/);
+	assert.equal(f.run("git", ["tag", "--list"]), "");
+	f.run("git", ["reset", "--hard", merge]);
+	f.run("git", ["push", "--force", "origin", "main"]);
+	const tagged = attemptTag(f);
+	assert.equal(tagged.status, 0, tagged.stderr);
+	assert.equal(f.run("git", ["rev-list", "-n", "1", "v1.0.1"]), merge);
 });
 
 test("prepare-commit-msg adds a DCO sign-off without duplicating an existing one", (t) => {
