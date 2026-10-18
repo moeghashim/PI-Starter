@@ -17,7 +17,8 @@ import {
 	tagExistsLocally,
 } from "./release-lib.mjs";
 
-const RELEASE_SUBJECT = "chore\\(release\\): v[0-9]+\\.[0-9]+\\.[0-9]+";
+const RELEASE_SUBJECT_GREP = "^chore\\(release\\): v[0-9]+\\.[0-9]+\\.[0-9]+( \\(#[0-9]+\\))?$";
+const RELEASE_SUBJECT = /^chore\(release\): v(\d+\.\d+\.\d+)( \(#\d+\))?$/m;
 
 const args = process.argv.slice(2);
 if (args.some((arg) => arg !== "--publish")) {
@@ -34,12 +35,16 @@ function isPublished(name, version) {
 ensureCleanTree();
 fetchOriginMain();
 
-const grep = `--grep=${RELEASE_SUBJECT}`;
+const grep = `--grep=${RELEASE_SUBJECT_GREP}`;
 const releaseCommit = git("log", "--first-parent", "--format=%H", "--extended-regexp", grep, "-n", "1", "FETCH_HEAD");
 if (releaseCommit === "") {
 	abort("origin/main has no chore(release) commit. Merge the release pull request first.");
 }
+const namedVersion = RELEASE_SUBJECT.exec(git("log", "-1", "--format=%B", releaseCommit))?.[1];
 const version = readReleaseVersionAt(releaseCommit);
+if (namedVersion !== version) {
+	abort(`${releaseCommit} is labeled chore(release): v${namedVersion} but its tree is at ${version}.`);
+}
 const tag = `v${version}`;
 
 if (publish) {
