@@ -1,13 +1,17 @@
 # Development Rules
 
+## Layout
+- `apps/web`: Next.js app, deployable to Vercel or to Cloudflare Workers through OpenNext.
+- `packages/core`: publishable library; public API re-exported from `src/index.ts`.
+- `scripts/`: repo automation; regression tests live in `scripts/test/`.
+- `agent/`: manifests that pin vendored skills to upstream commits.
+- `.agents/skills/`: every skill, vendored and local; `.claude/skills` links here.
+- `docs/`: workflow, skill, and deploy docs; decisions live in `docs/adrs/`.
+
 ## Code Quality
 - No `any` types unless absolutely necessary.
 - Check `node_modules` for external API type definitions instead of guessing.
-- NEVER use inline imports:
-  - no `await import("./foo.js")`
-  - no `import("pkg").Type` in type positions
-  - no dynamic imports for types
-  - always use standard top-level imports
+- Never use inline or dynamic imports, including `await import("./foo.js")` and `import("pkg").Type` in type positions; use standard top-level imports.
 - Never remove functionality to fix type errors from outdated dependencies; upgrade dependencies instead.
 - Always ask before removing functionality that appears intentional.
 
@@ -23,18 +27,21 @@
 - `useMountEffect` is the only allowed mount-only escape hatch for synchronizing with an external system.
 
 ## Commands
-- After code changes (not docs changes): `npm run check`
-- `npm run check` does not apply source fixes. Use `npm run fix` explicitly, then review its changes.
+- Dev server: `npm run dev -w @pi-starter/web`. Tests: `npm test`. Worker build: `npm run build:cloudflare`.
+- After code changes (not docs changes): `npm run check`. It never applies fixes; run `npm run fix` explicitly, then review its changes.
 - Before handoff or ship, run `npm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
 - After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`.
+- Releases: `npm run release:<patch|minor|major> -- --learning "..."` on clean `main`, push the `release/vX.Y.Z` branch through the gate, then run `npm run release:tag` after it merges.
+
+## Toolchain
+- Use the Node major in `.nvmrc`; `npm run check` fails on any other version.
+- The root and `packages/core` compile with TypeScript 7. `apps/web` stays on TypeScript 5.9 until Next.js supports 7, so do not bump its `typescript`.
 - Keep `node_modules` machine-local. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, run `npm install` or `npm run reinstall:clean` before using native-tooling commands.
 
 ## Database Deployments
-- Treat app deployment and database deployment as separate release surfaces.
-- Before shipping an app, check whether the diff touches schema, migrations, ORM configuration, seed data, database clients, or database environment variables.
-- If database changes are present, identify and run the project-specific database deploy or migration command before reporting the app as fully shipped.
-- If the database deploy cannot be run, call that out as a blocking or pending release step with the exact command or owner needed.
+- Treat app and database deployment as separate release surfaces. Before shipping an app, check the diff for schema, migration, ORM configuration, seed data, database client, or database environment changes.
+- If any are present, run the project's database deploy or migration command before reporting the app as shipped. If it cannot be run, report it as a blocking or pending release step with the exact command or owner needed.
 
 ## Agent Workflow
 - Agent workflow docs live in `docs/agent-workflow.md`, skill guidance in `docs/agent-skills.md`, and command index in `docs/commands.md`.
@@ -51,7 +58,7 @@
 
 ## Git
 - Never commit unless explicitly requested.
-- Push branches through `git push no-mistakes`, never directly to `origin`. The gate runs review, test, docs, and lint in a disposable worktree, forwards the branch only when everything passes, and opens the PR. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate already-committed work. Safe mechanical fixes are auto-applied; intent-level findings are escalated for human approval.
+- Push branches with `git push no-mistakes`, never directly to `origin`. The gate reviews, tests, documents, and lints in a disposable worktree, then opens the PR only when everything passes. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate committed work; it auto-applies safe mechanical fixes and escalates intent-level findings.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
 - Every commit must carry a `Signed-off-by:` trailer matching the author for the DCO check; keep `DCO` required in branch protection so unsigned PRs cannot merge. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.
