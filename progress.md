@@ -506,3 +506,11 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - progress.md
   - scripts
   - tsconfig.base.json
+## 2026-10-19T07:00:06.836Z
+- Trigger: commit
+- Learning: Agent instruction files earn their keep with a repo map, everyday commands, and toolchain traps; a CLAUDE.md audit found the file current but missing a layout and the test, dev, and release commands.
+- Context: docs(agent): add layout, commands, and toolchain notes to AGENTS.md Add a layout map, the missing dev, test, Worker build, and release commands, and toolchain notes for the .nvmrc Node check and the TypeScript 7 root versus TypeScript 5.9 web split. Tighten the inline-imports, database, and gate rules without changing them. Repro-Prompt: Audit the repository CLAUDE.md files with claude-md-improver and apply the layout, commands, toolchain, and wording updates. Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+- Branch: docs/agents-md-audit
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - AGENTS.md
