@@ -1,161 +1,104 @@
 #!/usr/bin/env node
 
-import { execSync, spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+// Prepares a release as a pull request: bumps versions on a release branch, validates, and commits.
+// After the pull request merges, `npm run release:tag` tags main and optionally publishes.
+
+import { spawnSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+
+import {
+	abort,
+	changelogPaths,
+	ensureCleanMainMatchingOrigin,
+	readReleaseVersion,
+	refExists,
+	run,
+	tagExistsLocally,
+} from "./release-lib.mjs";
 
 const VALID_BUMPS = new Set(["patch", "minor", "major"]);
+const UNRELEASED_HEADING = "## [Unreleased]";
 
 function usage() {
-	console.error('Usage: node scripts/release.mjs <patch|minor|major> --learning "<text>" [--publish] [--push]');
+	console.error('Usage: npm run release:<patch|minor|major> -- --learning "<text>"');
 }
 
 function parseArgs(argv) {
-	const bump = argv[0];
+	const [bump, flag, value, ...rest] = argv;
 	if (!VALID_BUMPS.has(bump)) {
 		usage();
 		process.exit(1);
 	}
-
-	let learning = "";
-	let publish = false;
-	let push = false;
-	let index = 1;
-	while (index < argv.length) {
-		const arg = argv[index];
-		if (arg === "--learning") {
-			const value = argv[index + 1];
-			if (value === undefined || value.trim().length === 0) {
-				usage();
-				console.error("Release aborted: --learning requires a non-empty value.");
-				process.exit(1);
-			}
-			learning = value.trim();
-			index += 2;
-			continue;
-		}
-		if (arg === "--publish") {
-			publish = true;
-			index += 1;
-			continue;
-		}
-		if (arg === "--push") {
-			push = true;
-			index += 1;
-			continue;
-		}
-
+	if (flag !== "--learning" || value === undefined || value.trim().length === 0 || rest.length > 0) {
 		usage();
-		console.error(`Release aborted: unknown argument "${arg}".`);
-		process.exit(1);
+		abort("pass exactly one non-empty --learning value.");
 	}
-
-	if (learning.length === 0) {
-		usage();
-		console.error("Release aborted: --learning is required.");
-		process.exit(1);
-	}
-
-	return { bump, learning, publish, push };
+	return { bump, learning: value.trim() };
 }
 
-const { bump, learning, publish, push } = parseArgs(process.argv.slice(2));
-
-function run(command) {
-	execSync(command, { stdio: "inherit", encoding: "utf8" });
-}
-
-function runArgs(command, args) {
-	const result = spawnSync(command, args, { stdio: "inherit" });
-	if (result.status !== 0) {
-		process.exit(result.status ?? 1);
+function ensureTagIsFree(tag) {
+	const remote = spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`]);
+	if (remote.status === 0 || tagExistsLocally(tag)) {
+		abort(`tag ${tag} already exists. Choose a different bump or remove the stale tag first.`);
 	}
 }
 
-function publishablePackages() {
-	return readdirSync("packages")
-		.map((packageName) => join("packages", packageName, "package.json"))
-		.filter((path) => existsSync(path))
-		.map((path) => JSON.parse(readFileSync(path, "utf8")))
-		.filter((pkg) => pkg.private !== true)
-		.map((pkg) => pkg.name);
-}
-
-function ensureCleanGitTree() {
-	const status = execSync("git status --porcelain", { encoding: "utf8" });
-	if (status.trim()) {
-		console.error("Release aborted: uncommitted changes detected.");
-		process.exit(1);
+function ensureBranchIsFree(branch) {
+	if (refExists(`refs/heads/${branch}`)) {
+		abort(`branch ${branch} already exists. Delete it or finish that release first.`);
 	}
 }
 
-function ensureNpmAuth() {
-	try {
-		execSync("npm whoami", { stdio: "ignore", encoding: "utf8" });
-	} catch {
-		console.error("Release aborted: --publish requires npm authentication. Run `npm login` first.");
-		process.exit(1);
+function bumpVersion(current, bump) {
+	const parts = /^(\d+)\.(\d+)\.(\d+)$/.exec(current)?.slice(1).map(Number);
+	if (!parts) {
+		abort(`current version ${current} is not a plain major.minor.patch release version.`);
 	}
-}
-
-function ensureReleaseBranch() {
-	const branch = execSync("git branch --show-current", { encoding: "utf8" }).trim();
-	if (branch !== "main") {
-		console.error("Release aborted: switch to main before releasing.");
-		process.exit(1);
+	const [major, minor, patch] = parts;
+	if (bump === "major") {
+		return `${major + 1}.0.0`;
 	}
-	run("git fetch origin main");
-	const head = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
-	const upstream = execSync("git rev-parse FETCH_HEAD", { encoding: "utf8" }).trim();
-	if (head !== upstream) {
-		console.error("Release aborted: main must match origin/main. Reconcile local and remote commits first.");
-		process.exit(1);
+	if (bump === "minor") {
+		return `${major}.${minor + 1}.0`;
 	}
+	return `${major}.${minor}.${patch + 1}`;
 }
 
-function changelogPaths() {
-	return readdirSync("packages")
-		.map((packageName) => join("packages", packageName, "CHANGELOG.md"))
-		.filter((path) => existsSync(path));
+function readUnreleasedChangelogs() {
+	return changelogPaths().map((path) => {
+		const content = readFileSync(path, "utf8");
+		if (!content.includes(UNRELEASED_HEADING)) {
+			abort(`${path} has no "${UNRELEASED_HEADING}" section.`);
+		}
+		return { path, content };
+	});
 }
 
-function readVersion() {
-	const corePackage = JSON.parse(readFileSync("packages/core/package.json", "utf8"));
-	return corePackage.version;
-}
-
-function moveUnreleasedToVersion(version) {
+function startNewVersionSection(changelogs, version) {
 	const date = new Date().toISOString().split("T")[0];
-	for (const path of changelogPaths()) {
-		const content = readFileSync(path, "utf8");
-		if (!content.includes("## [Unreleased]")) {
-			continue;
-		}
-		writeFileSync(path, content.replace("## [Unreleased]", `## [${version}] - ${date}`));
+	for (const { path, content } of changelogs) {
+		writeFileSync(path, content.replace(UNRELEASED_HEADING, `${UNRELEASED_HEADING}\n\n## [${version}] - ${date}`));
 	}
 }
 
-function addUnreleasedSection() {
-	for (const path of changelogPaths()) {
-		const content = readFileSync(path, "utf8");
-		if (content.includes("## [Unreleased]")) {
-			continue;
-		}
+const { bump, learning } = parseArgs(process.argv.slice(2));
+ensureCleanMainMatchingOrigin();
 
-		writeFileSync(path, content.replace(/^(# Changelog\n\n)/, "$1## [Unreleased]\n\n"));
-	}
+const version = bumpVersion(readReleaseVersion(), bump);
+const tag = `v${version}`;
+ensureTagIsFree(tag);
+const branch = `release/${tag}`;
+ensureBranchIsFree(branch);
+const changelogs = readUnreleasedChangelogs();
+
+run("git", ["switch", "-c", branch]);
+run("npm", ["run", `version:${bump}`]);
+const bumped = readReleaseVersion();
+if (bumped !== version) {
+	abort(`npm run version:${bump} produced ${bumped}, expected ${version}.`);
 }
-
-ensureCleanGitTree();
-ensureReleaseBranch();
-if (publish) {
-	ensureNpmAuth();
-}
-run(`npm run version:${bump}`);
-
-const version = readVersion();
-moveUnreleasedToVersion(version);
-runArgs("node", [
+startNewVersionSection(changelogs, version);
+run("node", [
 	"scripts/progress-log.mjs",
 	"append",
 	"--trigger",
@@ -168,29 +111,14 @@ runArgs("node", [
 	version,
 ]);
 
-run("npm run build");
-run("npm run check");
-run("npm test");
-run("npm run agent:check");
-run("npm run fallow:audit");
-
-run("git add .");
-run(`git commit -m "Release v${version}"`);
-run(`git tag v${version}`);
-
-if (publish) {
-	for (const packageName of publishablePackages()) {
-		runArgs("npm", ["publish", "-w", packageName, "--access", "public"]);
-	}
-} else {
-	console.log("Skipping npm publish by default for starter releases. Pass --publish to publish packages.");
+for (const script of ["build", "check", "test", "agent:check", "fallow:audit"]) {
+	run("npm", ["run", script]);
 }
 
-addUnreleasedSection();
-run("git add .");
-run('git commit -m "Add [Unreleased] section for next cycle"');
-if (push) {
-	run(`git push --atomic origin HEAD:refs/heads/main refs/tags/v${version}`);
-} else {
-	console.log("Skipping git push by default for starter releases. Pass --push to push main and the release tag.");
-}
+run("git", ["add", "--update"]);
+run("git", ["commit", "--signoff", "-m", `chore(release): ${tag}`]);
+
+console.log(`\nPrepared ${tag} on ${branch}. Push it through the gate:\n\n  git push no-mistakes ${branch}\n`);
+console.log(
+	"After the pull request merges, update main and run `npm run release:tag` (add `-- --publish` to publish).",
+);

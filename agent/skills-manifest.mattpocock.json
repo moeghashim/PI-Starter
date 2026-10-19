@@ -1,20 +1,34 @@
 {
   "sourceRepo": "https://github.com/mattpocock/skills",
-  "pinnedCommit": "60aa99c0230fbac087514ba5fca2ae6e519965fe",
+  "pinnedCommit": "49dd158d1076134a641b33efb035946536778336",
   "files": [
     {
       "type": "directory",
-      "upstreamPath": "improve-codebase-architecture",
-      "localPath": "agent/skills/mattpocock/improve-codebase-architecture",
+      "upstreamPath": "skills/engineering/improve-codebase-architecture",
+      "localPath": ".agents/skills/improve-codebase-architecture",
       "strategy": "reference",
-      "sha256": "2338ffeb3323953f6bdeebdec78ffaca0a420f9efc7aecd184e30dc14e0f19b6"
+      "sha256": "1fce4961730cb6471c5c176ef9d05d16f686a4e441e61a9a1c13d25d355d75ee"
     },
     {
       "type": "directory",
-      "upstreamPath": "domain-model",
-      "localPath": "agent/skills/mattpocock/domain-model",
+      "upstreamPath": "skills/engineering/codebase-design",
+      "localPath": ".agents/skills/codebase-design",
       "strategy": "reference",
-      "sha256": "622222c626ec3b8a97d5a3f522c9f18a267eacd7ca6aa4ad3b796db7b7ca8ab5"
+      "sha256": "6c63f4676c906946e558b2324fab85a6c1c10a44bde6fdabc3340b178522ce0e"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/engineering/domain-modeling",
+      "localPath": ".agents/skills/domain-modeling",
+      "strategy": "reference",
+      "sha256": "ad5932471853487efb0e0ced3ddc68628621da4341625eb29d8f5050291ff596"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/productivity/grilling",
+      "localPath": ".agents/skills/grilling",
+      "strategy": "reference",
+      "sha256": "19d163e452ffad7b07af48a673b44bb6e3ac2ba4b83833062c2b8f2bf99e7521"
     }
   ],
   "localOverrides": [
@@ -23,6 +37,10 @@
     "docs/architecture-decisions.md",
     "AGENTS.md",
     "README.md",
-    ".codex/prompts/**"
+    ".agents/skills/pickup/**",
+    ".agents/skills/handoff/**",
+    ".agents/skills/build-feature/**",
+    ".agents/skills/fix/**",
+    ".agents/skills/ship/**"
   ]
 }

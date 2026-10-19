@@ -1,8 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const EXPECTED_NODE_MAJOR = 22;
+// .nvmrc is the single source of truth for the supported Node major.
+const EXPECTED_NODE_MAJOR = Number(readFileSync(join(process.cwd(), ".nvmrc"), "utf8").trim().split(".")[0]);
 
 function readCommand(command, args) {
 	const result = spawnSync(command, args, { encoding: "utf8" });
@@ -93,7 +94,7 @@ export function getEnvironmentReport() {
 	for (const { label, packageName } of [
 		{ label: "Biome", packageName: (suffix) => `@biomejs/cli-${suffix}` },
 		{ label: "esbuild", packageName: (suffix) => `@esbuild/${suffix}` },
-		{ label: "TypeScript native preview", packageName: (suffix) => `@typescript/native-preview-${suffix}` },
+		{ label: "TypeScript", packageName: (suffix) => `@typescript/typescript-${suffix}` },
 	]) {
 		const result = collectNativePackageIssue(label, packageName);
 		if (result.issue) {
@@ -133,7 +134,7 @@ export function printEnvironmentReport({ issues, warnings, nodeVersion, npmVersi
 			console.error(`- ${issue}`);
 		}
 		console.error(
-			"\nSuggested fix: use Node 22 on this machine, then run npm install or npm run reinstall:clean so native dependencies match the current OS and CPU architecture.",
+			`\nSuggested fix: use Node ${EXPECTED_NODE_MAJOR} on this machine, then run npm install or npm run reinstall:clean so native dependencies match the current OS and CPU architecture.`,
 		);
 	}
 }

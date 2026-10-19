@@ -1,20 +1,13 @@
 {
   "sourceRepo": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
-  "pinnedCommit": "913308263bdc8042af74924b68dc39a374ad071d",
+  "pinnedCommit": "ff5204aaf572725557b4bb2f3f542fa3ead5f6a5",
   "files": [
     {
       "type": "directory",
       "upstreamPath": "skills/memory-leak-debugging",
-      "localPath": "agent/skills/chromedevtools/memory-leak-debugging",
+      "localPath": ".agents/skills/memory-leak-debugging",
       "strategy": "reference",
-      "rewrites": [
-        {
-          "path": "SKILL.md",
-          "search": "node skills/memory-leak-debugging/references/compare_snapshots.js <baseline.heapsnapshot> <target.heapsnapshot>",
-          "replace": "node agent/skills/chromedevtools/memory-leak-debugging/references/compare_snapshots.js <baseline.heapsnapshot> <target.heapsnapshot>"
-        }
-      ],
-      "sha256": "79aec4fb77368eb67fc65ff673e4faee85c6c621939cdccc848054246a5f4602"
+      "sha256": "7cb0bdb6387169f6f44f0547edb1c42338b9d7289a116c36a15f2273b852505a"
     }
   ],
   "localOverrides": [

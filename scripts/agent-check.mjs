@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync, execSync } from "node:child_process";
-import { existsSync, lstatSync, readFileSync, readlinkSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 
 const MANIFEST_PATHS = [
 	"agent/manifest.json",
@@ -24,12 +24,15 @@ const REQUIRED_PATHS = [
 	"docs/deploying-to-vercel.md",
 	"docs/deploying-to-cloudflare.md",
 	"progress.md",
-	".codex/prompts/pickup.md",
-	".codex/prompts/handoff.md",
-	".codex/prompts/build-feature.md",
-	".codex/prompts/fix.md",
-	".codex/prompts/ship.md",
+	".agents/skills/pickup/SKILL.md",
+	".agents/skills/handoff/SKILL.md",
+	".agents/skills/build-feature/SKILL.md",
+	".agents/skills/fix/SKILL.md",
+	".agents/skills/ship/SKILL.md",
 ];
+
+const SKILLS_DIR = ".agents/skills";
+const SKILL_LINKS = { ".claude/skills": "../.agents/skills" };
 
 const REQUIRED_AGENTS_SNIPPETS = [
 	"## Agent Workflow",
@@ -38,11 +41,8 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"docs/commands.md",
 	"npm run docs:list",
 	"npm run agent:check",
+	"npm run agent:verify-upstream",
 	"npm run fallow:audit",
-	"npm run skills:verify-sync",
-	"npm run skills:addy:verify-sync",
-	"npm run skills:matt:verify-sync",
-	"npm run skills:chrome:verify-sync",
 	"git push no-mistakes",
 	"useMountEffect",
 	"CLAUDE.md",
@@ -83,6 +83,31 @@ for (const snippet of REQUIRED_AGENTS_SNIPPETS) {
 	}
 }
 
+for (const [linkPath, expectedTarget] of Object.entries(SKILL_LINKS)) {
+	if (!lstatSync(linkPath, { throwIfNoEntry: false })?.isSymbolicLink()) {
+		fail(`${linkPath} must be a symlink to ${expectedTarget}`);
+	}
+	if (readlinkSync(linkPath) !== expectedTarget) {
+		fail(`${linkPath} must point to ${expectedTarget}, found: ${readlinkSync(linkPath)}`);
+	}
+}
+
+for (const entry of readdirSync(SKILLS_DIR, { withFileTypes: true })) {
+	if (entry.name.startsWith(".")) {
+		continue;
+	}
+	const skillFile = `${SKILLS_DIR}/${entry.name}/SKILL.md`;
+	if (!entry.isDirectory() || !existsSync(skillFile)) {
+		fail(`${SKILLS_DIR}/${entry.name} must be a directory containing SKILL.md`);
+	}
+	const frontMatter = readFileSync(skillFile, "utf8").match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
+	for (const field of ["name", "description"]) {
+		if (!new RegExp(`^${field}:\\s*\\S`, "m").test(frontMatter)) {
+			fail(`${skillFile} front matter is missing ${field}`);
+		}
+	}
+}
+
 if (!existsSync("package.json")) {
 	fail("package.json is missing");
 }
@@ -90,16 +115,8 @@ if (!existsSync("package.json")) {
 const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 const requiredScripts = [
 	"docs:list",
-	"agent:verify-sync",
-	"agent:sync",
-	"skills:verify-sync",
 	"skills:sync",
-	"skills:addy:verify-sync",
-	"skills:addy:sync",
-	"skills:matt:verify-sync",
-	"skills:matt:sync",
-	"skills:chrome:verify-sync",
-	"skills:chrome:sync",
+	"skills:verify",
 	"agent:check",
 	"agent:verify-upstream",
 	"fallow:audit",
@@ -114,11 +131,7 @@ for (const scriptName of requiredScripts) {
 
 execSync("npm run docs:list", { stdio: "inherit" });
 
-// Offline integrity only. Upstream provenance runs separately through `npm run agent:verify-upstream`.
-for (const manifestPath of MANIFEST_PATHS) {
-	execFileSync(process.execPath, ["scripts/agent-sync.mjs", "verify-local", "--manifest", manifestPath], {
-		stdio: "inherit",
-	});
-}
+// Offline integrity for every manifest. Upstream provenance runs separately through `npm run agent:verify-upstream`.
+execFileSync(process.execPath, ["scripts/agent-sync.mjs", "verify-local"], { stdio: "inherit" });
 
 console.log("agent-check: passed.");

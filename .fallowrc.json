@@ -5,7 +5,7 @@
 		"scripts/progress-append-only-check.mjs",
 		"scripts/progress-log.mjs"
 	],
-	"ignorePatterns": ["agent/skills/**", "agent/upstream/**"],
+	"ignorePatterns": [".agents/skills/**", "agent/upstream/**"],
 	"health": {
 		"ignore": ["scripts/agent-sync.mjs"]
 	},

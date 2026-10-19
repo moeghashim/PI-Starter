@@ -76,7 +76,7 @@ Cloudflare deploys are packaging steps. Workers Builds automatically sets `WORKE
 
 Next.js does not run repository linting during `next build`. Keep formatting, linting, types, tests, agent checks, and Fallow auditing in the repository validation flow.
 
-CI builds the OpenNext Worker on Ubuntu with `npm run build:cloudflare`; this does not deploy or require Cloudflare credentials. Protect `main` by requiring `Required checks`, `Fallow audit`, and `Cloudflare build` before merge. The packaging check does not replace local Workers-runtime preview when changing runtime behavior.
+CI builds the OpenNext Worker on Ubuntu with `npm run build:cloudflare`; this does not deploy or require Cloudflare credentials. Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`. The packaging check does not replace local Workers-runtime preview when changing runtime behavior.
 
 ## Environment Variables And Bindings
 
@@ -92,15 +92,12 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 
 ## Solo Shipping Flow
 
-1. Run `npm run check`
-2. Run `npm test`
-3. Run `npm run fallow:audit`
-4. Run `npm run agent:check`
-5. Push the committed feature branch with `git push no-mistakes`
-6. Wait for `Required checks`, `Fallow audit`, and `Cloudflare build`, then merge to `main`
-7. Run any required database deployment
-8. Let Workers Builds run `npm run deploy:cloudflare`, or deploy manually
-9. Verify the deployed app and database are compatible
+1. Run the validation steps in `docs/agent-workflow.md`
+2. Push the committed feature branch with `git push no-mistakes`
+3. Wait for `Required checks` and `DCO` to pass, then merge to `main`
+4. Run any required database deployment
+5. Let Workers Builds run `npm run deploy:cloudflare`, or deploy manually
+6. Verify the deployed app and database are compatible
 
 ## References
 

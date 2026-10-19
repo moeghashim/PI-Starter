@@ -41,22 +41,19 @@
 - At task start, review recent entries in `progress.md` to understand prior learnings.
 - Treat `progress.md` as part of the starter contract for forks; keep it tracked, preserve the append-only history, and continue the log in derived repos.
 - Keep `CLAUDE.md` as a tracked symlink to `AGENTS.md`; `AGENTS.md` remains the canonical source of agent instructions.
+- Skills live in `.agents/skills/<name>/SKILL.md`; keep `.claude/skills` as a tracked symlink to `../.agents/skills`. Vendored skill directories are owned by their manifest: change them through the sync commands, never by hand.
 - Run `npm run docs:list` whenever docs are added or updated.
-- Run `npm run skills:verify-sync` after changing vendored Vercel skills or their pinned manifest.
-- Run `npm run skills:addy:verify-sync` after changing vendored Addy Osmani skills or their pinned manifest.
-- Run `npm run skills:matt:verify-sync` after changing vendored Matt Pocock skills or their pinned manifest.
-- Run `npm run skills:chrome:verify-sync` after changing vendored Chrome DevTools skills or their pinned manifest.
 - Run `npm run agent:check` before handoff to validate docs front matter, AGENTS structure, and vendored file integrity. It runs offline by hashing vendored files against their manifests.
-- Run `npm run agent:verify-upstream` after editing any skill manifest to confirm the pinned hashes still match upstream. CI runs it on every push.
+- After editing a skill manifest, run `npm run skills:sync` and then `npm run agent:verify-upstream` to confirm the pinned hashes match upstream. CI runs the upstream check on every push.
 - Use `npm run commit:selective -- "type(scope): summary" "path/one" "path/two"` for path-scoped commits.
 - For agent-requested commits, use `npm run commit:with-progress -- "type(scope): summary" --learning "what was learned" -- "path/one" "path/two"` so `progress.md` is appended in the same commit.
-- The `memory-leak-debugging` skill requires the `chrome-devtools` MCP server configured in `.mcp.json` for heap-snapshot capture, and `memlab` via `npx memlab` for analysis. Without the MCP server, only the memlab and fallback-script analysis steps are usable. Never read raw `.heapsnapshot` files directly.
+- The `memory-leak-debugging` skill requires the `chrome-devtools` MCP server from `.mcp.json`, started with `--memoryDebugging`, for both heap-snapshot capture and analysis. Never read raw `.heapsnapshot` files directly.
 
 ## Git
 - Never commit unless explicitly requested.
 - Push branches through `git push no-mistakes`, never directly to `origin`. The gate runs review, test, docs, and lint in a disposable worktree, forwards the branch only when everything passes, and opens the PR. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate already-committed work. Safe mechanical fixes are auto-applied; intent-level findings are escalated for human approval.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
-- Every commit must carry a `Signed-off-by:` trailer matching the author because the DCO check blocks unsigned PRs. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
+- Every commit must carry a `Signed-off-by:` trailer matching the author for the DCO check; keep `DCO` required in branch protection so unsigned PRs cannot merge. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.
 - `progress.md` is append-only: only add new entries at the end; never edit prior entries.
 - For substantial agent-generated changes, add a `Repro-Prompt:` trailer in the commit message body.

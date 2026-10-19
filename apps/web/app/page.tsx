@@ -14,8 +14,8 @@ const appCards = [
 	{
 		title: "Work with agents",
 		description:
-			"Keep progress logging for solo task memory, use /build-feature for vertical slices, and /ship for final validation.",
-		accent: "No PR ceremony",
+			"Repo skills load natively in Codex and Claude Code. Every push goes through a validation gate before it opens a pull request.",
+		accent: "Gated pushes",
 	},
 ];
 
@@ -31,7 +31,7 @@ export default function HomePage() {
 				</h1>
 				<p className="hero-copy">
 					PI-Starter includes a deployable Next.js app, a shared package workspace, and agent guidance designed for
-					one maintainer shipping directly from main.
+					one maintainer shipping through validated pull requests.
 				</p>
 				<div className="hero-actions">
 					<a className="primary-action" href="https://vercel.com/new">

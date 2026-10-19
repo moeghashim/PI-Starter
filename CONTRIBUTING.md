@@ -16,17 +16,17 @@
 - `progress.md` is append-only; only add new entries at the end.
 - Forks should keep `progress.md` tracked and continue appending learnings so the repo retains local project memory after forking.
 - For agent-requested commits, use `npm run commit:with-progress -- "<message>" --learning "<learning>" -- "<path>" ...`.
-- For release commands, pass `--learning`, for example: `npm run release:patch -- --learning "What we learned from this release."`.
-- Release scripts skip `npm publish` by default in this starter; add `--publish` only when you intentionally want to publish packages.
+- Prepare releases with `npm run release:patch -- --learning "What we learned from this release."`, push the `release/vX.Y.Z` branch through the gate, and after it merges run `npm run release:tag` from any clean checkout.
+- `release:tag` skips `npm publish` by default; add `-- --publish` only when you intentionally want to publish packages.
 - In `apps/web`, do not import `useEffect` directly; use render-time derivation, event handlers, framework data loading, or `useMountEffect`.
 - Keep commit messages as clear summaries (do not use prompt-only commit subjects).
 - Push feature branches with `git push no-mistakes`; do not push directly to `origin`. The gate validates the branch and opens the pull request.
-- Start the gate daemon with Node 22 and npm on its `PATH`, using your preferred version manager or a standalone installation. The commands do not source nvm or a shell profile; `npm run check` still rejects an unsupported Node version.
+- Start the gate daemon with the Node major from `.nvmrc` and npm on its `PATH`, using your preferred version manager or a standalone installation. The commands do not source nvm or a shell profile; `npm run check` still rejects an unsupported Node version.
 - The pre-commit hook validates the working tree without re-staging files. For partial commits, review `git diff --cached` as well: unstaged changes can affect validation even though they are excluded from the commit.
-- Releases require clean `main` matching the fetched `origin/main`. Version bumps preserve locked dependencies. Release validation runs on the bumped tree before commits and tags are created.
+- Release preparation requires clean `main` matching the fetched `origin/main`. Version bumps preserve locked dependencies, and validation runs on the bumped tree before the release commit is created.
 - After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`; `npm test` fails when the committed file drifts.
 - For substantial agent-generated changes, include a `Repro-Prompt:` commit trailer.
-- Vendored Vercel skills are pinned through `agent/skills-manifest.json`; use `npm run skills:sync` and `npm run skills:verify-sync` when updating them.
+- Skills live in `.agents/skills/`; `.claude/skills` is a symlink to it. Vendored packs are pinned through the `agent/skills-manifest*.json` files; use `npm run skills:sync` and `npm run agent:verify-upstream` when updating them, and never hand-edit a vendored skill directory.
 
 ## Dependency Overrides
 The root `package.json` `overrides` block pins transitive dependencies for security reasons. Keep each entry only while the reason still applies, and re-check with `npm audit` when upgrading the parent package.
