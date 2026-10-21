@@ -124,7 +124,7 @@ const requiredScripts = [
 	"commit:with-progress",
 ];
 for (const scriptName of requiredScripts) {
-	if (!packageJson.scripts || !packageJson.scripts[scriptName]) {
+	if (!packageJson.scripts?.[scriptName]) {
 		fail(`package.json missing required script: ${scriptName}`);
 	}
 }
