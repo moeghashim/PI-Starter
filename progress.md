@@ -514,3 +514,17 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Actor: Moe Ghashim <mohanadgh@gmail.com>
 - Changed Paths:
   - AGENTS.md
+## 2026-10-21T15:49:08.847Z
+- Trigger: commit
+- Learning: The Fallow GitHub Action installs the fallow CLI version pinned in package.json, so bumping the action alone fails binary verification; update the action and the devDependency in one change.
+- Context: chore(deps): update Fallow, Biome, React, Next, and Wrangler Combine Dependabot #10 and #13. The Fallow 3.33.1 action installs the CLI version pinned in package.json and verifies a binary only newer CLIs ship, so the action and the fallow devDependency must move together. Migrate biome.json to the Biome 2.5 schema and preset key, use optional chaining in agent-check, and scope a biome-ignore for the new useExhaustiveDependencies rule on the intentionally mount-only useMountEffect helper. Repro-Prompt: Fix the failing checks on Dependabot PR 10 by combining it with the npm update group and fixing the Biome 2.5 findings. Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+- Branch: chore/deps-fallow-biome
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - apps/web/lib/use-mount-effect.ts
+  - apps/web/package.json
+  - biome.json
+  - package-lock.json
+  - package.json
+  - scripts/agent-check.mjs
