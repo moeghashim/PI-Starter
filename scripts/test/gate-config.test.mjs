@@ -29,7 +29,7 @@ test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
 	}
 });
 
-test("stable Required checks job fails on any failed or cancelled dependency", () => {
+test("stable Required checks job requires every dependency to succeed, allowing only a skipped Fallow audit", () => {
 	const job = Object.values(workflow.jobs).find(
 		(candidate) => candidate.name === "Required checks" && !candidate.strategy,
 	);
@@ -39,14 +39,8 @@ test("stable Required checks job fails on any failed or cancelled dependency", (
 	assert.deepEqual(job.steps, [
 		{
 			name: "Require successful validation",
-			if: `\${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}`,
+			if: `\${{ needs.required-checks.result != 'success' || needs.cloudflare-build.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}`,
 			run: "exit 1",
 		},
 	]);
-	// A skipped dependency passes, so only fallow-audit may be conditional; the rest must always run.
-	for (const name of ["required-checks", "cloudflare-build"]) {
-		assert.equal(workflow.jobs[name].if, undefined, name);
-		assert.equal(workflow.jobs[name].needs, undefined, name);
-	}
-	assert.equal(workflow.jobs["fallow-audit"].if, "github.event_name == 'pull_request'");
 });

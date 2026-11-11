@@ -24,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      # Only fallow-audit can be skipped (on non-PR events); the other jobs have no condition or dependencies.
+      # Every job must succeed; only fallow-audit may also be skipped (on non-PR events).
       - name: Require successful validation
-        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        if: ${{ needs.required-checks.result != 'success' || needs.cloudflare-build.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}
         run: exit 1
 
   cloudflare-build:
