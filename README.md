@@ -52,7 +52,17 @@ Initialize the push gate once per clone before shipping branches:
 no-mistakes init
 ```
 
-When work is committed on a feature branch, push with `git push no-mistakes` instead of pushing directly to `origin`. The gate validates the branch in a disposable worktree and opens the PR after the pinned pipeline passes.
+Push committed feature branches with `git push no-mistakes`. The gate validates the branch in a disposable worktree and opens the PR after local validation.
+
+The `no-mistakes` daemon resolves its PATH at startup. Make Node 24 from `.nvmrc` available in your login shell. On macOS with zsh, check which executables a fresh login shell resolves, then restart the daemon after changing PATH.
+
+```bash
+zsh -lic 'command -v node; node -v; command -v npm'
+no-mistakes daemon restart
+no-mistakes doctor
+```
+
+Check that Node reports `v24.x` and that `npm` comes from the same installation. If a gate run reports an expired reviewer login, check the configured CLI's auth status and sign in again before retrying.
 
 ## Host The Web App
 
@@ -63,7 +73,7 @@ When work is committed on a feature branch, push with `git push no-mistakes` ins
 
 GitHub Actions runs the required `Required checks` gate and the `Cloudflare build` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
-`Required checks` is a stable aggregate status for branch protection: it requires both OS matrix checks and the Cloudflare build to succeed, plus Fallow on pull requests. The aggregate fails unless every job reports `success`, so a failed, cancelled, or skipped job blocks the merge rather than leaving a missing status; only the Fallow audit may also be skipped, on non-PR events. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
+`Required checks` is the status used by branch protection. It requires both Linux and macOS validation jobs and the Cloudflare build to succeed. The Fallow audit runs on pull requests, and the summary accepts a skipped Fallow job. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
 
 In branch protection for `main`, require `Required checks` and `DCO`. Commits must carry a `Signed-off-by` trailer, and DCO only blocks merges once it is a required check.
 
@@ -138,7 +148,7 @@ npm run release:tag
 npm run release:tag -- --publish
 ```
 
-`agent:check` and `skills:verify` work offline. `skills:sync` and `agent:verify-upstream` fetch from GitHub and cover every manifest unless you pass `--manifest`.
+`agent:check` and `skills:verify` work offline. `agent:check` validates the agent symlinks, checks that the npm scripts referenced in `AGENTS.md` exist, and verifies vendored files against the manifest hashes. `agent:verify-upstream` also checks those hashes against the pinned GitHub commits. `skills:sync` and `agent:verify-upstream` cover every manifest by default. Pass `-- --manifest <path>` to target one.
 
 Releases go through a pull request like any other change. On clean `main` matching `origin/main`, `npm run release:<patch|minor|major> -- --learning "..."` bumps versions on a `release/vX.Y.Z` branch, refuses a version whose tag already exists, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit. Push that branch with `git push no-mistakes`. After the pull request merges, run `npm run release:tag` from any clean checkout: it fetches `origin/main`, tags the merged `chore(release)` commit found there, and pushes only the tag. Rerunning it is safe. Add `-- --publish` to publish packages; that requires the checkout to be at the release commit. Nothing pushes `main` directly, so releases pass the same CI and DCO checks as every other change.
 
