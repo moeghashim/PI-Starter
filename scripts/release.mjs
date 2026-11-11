@@ -3,7 +3,6 @@
 // Prepares a release as a pull request: bumps versions on a release branch, validates, and commits.
 // After the pull request merges, `npm run release:tag` tags main and optionally publishes.
 
-import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
 import {
@@ -14,6 +13,7 @@ import {
 	refExists,
 	run,
 	tagExistsLocally,
+	tagExistsOnOrigin,
 } from "./release-lib.mjs";
 
 const VALID_BUMPS = new Set(["patch", "minor", "major"]);
@@ -37,8 +37,7 @@ function parseArgs(argv) {
 }
 
 function ensureTagIsFree(tag) {
-	const remote = spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`]);
-	if (remote.status === 0 || tagExistsLocally(tag)) {
+	if (tagExistsOnOrigin(tag) || tagExistsLocally(tag)) {
 		abort(`tag ${tag} already exists. Choose a different bump or remove the stale tag first.`);
 	}
 }

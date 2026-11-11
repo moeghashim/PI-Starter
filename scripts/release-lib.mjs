@@ -61,6 +61,10 @@ export function tagExistsLocally(tag) {
 	return refExists(`refs/tags/${tag}`);
 }
 
+export function tagExistsOnOrigin(tag) {
+	return spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`]).status === 0;
+}
+
 export function ensureCleanTree() {
 	if (git("status", "--porcelain") !== "") {
 		abort("uncommitted changes detected.");

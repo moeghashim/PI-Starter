@@ -313,86 +313,33 @@ async function sync(manifest, manifestPath) {
 	console.log(`agent-sync: manifest updated at ${manifest.pinnedCommit}.`);
 }
 
+// Provenance: each manifest hash must match the pinned upstream commit. Together with the local check,
+// this proves the vendored files match upstream without comparing them file by file.
 async function verify(manifest, manifestPath) {
 	const mismatches = [];
 	const treeCache = new Map();
+	const source = { sourceRepo: manifest.sourceRepo, pinnedCommit: manifest.pinnedCommit };
 
 	for (const entry of manifest.entries) {
-		if ((entry.type ?? "file") === DIRECTORY_ENTRY_TYPE) {
-			const upstreamFiles = applyDirectoryRewrites(
-				entry,
-				await fetchDirectorySnapshot(
-					{
-						sourceRepo: manifest.sourceRepo,
-						pinnedCommit: manifest.pinnedCommit,
-						upstreamPath: entry.upstreamPath,
-					},
-					treeCache,
-				),
-			);
-			const upstreamHash = computeDirectoryHash(upstreamFiles);
-			if (entry.sha256 !== upstreamHash) {
-				mismatches.push(`${entry.localPath}: manifest hash is stale for ${entry.upstreamPath}`);
-			}
-
-			const localRoot = resolveRepoPath(entry.localPath, `Manifest localPath for ${entry.upstreamPath}`);
-			if (!existsSync(localRoot)) {
-				mismatches.push(`${entry.localPath}: directory missing`);
-				continue;
-			}
-
-			const expectedRelativePaths = new Set(upstreamFiles.map((file) => file.relativePath));
-			for (const upstreamFile of upstreamFiles) {
-				const localPath = join(localRoot, upstreamFile.relativePath);
-				if (!existsSync(localPath)) {
-					mismatches.push(`${entry.localPath}: missing ${upstreamFile.relativePath}`);
-					continue;
-				}
-				const localHash = sha256(readFileSync(localPath));
-				const fileHash = sha256(upstreamFile.content);
-				if (localHash !== fileHash) {
-					mismatches.push(`${entry.localPath}: drifted at ${upstreamFile.relativePath}`);
-				}
-			}
-
-			for (const existingFile of listLocalFiles(localRoot)) {
-				const relativePath = relative(localRoot, existingFile);
-				if (!expectedRelativePaths.has(relativePath)) {
-					mismatches.push(`${entry.localPath}: extra local file ${relativePath}`);
-				}
-			}
-			continue;
-		}
-
-		const localPath = resolveRepoPath(entry.localPath, `Manifest localPath for ${entry.upstreamPath}`);
-		if (!existsSync(localPath)) {
-			mismatches.push(`${entry.localPath}: file missing`);
-			continue;
-		}
-
-		const upstreamContent = applyRewrites(
-			entry,
-			entry.upstreamPath,
-			await fetchUpstream({
-				sourceRepo: manifest.sourceRepo,
-				pinnedCommit: manifest.pinnedCommit,
-				upstreamPath: entry.upstreamPath,
-			}),
-		);
-		const upstreamHash = sha256(upstreamContent);
-		const localHash = sha256(readFileSync(localPath));
-
+		const upstreamHash =
+			(entry.type ?? "file") === DIRECTORY_ENTRY_TYPE
+				? computeDirectoryHash(
+						applyDirectoryRewrites(
+							entry,
+							await fetchDirectorySnapshot({ ...source, upstreamPath: entry.upstreamPath }, treeCache),
+						),
+					)
+				: sha256(
+						applyRewrites(
+							entry,
+							entry.upstreamPath,
+							await fetchUpstream({ ...source, upstreamPath: entry.upstreamPath }),
+						),
+					);
 		if (entry.sha256 !== upstreamHash) {
 			mismatches.push(`${entry.localPath}: manifest hash is stale for ${entry.upstreamPath}`);
 		}
-
-		if (entry.strategy === "verbatim" && localHash !== upstreamHash) {
-			mismatches.push(`${entry.localPath}: drifted from upstream ${entry.upstreamPath}`);
-		}
-
-		if (entry.strategy === "reference" && localHash !== upstreamHash) {
-			mismatches.push(`${entry.localPath}: reference snapshot drifted from upstream ${entry.upstreamPath}`);
-		}
+		mismatches.push(...localMismatches(entry));
 	}
 
 	return report("verify", manifestPath, mismatches, "matches its pinned upstream commit");
@@ -417,28 +364,21 @@ function readLocalDirectorySnapshot(localRoot) {
 		.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 }
 
-// Offline integrity check: vendored files on disk must hash to the pinned manifest values.
-// Provenance (manifest hashes matching the pinned upstream commit) is checked by `verify`.
-function verifyLocal(manifest, manifestPath) {
-	const mismatches = [];
-
-	for (const entry of manifest.entries) {
-		const localPath = resolveRepoPath(entry.localPath, `Manifest localPath for ${entry.upstreamPath}`);
-		const isDirectory = (entry.type ?? "file") === DIRECTORY_ENTRY_TYPE;
-		if (!existsSync(localPath)) {
-			mismatches.push(`${entry.localPath}: ${isDirectory ? "directory" : "file"} missing`);
-			continue;
-		}
-
-		const localHash = isDirectory
-			? computeDirectoryHash(readLocalDirectorySnapshot(localPath))
-			: sha256(readFileSync(localPath));
-		if (localHash !== entry.sha256) {
-			mismatches.push(`${entry.localPath}: local content does not match the manifest sha256`);
-		}
+function localMismatches(entry) {
+	const localPath = resolveRepoPath(entry.localPath, `Manifest localPath for ${entry.upstreamPath}`);
+	const isDirectory = (entry.type ?? "file") === DIRECTORY_ENTRY_TYPE;
+	if (!existsSync(localPath)) {
+		return [`${entry.localPath}: ${isDirectory ? "directory" : "file"} missing`];
 	}
+	const localHash = isDirectory
+		? computeDirectoryHash(readLocalDirectorySnapshot(localPath))
+		: sha256(readFileSync(localPath));
+	return localHash === entry.sha256 ? [] : [`${entry.localPath}: local content does not match the manifest sha256`];
+}
 
-	return report("verify-local", manifestPath, mismatches, "matches vendored files");
+// Offline integrity check: vendored files on disk must hash to the pinned manifest values.
+function verifyLocal(manifest, manifestPath) {
+	return report("verify-local", manifestPath, manifest.entries.flatMap(localMismatches), "matches vendored files");
 }
 
 function defaultManifestPaths() {

@@ -63,7 +63,7 @@ When work is committed on a feature branch, push with `git push no-mistakes` ins
 
 GitHub Actions runs the required `Required checks` gate and the `Cloudflare build` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
-`Required checks` is a stable aggregate status for branch protection: it requires both OS matrix checks and the Cloudflare build to succeed, plus Fallow on pull requests. Failures, cancellations, or unexpected skips fail the aggregate rather than leaving a missing status. The Cloudflare job runs the only full Next.js production build; the matrix jobs build the packages and generate Next.js route types for type checking.
+`Required checks` is a stable aggregate status for branch protection: it requires both OS matrix checks and the Cloudflare build to succeed, plus Fallow on pull requests. Any failed or cancelled job fails the aggregate rather than leaving a missing status; only the Fallow audit may be skipped, on non-PR events. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
 
 In branch protection for `main`, require `Required checks` and `DCO`. Commits must carry a `Signed-off-by` trailer, and DCO only blocks merges once it is a required check.
 

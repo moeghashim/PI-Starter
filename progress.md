@@ -528,3 +528,21 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - package-lock.json
   - package.json
   - scripts/agent-check.mjs
+## 2026-11-11T18:51:58.450Z
+- Trigger: commit
+- Learning: node:test in-file concurrency does not overlap tests that block on synchronous child processes; split slow suites into separate files so the runner parallelizes them across processes.
+- Context: refactor(tooling): simplify repo automation, tests, and CI Share one temp-repo helper across the script tests and split the release tests into separate files so node runs them in parallel (about 16s to 9s). Share the remote tag check between release scripts. In agent-check, check both symlinks in one loop and verify every npm run command named in AGENTS.md instead of a hand-kept script list. Make the upstream verify compare manifest hashes and reuse the offline check. Replace the CI summary job's inline script with one condition, let the web check generate Next.js types itself, collapse the version and Cloudflare script tails, and target the Biome 2.6 schema. Repro-Prompt: Run /simplify on the setup work: remove redundant work and code that is not useful, keeping behavior unchanged. Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+- Branch: chore/simplify
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - README.md
+  - apps/web/package.json
+  - biome.json
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/agent-sync.mjs
+  - scripts/release-lib.mjs
+  - scripts/release-tag.mjs
+  - scripts/release.mjs
+  - scripts/test
