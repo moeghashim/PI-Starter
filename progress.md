@@ -546,3 +546,11 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - scripts/release-tag.mjs
   - scripts/release.mjs
   - scripts/test
+## 2026-11-11T19:53:54.405Z
+- Trigger: commit
+- Learning: The no-mistakes daemon resolves its own PATH at startup, so verify the login shell selects the Node major in .nvmrc and restart the daemon after correcting it.
+- Context: docs(readme): clarify validation and gate runtime setup
+- Branch: codex/readme-gate-runtime
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - README.md
