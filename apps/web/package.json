@@ -8,10 +8,10 @@
 		"build": "next build",
 		"cf:build": "opennextjs-cloudflare build",
 		"start": "next start",
-		"cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-		"cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+		"cf:preview": "npm run cf:build && opennextjs-cloudflare preview",
+		"cf:deploy": "npm run cf:build && opennextjs-cloudflare deploy",
 		"cf:typegen": "node scripts/cloudflare-typegen.mjs",
-		"check": "tsc -p tsconfig.json --noEmit"
+		"check": "next typegen && tsc -p tsconfig.json --noEmit"
 	},
 	"dependencies": {
 		"@opennextjs/cloudflare": "1.20.16",

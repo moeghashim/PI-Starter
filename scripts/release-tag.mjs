@@ -15,6 +15,7 @@ import {
 	readReleaseVersionAt,
 	run,
 	tagExistsLocally,
+	tagExistsOnOrigin,
 } from "./release-lib.mjs";
 
 const RELEASE_SUBJECT_GREP = "^chore\\(release\\): v[0-9]+\\.[0-9]+\\.[0-9]+( \\(#[0-9]+\\))?$";
@@ -68,8 +69,7 @@ if (tagExistsLocally(tag)) {
 	console.log(`Tagged ${releaseCommit} as ${tag}.`);
 }
 
-const remoteTag = spawnSync("git", ["ls-remote", "--exit-code", "--tags", "origin", `refs/tags/${tag}`]);
-if (remoteTag.status === 0) {
+if (tagExistsOnOrigin(tag)) {
 	console.log(`origin already has ${tag}.`);
 } else {
 	run("git", ["push", "origin", `refs/tags/${tag}`]);

@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL("../../", import.meta.url));
+import { root, tempDir } from "./helpers.mjs";
+
 const webRoot = join(root, "apps/web");
 const typegenScript = join(webRoot, "scripts/cloudflare-typegen.mjs");
 const FIXTURE_TMP_DIRECTORY = "tmp";
@@ -27,14 +26,8 @@ function generate(directory, outputName, extraEnv = {}) {
 	return readFileSync(outputPath, "utf8");
 }
 
-function createFixtureDirectory(t) {
-	const directory = mkdtempSync(join(tmpdir(), "pi-cloudflare-typegen-"));
-	t.after(() => rmSync(directory, { recursive: true, force: true }));
-	return directory;
-}
-
 test("cloudflare typegen output is identical with and without OpenNext build output", (t) => {
-	const directory = createFixtureDirectory(t);
+	const directory = tempDir(t, "pi-cloudflare-typegen-");
 	copyFileSync(join(webRoot, "wrangler.jsonc"), join(directory, "wrangler.jsonc"));
 
 	const withoutBuildOutput = generate(directory, "without-build.d.ts");
@@ -63,7 +56,7 @@ test("cloudflare typegen output is identical with and without OpenNext build out
 });
 
 test("cloudflare typegen ignores local secret files and process environment", (t) => {
-	const directory = createFixtureDirectory(t);
+	const directory = tempDir(t, "pi-cloudflare-typegen-");
 	copyFileSync(join(webRoot, "wrangler.jsonc"), join(directory, "wrangler.jsonc"));
 	const baseline = generate(directory, "baseline.d.ts");
 
@@ -91,7 +84,7 @@ test("cloudflare typegen ignores local secret files and process environment", (t
 });
 
 test("cloudflare typegen keeps bindings and vars declared in wrangler config", (t) => {
-	const directory = createFixtureDirectory(t);
+	const directory = tempDir(t, "pi-cloudflare-typegen-");
 	writeFileSync(
 		join(directory, "wrangler.jsonc"),
 		JSON.stringify({

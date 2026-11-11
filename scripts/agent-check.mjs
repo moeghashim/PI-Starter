@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 
 const MANIFEST_PATHS = [
@@ -12,6 +12,8 @@ const MANIFEST_PATHS = [
 ];
 
 const REQUIRED_PATHS = [
+	"AGENTS.md",
+	"package.json",
 	...MANIFEST_PATHS,
 	".fallowrc.json",
 	".mcp.json",
@@ -32,7 +34,7 @@ const REQUIRED_PATHS = [
 ];
 
 const SKILLS_DIR = ".agents/skills";
-const SKILL_LINKS = { ".claude/skills": "../.agents/skills" };
+const REQUIRED_SYMLINKS = { "CLAUDE.md": "AGENTS.md", ".claude/skills": "../.agents/skills" };
 
 const REQUIRED_AGENTS_SNIPPETS = [
 	"## Agent Workflow",
@@ -59,23 +61,6 @@ for (const targetPath of REQUIRED_PATHS) {
 	}
 }
 
-if (!existsSync("AGENTS.md")) {
-	fail("AGENTS.md is missing");
-}
-
-if (!existsSync("CLAUDE.md")) {
-	fail("CLAUDE.md compatibility symlink is missing");
-}
-
-if (!lstatSync("CLAUDE.md").isSymbolicLink()) {
-	fail("CLAUDE.md must be a symlink to AGENTS.md");
-}
-
-const claudeTarget = readlinkSync("CLAUDE.md");
-if (claudeTarget !== "AGENTS.md") {
-	fail(`CLAUDE.md must point to AGENTS.md, found: ${claudeTarget}`);
-}
-
 const agents = readFileSync("AGENTS.md", "utf8");
 for (const snippet of REQUIRED_AGENTS_SNIPPETS) {
 	if (!agents.includes(snippet)) {
@@ -83,12 +68,13 @@ for (const snippet of REQUIRED_AGENTS_SNIPPETS) {
 	}
 }
 
-for (const [linkPath, expectedTarget] of Object.entries(SKILL_LINKS)) {
+for (const [linkPath, expectedTarget] of Object.entries(REQUIRED_SYMLINKS)) {
 	if (!lstatSync(linkPath, { throwIfNoEntry: false })?.isSymbolicLink()) {
 		fail(`${linkPath} must be a symlink to ${expectedTarget}`);
 	}
-	if (readlinkSync(linkPath) !== expectedTarget) {
-		fail(`${linkPath} must point to ${expectedTarget}, found: ${readlinkSync(linkPath)}`);
+	const target = readlinkSync(linkPath);
+	if (target !== expectedTarget) {
+		fail(`${linkPath} must point to ${expectedTarget}, found: ${target}`);
 	}
 }
 
@@ -108,28 +94,16 @@ for (const entry of readdirSync(SKILLS_DIR, { withFileTypes: true })) {
 	}
 }
 
-if (!existsSync("package.json")) {
-	fail("package.json is missing");
-}
-
-const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
-const requiredScripts = [
-	"docs:list",
-	"skills:sync",
-	"skills:verify",
-	"agent:check",
-	"agent:verify-upstream",
-	"fallow:audit",
-	"commit:selective",
-	"commit:with-progress",
-];
-for (const scriptName of requiredScripts) {
-	if (!packageJson.scripts?.[scriptName]) {
-		fail(`package.json missing required script: ${scriptName}`);
+// Every root `npm run <script>` that AGENTS.md tells agents to use must exist. Workspace (-w) commands and
+// placeholders such as `release:<bump>` are skipped.
+const { scripts = {} } = JSON.parse(readFileSync("package.json", "utf8"));
+for (const [, scriptName, workspace] of agents.matchAll(/npm run ([a-z][\w:-]*)( -w)?(?=[\s`"])/g)) {
+	if (!workspace && !scripts[scriptName]) {
+		fail(`AGENTS.md references missing script: npm run ${scriptName}`);
 	}
 }
 
-execSync("npm run docs:list", { stdio: "inherit" });
+execFileSync(process.execPath, ["scripts/docs-list.mjs"], { stdio: "inherit" });
 
 // Offline integrity for every manifest. Upstream provenance runs separately through `npm run agent:verify-upstream`.
 execFileSync(process.execPath, ["scripts/agent-sync.mjs", "verify-local"], { stdio: "inherit" });
