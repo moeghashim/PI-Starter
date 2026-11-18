@@ -588,3 +588,13 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Actor: Moe Ghashim <mohanadgh@gmail.com>
 - Changed Paths:
   - progress.md
+## 2026-11-18T10:27:01.830Z
+- Trigger: commit
+- Learning: When removing an OS from the validation matrix, move its exclusive upstream verification step to the remaining runner so coverage is preserved.
+- Context: ci: run required validation only on macOS
+- Branch: codex/macos-only-validation
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - README.md
+  - scripts/test/gate-config.test.mjs

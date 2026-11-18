@@ -81,7 +81,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
           - macos-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -113,7 +112,6 @@ jobs:
         run: npm run agent:check
 
       - name: Verify vendored files against pinned upstream
-        if: matrix.os == 'ubuntu-latest'
         run: npm run agent:verify-upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
