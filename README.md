@@ -75,7 +75,7 @@ Check that Node reports `v26.x` and that `npm` comes from the same installation.
 
 GitHub Actions runs the required `Required checks` gate and the `Cloudflare build` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
-`Required checks` is the status used by branch protection. It requires macOS validation and the Cloudflare build to succeed. The macOS job also verifies vendored skills against pinned upstream sources. The Fallow audit runs on pull requests, and the summary accepts a skipped Fallow job. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
+`Required checks` is the status used by branch protection. It requires validation on a GitHub-hosted `ubuntu-latest` runner and the Cloudflare build to succeed. Ubuntu is the only validation runner; the job also verifies vendored skills against pinned upstream sources. The Fallow audit runs on pull requests, and the summary accepts a skipped Fallow job. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
 
 In branch protection for `main`, require `Required checks` and `DCO`. Commits must carry a `Signed-off-by` trailer, and DCO only blocks merges once it is a required check.
 

@@ -140,7 +140,7 @@ We intentionally do not vendor every upstream skill into the default starter. Th
 Two checks protect vendored files:
 
 - Integrity: `npm run agent:check` runs `npm run skills:verify`, which checks every manifest. It hashes the files on disk and compares them to each manifest `sha256`, with no network access. Editing a vendored file without updating its manifest fails this check.
-- Provenance: `npm run agent:verify-upstream` checks every manifest against upstream. It fetches the pinned upstream commit and confirms each manifest `sha256` still matches upstream. This catches a manifest hash edited to match tampered local files. CI runs it once per push in the macOS validation job.
+- Provenance: `npm run agent:verify-upstream` checks every manifest against upstream. It fetches the pinned upstream commit and confirms each manifest `sha256` still matches upstream. This catches a manifest hash edited to match tampered local files. CI runs it once per push in the Ubuntu validation job.
 
 Treat manifest diffs as security-relevant in review, since integrity alone trusts whatever hash the manifest records.
 
