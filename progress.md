@@ -570,3 +570,21 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - .agents/skills/ship/SKILL.md
   - scripts/pr-readiness.mjs
   - scripts/test/pr-readiness.test.mjs
+## 2026-11-18T09:31:28.000Z
+- Trigger: commit
+- Learning: A 404 from the classic required-status-checks endpoint only means no requirements when GitHub says the branch is unprotected or status checks are not enabled; any other 404 is an inspection error, and branch rules must be read with pagination.
+- Context: fix(scripts): fail closed on incomplete required checks
+- Branch: codex/node26-pr-readiness
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - scripts/pr-readiness.mjs
+  - scripts/test/pr-readiness.test.mjs
+  - progress.md
+## 2026-11-18T09:37:24.000Z
+- Trigger: commit
+- Learning: Correction to the previous entry: its commit subject is "no-mistakes(review): fail closed on incomplete required checks", not the recorded context. Gate-created repair commits bypass the Husky hook, so verify each one carries a Signed-off-by trailer matching its author before publication.
+- Context: no-mistakes(review): fail closed on incomplete required checks
+- Branch: codex/node26-pr-readiness
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - progress.md

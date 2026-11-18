@@ -12,13 +12,13 @@ const THREAD_QUERY = `query($owner: String!, $name: String!, $number: Int!, $end
 	}
 }`;
 
-function github(args) {
-	const result = spawnSync("gh", args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+export function github(args, run = spawnSync) {
+	const result = run("gh", args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
 	// An unprotected branch has no classic protection requirements. Rulesets are checked separately.
 	if (
 		result.status !== 0 &&
 		args[1]?.endsWith("/protection/required_status_checks") &&
-		/HTTP 404/.test(result.stderr)
+		/\b(Branch not protected|Required status checks not enabled) \(HTTP 404\)/.test(result.stderr)
 	) {
 		return null;
 	}
@@ -31,7 +31,7 @@ function readEvidence(repo, number, pr, read) {
 	const api = (path) => read(["api", `repos/${repo}/${path}`]);
 	const base = encodeURIComponent(pr.baseRefName);
 	const classic = api(`branches/${base}/protection/required_status_checks`);
-	const rules = api(`rules/branches/${base}`);
+	const rules = read(["api", `repos/${repo}/rules/branches/${base}?per_page=100`, "--paginate", "--slurp"]).flat();
 	const required = [
 		...(classic?.checks ?? classic?.contexts?.map((context) => ({ context })) ?? []),
 		...rules

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { checkReadiness } from "../pr-readiness.mjs";
+import { checkReadiness, github } from "../pr-readiness.mjs";
 
 function fixture(overrides = {}) {
 	const pr = {
@@ -66,7 +66,7 @@ function readFixture(pr, args) {
 		];
 	const path = args[1];
 	if (path.endsWith("/protection/required_status_checks")) return { contexts: ["Required checks", "DCO"] };
-	if (path.includes("/rules/branches/")) return [];
+	if (path.includes("/rules/branches/")) return [[]];
 	return { state: "open", draft: false, head: { sha: pr.headRefOid }, base: { sha: "base" } };
 }
 
@@ -130,15 +130,65 @@ test("ruleset requirements and checks from another app remain blocking", () => {
 	const read = (args) =>
 		args[1]?.includes("/rules/branches/")
 			? [
-					{
-						type: "required_status_checks",
-						parameters: {
-							required_status_checks: [{ context: "Security", integration_id: 12 }],
+					[
+						{
+							type: "required_status_checks",
+							parameters: {
+								required_status_checks: [{ context: "Security", integration_id: 12 }],
+							},
 						},
-					},
+					],
 				]
 			: f.read(args);
 	assert.match(checkReadiness("example/repo", "1", read).blockers.join(" "), /Security/);
+});
+
+test("ruleset requirements beyond the first page of rules remain blocking", () => {
+	const f = fixture();
+	const firstPage = Array.from({ length: 100 }, () => ({ type: "pull_request" }));
+	const laterPage = [
+		{
+			type: "required_status_checks",
+			parameters: { required_status_checks: [{ context: "Later page check" }] },
+		},
+	];
+	const read = (args) => {
+		if (!args[1]?.includes("/rules/branches/")) return f.read(args);
+		return args.includes("--paginate") && args.includes("--slurp") ? [firstPage, laterPage] : firstPage;
+	};
+	const result = checkReadiness("example/repo", "1", read);
+	assert.equal(result.ready, false);
+	assert.match(result.blockers.join(" "), /Later page check missing/);
+});
+
+test("only explicit no-protection responses count as no classic requirements", () => {
+	const path = "repos/example/repo/branches/main/protection/required_status_checks";
+	const fail = (stderr) => () => ({ status: 1, stdout: "", stderr });
+	for (const message of ["Branch not protected", "Required status checks not enabled"]) {
+		assert.equal(github(["api", path], fail(`gh: ${message} (HTTP 404)\n`)), null);
+	}
+	for (const stderr of [
+		"gh: Not Found (HTTP 404)\n",
+		"gh: Resource not accessible by integration (HTTP 403)\n",
+		"gh: Bad credentials (HTTP 401)\n",
+	]) {
+		assert.throws(() => github(["api", path], fail(stderr)), /HTTP 40[134]/);
+	}
+	assert.throws(
+		() => github(["api", "repos/example/repo/pulls/1"], fail("gh: Branch not protected (HTTP 404)\n")),
+		/HTTP 404/,
+	);
+	const ok = () => ({ status: 0, stdout: '{"contexts":["DCO"]}', stderr: "" });
+	assert.deepEqual(github(["api", path], ok), { contexts: ["DCO"] });
+});
+
+test("an ambiguous classic protection 404 fails inspection instead of reporting blockers", () => {
+	const f = fixture();
+	const read = (args) =>
+		args[1]?.endsWith("/protection/required_status_checks")
+			? github(args, () => ({ status: 1, stdout: "", stderr: "gh: Not Found (HTTP 404)\n" }))
+			: f.read(args);
+	assert.throws(() => checkReadiness("example/repo", "1", read), /Not Found/);
 });
 
 test("freshness, draft status, and unknown merge state block readiness", () => {
