@@ -42,7 +42,7 @@ read_when:
 
 ### PR readiness and review feedback
 
-Run `npm run pr:ready -- <number> [owner/repo]` after the gate opens the PR and before reporting it ready or merging it. The command reads classic branch protection and branch rulesets, requires successful checks on the current head, checks review threads and requests for changes, and rechecks both head and base commits. Exit 0 means ready at the time of inspection, 1 means blockers remain, and 2 means inspection failed. Missing checks stay pending. Run it again after any push, repair, or base update.
+Run `npm run pr:ready -- <number> [owner/repo]` after the gate opens the PR and before reporting it ready or merging it. The command reads classic branch protection and branch rulesets, requires successful checks on the current head, checks review threads and requests for changes, and rechecks both head and base commits. Exit 0 means ready at the time of inspection, 1 means blockers remain, and 2 means inspection failed. Missing checks stay pending. A requirement bound to a GitHub App passes only on a successful check run from that app; a commit status satisfies only requirements with no app binding. Run it again after any push, repair, or base update.
 
 The command reports the PR URL, inspected head, required-check results, and blockers as JSON. GitHub must report a clean merge state. A new commit invalidates earlier evidence. Resolve missing requirements or API errors before reporting readiness.
 
