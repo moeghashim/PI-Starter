@@ -554,3 +554,19 @@ Append-only learning log for commits and deploys. Add new entries only at the en
 - Actor: Moe Ghashim <mohanadgh@gmail.com>
 - Changed Paths:
   - README.md
+## 2026-11-18T09:27:50.080Z
+- Trigger: commit
+- Learning: Keep Node pins, types, login-shell PATH and daemon runtime aligned; PR readiness requires current-head checks and unresolved-feedback inspection.
+- Context: chore(tooling): upgrade to Node 26 and verify PR readiness Check current-head required checks, review threads, review decisions, and PR freshness before reporting readiness. Align Node pins, types and setup instructions with Node 26 LTS. Repro-Prompt: Tighten PR readiness and review-feedback handling, upgrade the repo to Node 26, then commit and push through no-mistakes while preserving the staged TanStack migration.
+- Branch: codex/node26-pr-readiness
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .nvmrc
+  - README.md
+  - package.json
+  - package-lock.json
+  - apps/web/package.json
+  - docs/agent-workflow.md
+  - .agents/skills/ship/SKILL.md
+  - scripts/pr-readiness.mjs
+  - scripts/test/pr-readiness.test.mjs

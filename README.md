@@ -4,7 +4,7 @@ Monorepo starter for solo maintainers shipping both deployable apps and publisha
 - Vercel-ready or Cloudflare Workers-ready Next.js app in `apps/web`
 - Shared package workspace in `packages/core`
 - Append-only `progress.md` learning log for solo task memory
-- Node 24 LTS, pinned by major in `.nvmrc`
+- Node 26 LTS, pinned by major in `.nvmrc`
 - ESM TypeScript with strict checking, compiled by the native TypeScript 7 compiler; `apps/web` stays on TypeScript 5 for Next.js
 - Biome formatting/linting (tabs, indentWidth 3, lineWidth 120)
 - `npm run check` gates formatting, linting, and type checking
@@ -34,6 +34,8 @@ Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/a
 ## Setup
 
 ```bash
+nvm install
+nvm use
 npm run doctor
 npm install
 npm run check
@@ -54,7 +56,7 @@ no-mistakes init
 
 Push committed feature branches with `git push no-mistakes`. The gate validates the branch in a disposable worktree and opens the PR after local validation.
 
-The `no-mistakes` daemon resolves its PATH at startup. Make Node 24 from `.nvmrc` available in your login shell. On macOS with zsh, check which executables a fresh login shell resolves, then restart the daemon after changing PATH.
+The `no-mistakes` daemon resolves its PATH at startup. Make Node 26 from `.nvmrc` available in your login shell. On macOS with zsh, check which executables a fresh login shell resolves, then restart the daemon after changing PATH.
 
 ```bash
 zsh -lic 'command -v node; node -v; command -v npm'
@@ -62,7 +64,7 @@ no-mistakes daemon restart
 no-mistakes doctor
 ```
 
-Check that Node reports `v24.x` and that `npm` comes from the same installation. If a gate run reports an expired reviewer login, check the configured CLI's auth status and sign in again before retrying.
+Check that Node reports `v26.x` and that `npm` comes from the same installation. If a gate run reports an expired reviewer login, check the configured CLI's auth status and sign in again before retrying.
 
 ## Host The Web App
 

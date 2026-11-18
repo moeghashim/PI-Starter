@@ -12,6 +12,7 @@
 		"clean": "npm run clean --workspaces --if-present",
 		"build": "npm run build --workspaces --if-present",
 		"test": "node --test scripts/test/*.test.mjs && npm run test --workspaces --if-present",
+		"pr:ready": "node scripts/pr-readiness.mjs",
 		"fallow:audit": "fallow audit --changed-since origin/main",
 		"preview:cloudflare": "npm run cf:preview -w @pi-starter/web",
 		"build:cloudflare": "npm run cf:build -w @pi-starter/web",
@@ -41,7 +42,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.6",
-		"@types/node": "^24.19.2",
+		"@types/node": "^26.6.6",
 		"fallow": "3.41.0",
 		"husky": "^9.1.7",
 		"tsx": "^4.23.15",
@@ -54,6 +55,6 @@
 		}
 	},
 	"engines": {
-		"node": "24.x"
+		"node": "26.x"
 	}
 }
