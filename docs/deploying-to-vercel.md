@@ -38,7 +38,7 @@ Next.js 16 does not run linting during `next build`; keep linting and type check
 
 Image optimization uses the patched Sharp range declared by Next.js itself; no Next.js-specific Sharp override is needed. See the Dependency Overrides section in `CONTRIBUTING.md` for the current override policy.
 
-GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, runs `npm run agent:verify-upstream` on the Ubuntu runner, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`.
+GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, runs `npm run agent:verify-upstream` in the macOS validation job, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`.
 
 ## Environment Variables
 
