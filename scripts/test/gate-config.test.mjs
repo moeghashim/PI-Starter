@@ -17,6 +17,14 @@ test("Fallow CI prepares generated Next.js types before auditing a clean checkou
 	assert.equal(steps[audit].with["no-cache"], true);
 });
 
+test("validation runs on macOS and still verifies pinned upstream skills", () => {
+	const validation = workflow.jobs["required-checks"];
+	assert.deepEqual(validation.strategy.matrix.os, ["macos-latest"]);
+	const upstream = validation.steps.find((step) => step.run === "npm run agent:verify-upstream");
+	assert.ok(upstream);
+	assert.equal(upstream.if, undefined);
+});
+
 test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
 	for (const command of [gate.commands.test, gate.commands.lint]) {
 		// Replace npm at the shell boundary to avoid installing during this test.
