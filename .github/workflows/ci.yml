@@ -67,7 +67,7 @@ jobs:
         run: npm exec -w @pi-starter/web -- next typegen
 
       - name: Audit changed code
-        uses: fallow-rs/fallow@34269241152fa2e7e6a9de1aba698dcae93035b3 # v3.41.0
+        uses: fallow-rs/fallow@8cc305d74aeb77b7ab316388f8ab41cce20a394f # v3.43.1
         with:
           command: audit
           gate: new-only
