@@ -598,3 +598,15 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - .github/workflows/ci.yml
   - README.md
   - scripts/test/gate-config.test.mjs
+## 2026-11-18T17:44:44.535Z
+- Trigger: commit
+- Learning: Use one GitHub-hosted Ubuntu validation runner and leave upstream skill verification unconditional; keep the aggregate Required checks name stable for branch protection.
+- Context: ci: use GitHub-hosted Ubuntu for required validation
+- Branch: codex/ubuntu-only-validation
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .github/workflows/ci.yml
+  - README.md
+  - docs/agent-skills.md
+  - docs/deploying-to-vercel.md
+  - scripts/test/gate-config.test.mjs

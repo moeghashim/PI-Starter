@@ -17,9 +17,9 @@ test("Fallow CI prepares generated Next.js types before auditing a clean checkou
 	assert.equal(steps[audit].with["no-cache"], true);
 });
 
-test("validation runs on macOS and still verifies pinned upstream skills", () => {
+test("validation runs only on GitHub-hosted Ubuntu and verifies pinned upstream skills", () => {
 	const validation = workflow.jobs["required-checks"];
-	assert.deepEqual(validation.strategy.matrix.os, ["macos-latest"]);
+	assert.deepEqual(validation.strategy.matrix.os, ["ubuntu-latest"]);
 	const upstream = validation.steps.find((step) => step.run === "npm run agent:verify-upstream");
 	assert.ok(upstream);
 	assert.equal(upstream.if, undefined);
