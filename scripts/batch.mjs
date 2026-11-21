@@ -10,6 +10,8 @@ const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
 const gh = (...args) => JSON.parse(execFileSync("gh", args, { encoding: "utf8" }));
 const prs = (branch, state) =>
 	gh("pr", "list", "--base", branch, "--state", state, "--limit", "1000", "--json", prFields);
+const noRunDiagnostic = "error: no run found for this branch";
+const reservationCommands = new Set(["resume", "release"]);
 const origin = (name) => `refs/remotes/origin/${name}`;
 const isBatch = ({ headRefName, isCrossRepository }) => !isCrossRepository && batchName.test(headRefName);
 
@@ -44,12 +46,24 @@ function ensureBatch(base) {
 	fetchBranch(base);
 }
 
+function gateStatus() {
+	const { error, status, stdout } = spawnSync("no-mistakes", ["axi", "status"], { encoding: "utf8" });
+	if (error) throw error;
+	if (stdout.startsWith(noRunDiagnostic)) return "";
+	assertGateStatus(status, stdout);
+	return stdout;
+}
+
+function assertGateStatus(status, stdout) {
+	if (status !== 0 || stdout.startsWith("error:")) {
+		throw new Error(stdout.trim() || "no-mistakes axi status failed.");
+	}
+}
+
 function readGate() {
-	const output = execFileSync("no-mistakes", ["axi", "status"], { encoding: "utf8" });
-	if (output.startsWith("error:")) throw new Error(output.trim());
-	const run = /^run:\n((?:^ {2}[^\n]+\n)+)/m.exec(output)?.[1] ?? "";
+	const run = /^run:\n((?:^ {2}[^\n]+\n)+)/m.exec(gateStatus())?.[1] ?? "";
 	const field = (name) => new RegExp(`^  ${name}: "?([^"\\n]+)"?$`, "m").exec(run)?.[1];
-	const completed = (step) => new RegExp(`^    ${step},completed,`, "m").test(output);
+	const completed = (step) => new RegExp(`^    ${step},completed,`, "m").test(run);
 	return { id: field("id"), status: field("status"), sha: field("head_sha"), completed };
 }
 
@@ -185,8 +199,14 @@ function checkTaskMerge({ mode, base, branch, sha }) {
 	requireAncestor(tip, sha, "The batch moved after review. Run the light gate again against its latest head.");
 }
 
-function checkBatchMerge(branch, number) {
+function checkBatchMerge({ branch, sha }, number) {
 	if (openBatch() !== branch) throw new Error("Only the open batch PR can merge to main.");
+	if (fetchBranch(branch) !== sha) throw new Error("The batch PR head moved during inspection.");
+	requireAncestor(
+		fetchBranch("main"),
+		sha,
+		"Main moved after the batch was validated. Merge main into the batch and publish again.",
+	);
 	execFileSync("npm", ["run", "pr:ready", "--", number], { stdio: "inherit" });
 }
 
@@ -200,13 +220,13 @@ function readOpenPR(number) {
 function merge(gateDir, number) {
 	if (!/^\d+$/.test(number ?? "")) throw new Error("Supply a PR number.");
 	const receipt = receiptFor(gateDir, readOpenPR(number));
-	if (receipt.mode === "publish") checkBatchMerge(receipt.branch, number);
+	if (receipt.mode === "publish") checkBatchMerge(receipt, number);
 	else checkTaskMerge(receipt);
 	execFileSync("gh", ["pr", "merge", number, "--merge", "--match-head-commit", receipt.sha], { stdio: "inherit" });
 }
 
 function continueGate(gateDir, opFile, op, { command, branch }) {
-	if (op.branch !== branch || !["resume", "release"].includes(command))
+	if (op.branch !== branch || !reservationCommands.has(command))
 		throw new Error(`The gate is reserved by ${op.branch}. Finish its AXI run and resume on that branch.`);
 	if (command === "resume") return drive(gateDir, opFile, op);
 	release(gateDir, opFile, op);
@@ -246,13 +266,22 @@ function launch(gateDir, opFile, { command, value, branch }) {
 	start(gateDir, opFile, { mode: command, branch, intent: value });
 }
 
+function validateArgumentCount(extra) {
+	if (extra) throw new Error("Too many batch command arguments.");
+}
+
 function operate(gateDir, opFile) {
 	const [command, value, extra] = process.argv.slice(2);
-	const branch = git("branch", "--show-current");
-	const args = { command, value, branch };
+	const args = { command, value, branch: git("branch", "--show-current") };
+	validateArgumentCount(extra);
 	if (existsSync(opFile)) return continueGate(gateDir, opFile, JSON.parse(readFileSync(opFile, "utf8")), args);
+	if (reservationCommands.has(command)) return console.log(`No reservation to ${command}.`);
 	ensureIdle();
-	if (extra) throw new Error("Too many batch command arguments.");
+	return dispatch(gateDir, opFile, args);
+}
+
+function dispatch(gateDir, opFile, args) {
+	const { command, value } = args;
 	const commands = {
 		target: () => showTarget(value),
 		task: () => launch(gateDir, opFile, args),

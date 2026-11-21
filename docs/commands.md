@@ -26,7 +26,7 @@ From the gate operator's initialized clone or a linked worktree:
 - `npm run batch -- target repair` returns the oldest batch for a fix branch.
 - `npm run batch -- repair <intent-file>` runs the light gate for that fix branch.
 - `npm run batch -- publish <intent-file>` opens or updates the batch PR to main from the local batch branch.
-- `npm run batch -- resume` reattaches on the branch that owns the reservation. If the daemon reports a decision, use its AXI response command, then resume to record the result.
+- `npm run batch -- resume` reattaches on the branch that owns the reservation. If the daemon reports a decision, use its AXI response command, then resume to record the result. With no reservation, `resume` and `release` report that and exit 0.
 - `npm run batch -- release` clears a reservation when a launch never created a run. If the run did start, this command requires a terminal result and records it.
 - `npm run batch -- merge <PR>` checks the current head and uses a merge commit.
 - `npm run check:light -- <base>` runs the light checks locally. A `batch/<n>` base uses the fetched `origin/batch/<n>` ref.
