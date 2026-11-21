@@ -67,22 +67,37 @@ function readGate() {
 	return { id: field("id"), status: field("status"), sha: field("head_sha"), completed };
 }
 
+function reserve(gateDir, base, head) {
+	const values = { "batch-base": base, "batch-head": head, "batch-lint-pass": "", "batch-test-pass": "" };
+	for (const [key, value] of Object.entries(values)) {
+		git("--git-dir", gateDir, "config", "--local", `pi-starter.${key}`, value);
+	}
+}
+
 function clearReservation(gateDir, opFile) {
-	git("--git-dir", gateDir, "config", "--local", "pi-starter.batch-base", "");
-	git("--git-dir", gateDir, "config", "--local", "pi-starter.batch-head", "");
+	reserve(gateDir, "", "");
 	rmSync(opFile);
 }
 
-function passed(status, mode) {
-	const steps = ["review", "lint", "push", "pr"];
-	if (mode === "publish") steps.push("test");
-	return status.status === "completed" && shaPattern.test(status.sha) && steps.every(status.completed);
+function passed(gateDir, status, mode) {
+	const checks = mode === "publish" ? ["lint", "test"] : ["lint"];
+	const proven = (check) =>
+		git("--git-dir", gateDir, "config", "--local", "--default", "", "--get", `pi-starter.batch-${check}-pass`) ===
+		status.sha;
+	return (
+		status.status === "completed" &&
+		shaPattern.test(status.sha) &&
+		["review", "push", "pr", ...checks].every(status.completed) &&
+		checks.every(proven)
+	);
 }
 
 function finish(gateDir, opFile, operation, status) {
-	if (!passed(status, operation.mode)) {
+	if (!passed(gateDir, status, operation.mode)) {
 		clearReservation(gateDir, opFile);
-		throw new Error("The gate did not complete all required steps. Inspect no-mistakes axi status before retrying.");
+		throw new Error(
+			"The gate did not complete all required steps with passing checks. Inspect no-mistakes axi status before retrying.",
+		);
 	}
 
 	const dir = join(gateDir, "pi-starter-receipts");
@@ -170,15 +185,7 @@ function start(gateDir, opFile, { mode, branch, intent }) {
 	if (mode === "repair") requireAncestor(origin(base), "HEAD", `Create the fix branch from the current ${base} head.`);
 	const operation = { mode, base, branch, previous: readGate().id };
 	writeFileSync(opFile, JSON.stringify(operation), { flag: "wx", mode: 0o600 });
-	git("--git-dir", gateDir, "config", "--local", "pi-starter.batch-base", base);
-	git(
-		"--git-dir",
-		gateDir,
-		"config",
-		"--local",
-		"pi-starter.batch-head",
-		base === "main" ? git("rev-parse", "HEAD") : "",
-	);
+	reserve(gateDir, base, base === "main" ? git("rev-parse", "HEAD") : "");
 	drive(gateDir, opFile, operation, resolve(intent));
 }
 

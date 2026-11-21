@@ -98,9 +98,11 @@ test("the lock survives an unfinished light gate and merge requires its exact pa
 		`run:\n  id: "RUN"\n  status: completed\n  head_sha: ${sha}\n  steps[4]{step,status,findings,duration_ms}:\n` +
 			["review", "lint", "push", "pr"].map((step) => `    ${step},completed,0,0\n`).join(""),
 	);
+	run("git", ["--git-dir", gate, "config", "pi-starter.batch-lint-pass", sha]);
 	const done = batch("resume");
 	assert.equal(done.status, 0, done.stderr);
 	assert.equal(run("git", ["--git-dir", gate, "config", "pi-starter.batch-base"]), "");
+	assert.equal(run("git", ["--git-dir", gate, "config", "pi-starter.batch-lint-pass"]), "");
 
 	write("fixture/pr", JSON.stringify({ ...pr, headRefOid: "f".repeat(40) }));
 	assert.match(batch("merge", "15").stderr, /no passing batch gate receipt/);
@@ -108,6 +110,46 @@ test("the lock survives an unfinished light gate and merge requires its exact pa
 	const merged = batch("merge", "15");
 	assert.equal(merged.status, 0, merged.stderr);
 	assert.deepEqual(stored("merges"), ["15", "--merge", "--match-head-commit", sha]);
+});
+
+test("a completed run whose checks did not pass on its final commit earns no receipt", (t) => {
+	const { gate, batch, open, run, write } = setup(t);
+	const head = () => run("git", ["rev-parse", "HEAD"]);
+	const complete = (steps) =>
+		write(
+			"fixture/status",
+			`run:\n  id: "RUN"\n  status: completed\n  head_sha: ${head()}\n  steps[${steps.length}]{step,status,findings,duration_ms}:\n` +
+				steps.map((step) => `    ${step},completed,0,0\n`).join(""),
+		);
+	const prove = (check, sha) => run("git", ["--git-dir", gate, "config", `pi-starter.batch-${check}-pass`, sha]);
+	const launch = (mode) => {
+		write("fixture/status", noRun);
+		const launched = batch(mode, "fixture/intent");
+		assert.equal(launched.status, 0, launched.stderr);
+	};
+	const refused = () => {
+		const result = batch("resume");
+		assert.equal(result.status, 1);
+		assert.match(result.stderr, /did not complete all required steps with passing checks/);
+		assert.equal(existsSync(join(gate, "pi-starter-receipts")), false);
+	};
+
+	prove("lint", head());
+	launch("task");
+	complete(["review", "lint", "push", "pr"]);
+	refused();
+
+	launch("task");
+	prove("lint", run("git", ["rev-parse", "HEAD^"]));
+	complete(["review", "lint", "push", "pr"]);
+	refused();
+
+	write("fixture/open", JSON.stringify([open("batch/1")]));
+	run("git", ["switch", "-q", "batch/1"]);
+	launch("publish");
+	prove("lint", head());
+	complete(["review", "test", "lint", "push", "pr"]);
+	refused();
 });
 
 test("a run that belongs to another branch is never recorded as this branch's result", (t) => {
@@ -164,7 +206,7 @@ test("a concurrent batch process fails before it can touch remote refs", (t) => 
 });
 
 test("a batch with passing gate evidence cannot merge after main advances", (t) => {
-	const { batch, open, run, write } = setup(t);
+	const { gate, batch, open, run, write } = setup(t);
 	write("fixture/open", JSON.stringify([open("batch/1")]));
 	run("git", ["switch", "batch/1"]);
 	const sha = run("git", ["rev-parse", "HEAD"]);
@@ -176,6 +218,9 @@ test("a batch with passing gate evidence cannot merge after main advances", (t) 
 		`run:\n  id: "RUN"\n  status: completed\n  head_sha: ${sha}\n  steps[5]{step,status,findings,duration_ms}:\n` +
 			["review", "test", "lint", "push", "pr"].map((step) => `    ${step},completed,0,0\n`).join(""),
 	);
+	for (const check of ["lint", "test"]) {
+		run("git", ["--git-dir", gate, "config", `pi-starter.batch-${check}-pass`, sha]);
+	}
 	const done = batch("resume");
 	assert.equal(done.status, 0, done.stderr);
 

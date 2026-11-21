@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { chmodSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 import { sandbox } from "./helpers.mjs";
 
@@ -52,4 +54,33 @@ test("the full gate rejects unreviewed changes to the submitted batch checkout",
 	const result = node("scripts/gate-check.mjs", "gate", "lint");
 	assert.equal(result.status, 1);
 	assert.match(result.stderr, /full gate changed the batch checkout/);
+});
+
+test("the gate records a check as passed only for a reserved run whose commands all succeed", (t) => {
+	const { directory, env, exec, run, write, copy, node } = sandbox(t);
+	copy("scripts/gate-check.mjs");
+	write("bin/npm", '#!/bin/sh\nexit "$NPM_STATUS"\n');
+	chmodSync(join(directory, "bin/npm"), 0o755);
+	env.PATH = `${join(directory, "bin")}:${env.PATH}`;
+	env.NPM_STATUS = "0";
+	run("git", ["add", "."]);
+	run("git", ["commit", "-qm", "batch"]);
+	const head = run("git", ["rev-parse", "HEAD"]);
+	const proof = (check) => exec("git", ["config", "--get", `pi-starter.batch-${check}-pass`]).stdout.trim();
+
+	assert.equal(node("scripts/gate-check.mjs", "gate", "lint").status, 0);
+	assert.equal(proof("lint"), "");
+
+	run("git", ["config", "pi-starter.batch-base", "main"]);
+	run("git", ["config", "pi-starter.batch-head", head]);
+	for (const check of ["lint", "test"]) {
+		assert.equal(node("scripts/gate-check.mjs", "gate", check).status, 0);
+		assert.equal(proof(check), head);
+	}
+
+	env.NPM_STATUS = "1";
+	for (const check of ["lint", "test"]) {
+		assert.equal(node("scripts/gate-check.mjs", "gate", check).status, 1);
+		assert.equal(proof(check), "");
+	}
 });

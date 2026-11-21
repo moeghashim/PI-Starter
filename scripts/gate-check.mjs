@@ -7,7 +7,7 @@ const git = (...args) => execFileSync("git", args, { encoding: "utf8" });
 const manifest = (path) => JSON.parse(readFileSync(path, "utf8"));
 
 function resolveBase(base) {
-	if (!base) throw new Error("Set PI_STARTER_GATE_BASE or pass the batch base branch.");
+	if (!base) throw new Error("Pass the batch base branch.");
 	const ref = base.startsWith("batch/") ? `refs/remotes/origin/${base}` : base;
 	return git("rev-parse", "--verify", "--end-of-options", `${ref}^{commit}`).trim();
 }
@@ -96,9 +96,16 @@ function gateLint(base) {
 	return base.startsWith("batch/") ? light(base) : lintCommands;
 }
 
+function recordPass(passed) {
+	if (mode === "gate" && !extra && ["test", "lint"].includes(phase) && gateBase()) {
+		git("config", "--local", `pi-starter.batch-${phase}-pass`, passed ? git("rev-parse", "HEAD").trim() : "");
+	}
+}
+
 try {
 	let commands;
-	if (mode === "light" && !extra) commands = light(phase ?? process.env.PI_STARTER_GATE_BASE);
+	recordPass(false);
+	if (mode === "light" && !extra) commands = light(phase);
 	else if (mode === "full" && !phase) commands = full();
 	else if (mode === "plan" && !extra && ["full", "light"].includes(phase)) {
 		console.log(JSON.stringify(phase === "full" ? full() : gate("lint")));
@@ -110,6 +117,7 @@ try {
 		if (result.error) throw result.error;
 		if (result.status !== 0) process.exit(result.status ?? 1);
 	}
+	recordPass(true);
 } catch (error) {
 	console.error(error.message);
 	process.exitCode = 1;
