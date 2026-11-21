@@ -58,7 +58,7 @@
 
 ## Git
 - Never commit unless explicitly requested.
-- Push branches with `git push no-mistakes`, never directly to `origin`. The gate reviews, tests, documents, and lints in a disposable worktree, then opens the PR only when everything passes. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate committed work; it auto-applies safe mechanical fixes and escalates intent-level findings.
+- Push branches with `git push no-mistakes`, never directly to `origin`. A project that opts into batching starts every gate with `npm run batch` instead, following the batch procedure in `docs/agent-workflow.md`; a plain push there bypasses the lock. The gate reviews, tests, documents, and lints in a disposable worktree, then opens the PR only when everything passes. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate committed work; it auto-applies safe mechanical fixes and escalates intent-level findings.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
 - Every commit must carry a `Signed-off-by:` trailer matching the author for the DCO check; keep `DCO` required in branch protection so unsigned PRs cannot merge. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.
