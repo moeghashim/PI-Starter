@@ -54,7 +54,7 @@ Initialize the push gate once per clone before shipping branches:
 no-mistakes init
 ```
 
-Push committed feature branches with `git push no-mistakes`. The gate validates the branch in a disposable worktree and opens the PR after local validation.
+Push committed feature branches with `git push no-mistakes`. The gate validates the branch in a disposable worktree and opens the PR after local validation. A project can instead collect reviewed task branches into one batch PR; see the optional batch workflow in `docs/agent-workflow.md`.
 
 The `no-mistakes` daemon resolves its PATH at startup. Make Node 26 from `.nvmrc` available in your login shell. On macOS with zsh, check which executables a fresh login shell resolves, then restart the daemon after changing PATH.
 
@@ -110,7 +110,7 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `apps/web/scripts/cloudflare-typegen.mjs` regenerates `apps/web/cloudflare-env.d.ts` from `apps/web/wrangler.jsonc` through `npm run typegen:cloudflare`.
 - `.agents/skills/` is the single skill directory that agent harnesses discover; `.claude/skills` is a tracked symlink to it. It holds the vendored packs plus the local workflow skills `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.
-- `.no-mistakes.yaml` pins the push-gate pipeline commands.
+- `.no-mistakes.yaml` pins the push-gate pipeline commands. Its test, lint, and format entries call `scripts/gate-check.mjs`, which holds the npm command lists.
 - `.fallowrc.json` declares intentional indirect entry points and keeps pull-request auditing scoped to new findings.
 - `progress.md` is an append-only learning log for solo commits, releases, and deploys.
 - `docs/agent-skills.md` explains which upstream skills are vendored and how to update them.

@@ -22,6 +22,8 @@ Task PRs target a numbered batch branch. Their gate keeps Review and runs a ligh
 
 The batch gate keeps Review, Test, Document and Lint. It skips Rebase to preserve commits already integrated. It skips the daemon's CI monitor because that monitor can rebase or push repairs to a published branch. GitHub runs the full CI workflow for the batch PR. The batch merge command requires the current head to pass the repository's PR readiness checks.
 
+A gate pass is recorded as a receipt for one exact commit. The daemon marks an approved step completed even when its command failed, so step status alone is not proof. The gate commands in `scripts/gate-check.mjs` record the commit they ran on only after every command exits successfully. A task receipt needs that proof for Lint. A batch receipt needs it for Lint and Test. The batch merge command refuses a PR head without a receipt. `scripts/test/batch.test.mjs` covers the refusal.
+
 When a batch PR is open, new tasks go into the next batch. Fix a failed batch by merging a reviewed fix branch into that same batch. Retain the original commits through merge commits. The batch commands ask GitHub to merge by the exact validated head.
 
 Warn at more than 1,500 additions and deletions. Exclude vendored, lock, and generated files. Measure the task diff against its target branch. Skip the warning on the aggregate PR.

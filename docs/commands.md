@@ -1,7 +1,8 @@
 ---
-summary: "Index of the local workflow skills stored in this repository"
+summary: "Index of the local workflow skills and the batch gate commands"
 read_when:
   - Looking up the in-repo workflow skills.
+  - Looking up a batch gate, light check, or PR size command.
   - Updating the workflows for pickup, handoff, feature delivery, fixes, or solo shipping.
 ---
 
