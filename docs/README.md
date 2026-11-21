@@ -23,7 +23,7 @@ Validation is enforced by `npm run docs:list`.
 - `docs/agent-workflow.md`: skill-driven agent workflow and guardrails.
 - `docs/agent-skills.md`: curated vendored Vercel, Addy Osmani, Matt Pocock, and Chrome DevTools skills plus the update policy.
 - `docs/architecture-decisions.md`: ADR template and local conventions for recording durable technical decisions.
-- `docs/commands.md`: index of the local workflow skills.
+- `docs/commands.md`: index of the local workflow skills and the batch gate commands.
 - `docs/deploying-to-cloudflare.md`: Cloudflare Workers deployment path for `apps/web`.
 - `docs/deploying-to-vercel.md`: minimal Vercel deployment path for `apps/web`.
 - `docs/adrs/`: accepted architecture and workflow decisions.

@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { chmodSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import test from "node:test";
 import { parse } from "yaml";
+import { sandbox } from "./helpers.mjs";
 
 const root = new URL("../../", import.meta.url);
 const gate = parse(readFileSync(new URL(".no-mistakes.yaml", root), "utf8"));
@@ -25,16 +26,23 @@ test("validation runs only on GitHub-hosted Ubuntu and verifies pinned upstream 
 	assert.equal(upstream.if, undefined);
 });
 
-test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
-	for (const command of [gate.commands.test, gate.commands.lint]) {
-		// Replace npm at the shell boundary to avoid installing during this test.
-		const result = spawnSync("sh", ["-c", `npm() { exit 42; }; ${command}`], {
-			cwd: root,
-			env: { ...process.env, NVM_DIR: "/nonexistent-pi-starter-nvm" },
-			encoding: "utf8",
-		});
-		assert.equal(result.status, 42, result.stderr);
-	}
+test("gate commands run through Node on PATH without nvm and hand npm the documented checks", (t) => {
+	const { copy, directory, env, exec, write } = sandbox(t);
+	copy("scripts/gate-check.mjs");
+	write("bin/npm", '#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$NPM_LOG"\n');
+	chmodSync(join(directory, "bin/npm"), 0o755);
+	env.NPM_LOG = join(directory, "npm.log");
+	env.NVM_DIR = "/nonexistent-pi-starter-nvm";
+	env.PATH = `${join(directory, "bin")}:${dirname(process.execPath)}:${env.PATH}`;
+	const invocations = (command) => {
+		writeFileSync(env.NPM_LOG, "");
+		const result = exec("sh", ["-c", command]);
+		assert.equal(result.status, 0, result.stderr);
+		return readFileSync(env.NPM_LOG, "utf8").trim().split("\n");
+	};
+	assert.deepEqual(invocations(gate.commands.prepare), ["ci --prefer-offline"]);
+	assert.deepEqual(invocations(gate.commands.test), ["test", "run test:e2e --if-present"]);
+	assert.deepEqual(invocations(gate.commands.lint), ["run check", "run agent:check", "run fallow:audit"]);
 });
 
 test("stable Required checks job requires every dependency to succeed, allowing only a skipped Fallow audit", () => {

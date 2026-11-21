@@ -40,6 +40,20 @@ read_when:
 3. For app deploys, choose `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md`. Let the no-mistakes gate open the PR and the selected provider deploy after the protected branch merges. Cloudflare changes must pass `Cloudflare build` in CI.
 4. For package releases, follow the release flow in `README.md`: prepare with `npm run release:<patch|minor|major> -- --learning "..."`, push the `release/vX.Y.Z` branch with `git push no-mistakes`, and after the pull request merges run `npm run release:tag`. The decision record is `docs/adrs/2026-10-18-release-through-pull-requests.md`.
 
+### Optional batch workflow
+
+Choose one workflow for the project. The normal push path remains available. To use batching, land the gate config on main first. Enable merge commits and keep the required CI checks for main. Give one operator a clone with `gh` and no-mistakes set up. Use linked worktrees from that clone for all batch gate commands. Use the batch commands for all gate starts and merges in this mode. A second clone or a plain push would bypass the lock.
+
+1. Run `npm run batch -- target`. The command creates the batch ref at the current main commit if needed. This bootstrap creates a ref to an existing commit. It sends no new commits.
+2. Commit the task and run `npm run batch -- task <intent-file>`. Keep reviewing and resolving AXI decisions until the run ends. Run `npm run batch -- resume` to clear the reservation and record the passes for the exact head. Run `npm run batch -- merge <task-PR>`. If the base advanced after review, rerun the task gate against the current batch before merging.
+3. Once the batch has no outstanding task PRs, fetch its tip and check out that branch. Merge main into it if main moved. Run `npm run batch -- publish <intent-file>`. GitHub opens the full CI run when the gate publishes the batch PR. Configure a root `test:e2e` script when the project has end-to-end tests.
+4. While that PR is open, new task branches go into the next batch. When required checks and review pass, run `npm run batch -- merge <batch-PR>`.
+5. If a batch fails, branch from its latest remote head and use `npm run batch -- repair <intent-file>`. Merge the fix PR into the failed batch. GitHub starts CI for the new head. If the failure happened before publication, run the batch gate again after merging the fix. On an open batch PR, rerun the batch gate on the updated head to record a new receipt before merging to main. Keep the existing commits, including when bringing main into a batch. If full-gate validation fails, stop that run and resolve your AXI custody state before creating the fix branch. Approve neither a failed check nor a gate repair that edits the batch checkout. An approved failure leaves no receipt, so `batch merge` refuses that head.
+
+Batch gates use the configured agent profile. The installed AXI help documents `--base-branch` and comma-separated `--skip`. The optional `--model` and `--effort` flags apply to Pi-only runs and require a complete profile.
+
+If the runner stops while a gate is active, inspect `no-mistakes axi status` from that branch and resume the existing run. Follow any AXI custody recovery instructions. If the process was killed and left the mutex directory behind, verify that no batch command is still running before removing only `pi-starter-batch.lock` from the local bare gate. Keep the reservation file in place until the run reaches a terminal state.
+
 ### PR readiness and review feedback
 
 Run `npm run pr:ready -- <number> [owner/repo]` after the gate opens the PR and before reporting it ready or merging it. The command reads classic branch protection and branch rulesets, requires successful checks on the current head, checks review threads and requests for changes, and rechecks both head and base commits. Exit 0 means ready at the time of inspection, 1 means blockers remain, and 2 means inspection failed. Missing checks stay pending. A requirement bound to a GitHub App passes only on a successful check run from that app; a commit status satisfies only requirements with no app binding. Run it again after any push, repair, or base update.

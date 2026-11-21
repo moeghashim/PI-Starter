@@ -88,6 +88,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -105,8 +107,18 @@ jobs:
       - name: Check formatting, linting, and types
         run: npm run check
 
+      - name: Warn about large task PRs
+        if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'batch/')
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: npm run pr:size -- "$PR_BASE" "$PR_HEAD"
+
       - name: Run tests
         run: npm test
+
+      - name: Run end-to-end tests if configured
+        run: npm run test:e2e --if-present
 
       - name: Run agent guardrails
         run: npm run agent:check
