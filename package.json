@@ -11,7 +11,7 @@
 	"scripts": {
 		"clean": "npm run clean --workspaces --if-present",
 		"build": "npm run build --workspaces --if-present",
-		"test": "node --test scripts/test/*.test.mjs && npm run test --workspaces --if-present",
+		"test": "npm run test:scripts && npm run test --workspaces --if-present",
 		"pr:ready": "node scripts/pr-readiness.mjs",
 		"fallow:audit": "fallow audit --changed-since origin/main",
 		"preview:cloudflare": "npm run cf:preview -w @pi-starter/web",
@@ -38,7 +38,12 @@
 		"release:minor": "node scripts/release.mjs minor",
 		"release:major": "node scripts/release.mjs major",
 		"release:tag": "node scripts/release-tag.mjs",
-		"prepare": "node scripts/prepare.mjs"
+		"prepare": "node scripts/prepare.mjs",
+		"test:scripts": "node --test scripts/test/*.test.mjs",
+		"check:light": "node scripts/gate-check.mjs light",
+		"check:full": "node scripts/gate-check.mjs full",
+		"pr:size": "node scripts/pr-size.mjs",
+		"batch": "node scripts/batch.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.6",

@@ -26,9 +26,9 @@ test("validation runs only on GitHub-hosted Ubuntu and verifies pinned upstream 
 });
 
 test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
-	for (const command of [gate.commands.test, gate.commands.lint]) {
+	for (const command of [gate.commands.prepare, gate.commands.test, gate.commands.lint]) {
 		// Replace npm at the shell boundary to avoid installing during this test.
-		const result = spawnSync("sh", ["-c", `npm() { exit 42; }; ${command}`], {
+		const result = spawnSync("sh", ["-c", `npm() { exit 42; }; node() { exit 42; }; ${command}`], {
 			cwd: root,
 			env: { ...process.env, NVM_DIR: "/nonexistent-pi-starter-nvm" },
 			encoding: "utf8",

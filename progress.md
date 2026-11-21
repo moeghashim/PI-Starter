@@ -610,3 +610,24 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/agent-skills.md
   - docs/deploying-to-vercel.md
   - scripts/test/gate-config.test.mjs
+## 2026-11-21T10:40:19.582Z
+- Trigger: commit
+- Learning: A gate reservation must outlast the AXI CLI session, and the daemon CI repair path can rebase even when the normal integration strategy is merge.
+- Context: feat(gate): add opt-in batch branch validation Repro-Prompt: Keep small task reviews, batch branches through one full CI PR, serialize gate fetches and pushes, and warn on large task diffs.
+- Branch: codex/batch-gates
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - .fallowrc.json
+  - .github/workflows/ci.yml
+  - .no-mistakes.yaml
+  - package.json
+  - docs/agent-workflow.md
+  - docs/commands.md
+  - docs/adrs/2026-11-21-batch-branch-gates.md
+  - scripts/batch.mjs
+  - scripts/gate-check.mjs
+  - scripts/pr-size.mjs
+  - scripts/test/batch.test.mjs
+  - scripts/test/gate-check.test.mjs
+  - scripts/test/gate-config.test.mjs
+  - scripts/test/pr-size.test.mjs
