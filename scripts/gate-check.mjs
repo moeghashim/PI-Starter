@@ -96,28 +96,28 @@ function gateLint(base) {
 	return base.startsWith("batch/") ? light(base) : lintCommands;
 }
 
-function recordPass(passed) {
-	if (mode === "gate" && !extra && ["test", "lint"].includes(phase) && gateBase()) {
-		git("config", "--local", `pi-starter.batch-${phase}-pass`, passed ? git("rev-parse", "HEAD").trim() : "");
-	}
-}
+const reservedCheck = (check) => (check !== "format" && gateBase() ? check : "");
+const recordPass = (check, sha) => git("config", "--local", `pi-starter.batch-${check}-pass`, sha);
 
 try {
 	let commands;
-	recordPass(false);
+	let check = "";
 	if (mode === "light" && !extra) commands = light(phase);
 	else if (mode === "full" && !phase) commands = full();
 	else if (mode === "plan" && !extra && ["full", "light"].includes(phase)) {
 		console.log(JSON.stringify(phase === "full" ? full() : gate("lint")));
-	} else if (mode === "gate" && !extra && ["test", "lint", "format"].includes(phase)) commands = gate(phase);
-	else throw new Error("Usage: gate-check.mjs light [base] | full | gate test|lint|format | plan light|full");
+	} else if (mode === "gate" && !extra && ["test", "lint", "format"].includes(phase)) {
+		check = reservedCheck(phase);
+		if (check) recordPass(check, "");
+		commands = gate(phase);
+	} else throw new Error("Usage: gate-check.mjs light [base] | full | gate test|lint|format | plan light|full");
 
 	for (const args of commands ?? []) {
 		const result = spawnSync("npm", args, { stdio: "inherit" });
 		if (result.error) throw result.error;
 		if (result.status !== 0) process.exit(result.status ?? 1);
 	}
-	recordPass(true);
+	if (check) recordPass(check, git("rev-parse", "HEAD").trim());
 } catch (error) {
 	console.error(error.message);
 	process.exitCode = 1;

@@ -79,17 +79,22 @@ function clearReservation(gateDir, opFile) {
 	rmSync(opFile);
 }
 
-function passed(gateDir, status, mode) {
-	const checks = mode === "publish" ? ["lint", "test"] : ["lint"];
-	const proven = (check) =>
-		git("--git-dir", gateDir, "config", "--local", "--default", "", "--get", `pi-starter.batch-${check}-pass`) ===
-		status.sha;
+function stepsCompleted(status, checks) {
 	return (
 		status.status === "completed" &&
 		shaPattern.test(status.sha) &&
-		["review", "push", "pr", ...checks].every(status.completed) &&
-		checks.every(proven)
+		["review", "push", "pr", ...checks].every(status.completed)
 	);
+}
+
+function proven(gateDir, check, sha) {
+	const key = `pi-starter.batch-${check}-pass`;
+	return git("--git-dir", gateDir, "config", "--local", "--default", "", "--get", key) === sha;
+}
+
+function passed(gateDir, status, mode) {
+	const checks = mode === "publish" ? ["lint", "test"] : ["lint"];
+	return stepsCompleted(status, checks) && checks.every((check) => proven(gateDir, check, status.sha));
 }
 
 function finish(gateDir, opFile, operation, status) {
