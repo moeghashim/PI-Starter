@@ -610,3 +610,13 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/agent-skills.md
   - docs/deploying-to-vercel.md
   - scripts/test/gate-config.test.mjs
+## 2026-11-21T09:04:37.354Z
+- Trigger: commit
+- Learning: Git's union driver keeps concurrent append-only progress entries without a manual merge.
+- Context: fix(git): merge parallel progress entries
+- Branch: codex/progress-union-merge
+- Actor: Ja3ood <moeghashim@users.noreply.github.com>
+- Changed Paths:
+  - .gitattributes
+  - docs/adrs/2026-11-21-merge-append-only-progress.md
+  - scripts/test/progress-merge.test.mjs
