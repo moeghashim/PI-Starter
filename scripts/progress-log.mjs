@@ -130,29 +130,24 @@ function buildContext({ trigger, message, bump, version }) {
 	return contextParts.length > 0 ? contextParts.join("; ") : "n/a";
 }
 
+function inlineField(value) {
+	return normalizeSingleLine(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function buildEntry({ trigger, learning, context, branch, actor, files }) {
-	const lines = [
-		`## ${new Date().toISOString()}`,
-		`- Trigger: ${trigger}`,
-		`- Learning: ${learning}`,
-		`- Context: ${context}`,
-		`- Branch: ${branch}`,
-		`- Actor: ${actor}`,
+	const fields = [
+		`Trigger: ${trigger}`,
+		`Learning: ${learning}`,
+		`Context: ${context}`,
+		`Branch: ${branch}`,
+		`Actor: ${actor}`,
 	];
 
 	if (trigger === "commit") {
-		if (files.length > 0) {
-			lines.push("- Changed Paths:");
-			for (const file of files) {
-				lines.push(`  - ${file}`);
-			}
-		} else {
-			lines.push("- Changed Paths: n/a");
-		}
+		fields.push(`Changed Paths: ${files.length > 0 ? files.join(", ") : "n/a"}`);
 	}
 
-	lines.push("");
-	return lines.join("\n");
+	return `- **${new Date().toISOString()}**<br>${fields.map(inlineField).join("<br>")}\n`;
 }
 
 if (!existsSync(PROGRESS_PATH)) {
