@@ -79,7 +79,7 @@ FAILED = ("fail", "cancel")
 RANK = {"fail": 4, "cancel": 3, "pending": 2, "pass": 1, "skipping": 0}
 
 QUERY = """
-query($owner: String!, $name: String!, $number: Int!) {
+query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
   viewer { login }
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
@@ -90,7 +90,8 @@ query($owner: String!, $name: String!, $number: Int!) {
       reviews(last: 100) {
         nodes { id url state body commit { oid } author { login __typename } }
       }
-      reviewThreads(last: 100) {
+      reviewThreads(first: 100, after: $endCursor) {
+        pageInfo { hasNextPage endCursor }
         nodes {
           isResolved path line
           comments(first: 100) { nodes { id url body author { login __typename } } }
@@ -297,12 +298,19 @@ class Watcher:
 
     def fetch_pr(self) -> Json:
         proc = gh([
-            "api", "graphql", "-f", f"query={QUERY}",
+            "api", "graphql", "--paginate", "--slurp", "-f", f"query={QUERY}",
             "-f", f"owner={self.owner}", "-f", f"name={self.name}", "-F", f"number={self.pr}",
         ])
-        data = json.loads(proc.stdout)["data"]
+        pages = json.loads(proc.stdout)
+        if not pages or any(page.get("errors") for page in pages):
+            raise GhError("GitHub could not list all review threads", False)
+        data = pages[0]["data"]
         pr = data["repository"]["pullRequest"]
         pr["viewer"] = data["viewer"]["login"]
+        pr["reviewThreads"]["nodes"] = [
+            thread for page in pages
+            for thread in page["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
+        ]
         return pr
 
     def fetch_checks(self) -> dict[str, Json]:

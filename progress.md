@@ -659,3 +659,15 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - scripts/release.mjs
   - scripts/test/gate-config.test.mjs
   - scripts/test/pr-size.test.mjs
+## 2026-11-25T18:06:14.771Z
+- Trigger: commit
+- Learning: PR readiness must cover all review threads before the watcher reports green.
+- Context: fix(workflow): paginate TStack review threads
+- Branch: codex/tstack-pstack-workflow
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - agent/skills-manifest.tstack.json
+  - .agents/skills/babysit-pr/scripts/pr-wait
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - scripts/test/tstack-watcher.test.mjs

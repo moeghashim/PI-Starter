@@ -35,7 +35,29 @@
       "upstreamPath": "skills/babysit-pr",
       "localPath": ".agents/skills/babysit-pr",
       "strategy": "reference",
-      "sha256": "187821af8e31dcd7839ca8bfe20bffee463c920b93f57cf173740b5228ef0536"
+      "sha256": "fb6f6845c63361c41f33e0f76c445d188918851321d8e549d8bf4c2f8cc102de",
+      "rewrites": [
+        {
+          "path": "scripts/pr-wait",
+          "search": "query($owner: String!, $name: String!, $number: Int!) {",
+          "replace": "query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {"
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "      reviewThreads(last: 100) {",
+          "replace": "      reviewThreads(first: 100, after: $endCursor) {\n        pageInfo { hasNextPage endCursor }"
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "            \"api\", \"graphql\", \"-f\", f\"query={QUERY}\",",
+          "replace": "            \"api\", \"graphql\", \"--paginate\", \"--slurp\", \"-f\", f\"query={QUERY}\","
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "        data = json.loads(proc.stdout)[\"data\"]\n        pr = data[\"repository\"][\"pullRequest\"]\n        pr[\"viewer\"] = data[\"viewer\"][\"login\"]",
+          "replace": "        pages = json.loads(proc.stdout)\n        if not pages or any(page.get(\"errors\") for page in pages):\n            raise GhError(\"GitHub could not list all review threads\", False)\n        data = pages[0][\"data\"]\n        pr = data[\"repository\"][\"pullRequest\"]\n        pr[\"viewer\"] = data[\"viewer\"][\"login\"]\n        pr[\"reviewThreads\"][\"nodes\"] = [\n            thread for page in pages\n            for thread in page[\"data\"][\"repository\"][\"pullRequest\"][\"reviewThreads\"][\"nodes\"]\n        ]"
+        }
+      ]
     },
     {
       "type": "directory",

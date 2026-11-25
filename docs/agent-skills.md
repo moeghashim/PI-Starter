@@ -44,7 +44,7 @@ Every skill lives at `.agents/skills/<name>/SKILL.md`, one flat directory per sk
 ### PStack and TStack
 
 - [PStack](https://github.com/cursor/plugins/tree/main/pstack) provides the principles under `agent/skills-manifest.pstack.json`. The local `pstack-work` skill adapts them for the available host tools.
-- [TStack](https://github.com/t3dotgg/tstack) provides `full-stop` and its dependencies under `agent/skills-manifest.tstack.json`. Use `full-stop` for GitHub PR handoff. Review the repository rules before running upstream workflows.
+- [TStack](https://github.com/t3dotgg/tstack) provides `full-stop` and its dependencies under `agent/skills-manifest.tstack.json`. Use `full-stop` for GitHub PR handoff. The TStack manifest applies the review-thread pagination fix to its watcher. Review the repository rules before running upstream workflows.
 
 ## Vendored Skills
 
