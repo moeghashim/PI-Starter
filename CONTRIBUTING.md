@@ -16,12 +16,11 @@
 - `progress.md` is append-only; only add new entries at the end.
 - Forks should keep `progress.md` tracked and continue appending learnings so the repo retains local project memory after forking.
 - For agent-requested commits, use `npm run commit:with-progress -- "<message>" --learning "<learning>" -- "<path>" ...`.
-- Prepare releases with `npm run release:patch -- --learning "What we learned from this release."`, push the `release/vX.Y.Z` branch through the gate, and after it merges run `npm run release:tag` from any clean checkout.
+- Prepare releases with `npm run release:patch -- --learning "What we learned from this release."`, open a pull request from the `release/vX.Y.Z` branch, and after it merges run `npm run release:tag` from any clean checkout.
 - `release:tag` skips `npm publish` by default; add `-- --publish` only when you intentionally want to publish packages.
 - In `apps/web`, do not import `useEffect` directly; use render-time derivation, event handlers, framework data loading, or `useMountEffect`.
 - Keep commit messages as clear summaries (do not use prompt-only commit subjects).
-- Push feature branches with `git push no-mistakes`; do not push directly to `origin`. The gate validates the branch and opens the pull request.
-- Start the gate daemon with the Node major from `.nvmrc` and npm on its `PATH`, using your preferred version manager or a standalone installation. The commands do not source nvm or a shell profile; `npm run check` still rejects an unsupported Node version.
+- Validate changes locally, push the feature branch to `origin`, and open a pull request. See `docs/agent-workflow.md` for review and handoff.
 - The pre-commit hook validates the working tree without re-staging files. For partial commits, review `git diff --cached` as well: unstaged changes can affect validation even though they are excluded from the commit.
 - Release preparation requires clean `main` matching the fetched `origin/main`. Version bumps preserve locked dependencies, and validation runs on the bumped tree before the release commit is created.
 - After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`; `npm test` fails when the committed file drifts.

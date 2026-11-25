@@ -1,23 +1,13 @@
 ---
 name: ship
-description: Ship committed solo changes through the no-mistakes push gate, then follow through on app deploy or package release. Run only when the user asks to ship.
+description: Prepare committed solo changes for a GitHub pull request and follow through on an authorized app deploy or package release. Run only when the user asks to ship.
 disable-model-invocation: true
 ---
 
 # /ship
 
-Purpose: ship solo changes cleanly through the no-mistakes push gate.
-
-Workflow:
-1. Confirm whether the target is an app deploy, a package release, or both.
-2. Confirm the working tree is clean, the work is committed, and the current branch is a feature branch.
-3. If the change affects behavior, review it against the `code-review-and-quality` skill.
-4. If the change affects trust boundaries, auth, input handling, or third-party integrations, review it against the `security-and-hardening` skill.
-5. If the change alters repo conventions, interfaces, or architecture, record or update an ADR under `docs/adrs/` using `docs/architecture-decisions.md`.
-6. Push committed work with `git push no-mistakes`. Do not push directly to `origin`.
-7. If the work is not committed yet, use bare `/no-mistakes` to let the gate commit and validate it, or `/no-mistakes <task>` to have the agent do-and-gate a task.
-8. If shipping the app, select `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md` for the chosen provider. Cloudflare changes must pass the `Cloudflare build` CI check.
-9. If shipping the app, check whether the diff includes schema, migration, seed, ORM, database client, or database environment changes; if so, run or document the required database deploy step.
-10. If shipping a package, follow the release flow in `README.md`: prepare with `npm run release:<patch|minor|major> -- --learning "..."`, push the `release/vX.Y.Z` branch with `git push no-mistakes`, and after the pull request merges run `npm run release:tag`. Pass `-- --publish` only when the user intends to publish. Never push `main` directly.
-11. Before reporting a PR ready or merging, run `npm run pr:ready -- <number> [owner/repo]`. Follow the PR readiness and review-feedback procedure in `docs/agent-workflow.md`. Inspect configured bots and human feedback, including top-level comments. Missing checks, unresolved threads, requests for changes, and a changing head or base block readiness. Route repairs through the active no-mistakes run, then repeat the readiness check on the new head. Merge only with user authorization.
-12. Summarize what shipped, the no-mistakes gate status, database deploy status when relevant, and any manual follow-up.
+1. Identify the target, app deployment, package release, or both. Confirm the feature branch contains the intended commits and has a clean working tree.
+2. Follow the validation and shipping steps in `docs/agent-workflow.md`. Use TStack `full-stop` under the repository authorization rules. Apply `security-and-hardening` when the change affects trust boundaries or integrations.
+3. Run `npm run pr:ready -- <number> [owner/repo]` against the final head. Report proof, review, and remaining blockers. Merge only with explicit authorization.
+4. After an authorized merge, follow the selected deployment doc. For app changes, check for schema, migration, seed, ORM, database client, and database environment changes before rollout. Run any required database deploy step before reporting the app as shipped.
+5. For a package release, use the release commands in `README.md`. Run `npm run release:tag` after the release PR merges. Use `--publish` only when authorized.

@@ -117,7 +117,9 @@ for (const script of ["build", "check", "test", "agent:check", "fallow:audit"]) 
 run("git", ["add", "--update"]);
 run("git", ["commit", "--signoff", "-m", `chore(release): ${tag}`]);
 
-console.log(`\nPrepared ${tag} on ${branch}. Push it through the gate:\n\n  git push no-mistakes ${branch}\n`);
+console.log(
+	`\nPrepared ${tag} on ${branch}. Push it and open a pull request:\n\n  git push -u origin ${branch}\n  gh pr create --base main --head ${branch}\n`,
+);
 console.log(
 	"After the pull request merges, update main and run `npm run release:tag` (add `-- --publish` to publish).",
 );

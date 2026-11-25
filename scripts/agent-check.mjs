@@ -9,6 +9,8 @@ const MANIFEST_PATHS = [
 	"agent/skills-manifest.addyosmani.json",
 	"agent/skills-manifest.mattpocock.json",
 	"agent/skills-manifest.chromedevtools.json",
+	"agent/skills-manifest.pstack.json",
+	"agent/skills-manifest.tstack.json",
 ];
 
 const REQUIRED_PATHS = [
@@ -17,7 +19,6 @@ const REQUIRED_PATHS = [
 	...MANIFEST_PATHS,
 	".fallowrc.json",
 	".mcp.json",
-	".no-mistakes.yaml",
 	"docs/README.md",
 	"docs/agent-workflow.md",
 	"docs/agent-skills.md",
@@ -31,6 +32,7 @@ const REQUIRED_PATHS = [
 	".agents/skills/build-feature/SKILL.md",
 	".agents/skills/fix/SKILL.md",
 	".agents/skills/ship/SKILL.md",
+	".agents/skills/pstack-work/SKILL.md",
 ];
 
 const SKILLS_DIR = ".agents/skills";
@@ -45,7 +47,8 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"npm run agent:check",
 	"npm run agent:verify-upstream",
 	"npm run fallow:audit",
-	"git push no-mistakes",
+	"full-stop",
+	"npm run pr:ready",
 	"useMountEffect",
 	"CLAUDE.md",
 ];
