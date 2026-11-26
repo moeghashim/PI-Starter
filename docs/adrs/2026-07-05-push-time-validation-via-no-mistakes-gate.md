@@ -9,7 +9,7 @@ read_when:
 
 ## Status
 
-Accepted
+Superseded by [Use PStack and TStack with GitHub Pull Requests](2026-11-25-pstack-tstack-github-prs.md).
 
 ## Context
 

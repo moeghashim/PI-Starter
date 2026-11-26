@@ -93,7 +93,7 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 ## Solo Shipping Flow
 
 1. Run the validation steps in `docs/agent-workflow.md`
-2. Push the committed feature branch with `git push no-mistakes`
+2. Push the committed feature branch to `origin` and open a GitHub pull request
 3. Wait for `Required checks` and `DCO` to pass, then merge to `main`
 4. Run any required database deployment
 5. Let Workers Builds run `npm run deploy:cloudflare`, or deploy manually

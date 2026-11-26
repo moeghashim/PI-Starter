@@ -610,3 +610,64 @@ Append-only learning log for commits and deploys. Add new entries only at the en
   - docs/agent-skills.md
   - docs/deploying-to-vercel.md
   - scripts/test/gate-config.test.mjs
+## 2026-11-25T17:54:42.740Z
+- Trigger: commit
+- Learning: GitHub required checks can enforce merge readiness while agent skills handle proof and review before handoff.
+- Context: feat(workflow): replace the push proxy with TStack and PStack Repro-Prompt: Use portable PStack skills for development and TStack full-stop for GitHub PR review. Retain required GitHub checks and carry over the advisory PR size warning.
+- Branch: codex/tstack-pstack-workflow
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - .agents/skills/babysit-pr/SKILL.md
+  - .agents/skills/babysit-pr/scripts/pr-wait
+  - .agents/skills/file-pr/SKILL.md
+  - .agents/skills/full-send/SKILL.md
+  - .agents/skills/full-send/agents/openai.yaml
+  - .agents/skills/full-stop/SKILL.md
+  - .agents/skills/full-stop/agents/openai.yaml
+  - .agents/skills/leaving-pr-comments/SKILL.md
+  - .agents/skills/leaving-pr-comments/agents/openai.yaml
+  - .agents/skills/principle-explain-the-number/SKILL.md
+  - .agents/skills/principle-fix-root-causes/SKILL.md
+  - .agents/skills/principle-prove-it-works/SKILL.md
+  - .agents/skills/principle-sequence-verifiable-units/SKILL.md
+  - .agents/skills/principle-test-behavior-not-implementation/SKILL.md
+  - .agents/skills/pstack-work/SKILL.md
+  - .agents/skills/ship/SKILL.md
+  - .agents/skills/sol-loop/SKILL.md
+  - .github/workflows/ci.yml
+  - .no-mistakes.yaml
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - README.md
+  - agent/skills-manifest.pstack.json
+  - agent/skills-manifest.tstack.json
+  - agent/upstream/pstack/LICENSE
+  - agent/upstream/tstack/LICENSE
+  - apps/web/app/page.tsx
+  - docs/README.md
+  - docs/adrs/2026-07-05-push-time-validation-via-no-mistakes-gate.md
+  - docs/adrs/2026-10-18-release-through-pull-requests.md
+  - docs/adrs/2026-11-25-pstack-tstack-github-prs.md
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - docs/commands.md
+  - docs/deploying-to-cloudflare.md
+  - docs/deploying-to-vercel.md
+  - package.json
+  - scripts/agent-check.mjs
+  - scripts/pr-size.mjs
+  - scripts/release.mjs
+  - scripts/test/gate-config.test.mjs
+  - scripts/test/pr-size.test.mjs
+## 2026-11-25T18:06:14.771Z
+- Trigger: commit
+- Learning: PR readiness must cover all review threads before the watcher reports green.
+- Context: fix(workflow): paginate TStack review threads
+- Branch: codex/tstack-pstack-workflow
+- Actor: Moe Ghashim <mohanadgh@gmail.com>
+- Changed Paths:
+  - agent/skills-manifest.tstack.json
+  - .agents/skills/babysit-pr/scripts/pr-wait
+  - docs/agent-skills.md
+  - docs/agent-workflow.md
+  - scripts/test/tstack-watcher.test.mjs

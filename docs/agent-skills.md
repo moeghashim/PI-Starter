@@ -1,22 +1,22 @@
 ---
-summary: "Curated vendored Vercel, Addy Osmani, Matt Pocock, and Chrome DevTools agent skills plus the policy for keeping them pinned"
+summary: "Vendored and local agent skills and the policy for keeping them pinned"
 read_when:
   - Working on React, Next.js, UI review, or interaction patterns in this starter.
   - Working on context setup, testing strategy, review rigor, security checks, or ADRs in this starter.
   - Working on architecture review, refactoring, domain vocabulary, or testable module interfaces.
   - Diagnosing frontend or Node.js memory leaks with heap snapshots.
   - Adding, moving, or renaming a skill directory under `.agents/skills/`.
-  - Updating vendored skills from `vercel-labs/agent-skills`, `addyosmani/agent-skills`, `mattpocock/skills`, or `ChromeDevTools/chrome-devtools-mcp`.
+  - Updating a vendored skill manifest.
   - Deciding whether a new upstream skill belongs in the default starter layer.
 ---
 
 # Agent Skills
 
-PI Starter vendors four small upstream skill subsets so repo-local workflows can reference stable, pinned guidance without inheriting an entire external workflow.
+PI Starter vendors small upstream skill subsets so repo-local workflows can reference stable, pinned guidance without inheriting an entire external workflow.
 
 ## Layout
 
-Every skill lives at `.agents/skills/<name>/SKILL.md`, one flat directory per skill, which is the layout agent harnesses discover natively. `.claude/skills` is a tracked symlink to `../.agents/skills` for harnesses that read that location. The pack a vendored skill belongs to is recorded in its manifest, not in its path. The local workflow skills (`pickup`, `handoff`, `build-feature`, `fix`, `ship`) sit in the same directory and are indexed in `docs/commands.md`. See `docs/adrs/2026-10-04-native-skill-layout.md`.
+Every skill lives at `.agents/skills/<name>/SKILL.md`, one flat directory per skill, which is the layout agent harnesses discover natively. `.claude/skills` is a tracked symlink to `../.agents/skills` for harnesses that read that location. The pack a vendored skill belongs to is recorded in its manifest, not in its path. The local workflow skills (`pickup`, `handoff`, `build-feature`, `fix`, `pstack-work`, `ship`) sit in the same directory and are indexed in `docs/commands.md`. See `docs/adrs/2026-10-04-native-skill-layout.md`.
 
 ## Pinned Upstream
 
@@ -40,6 +40,11 @@ Every skill lives at `.agents/skills/<name>/SKILL.md`, one flat directory per sk
 - Source repo: `https://github.com/ChromeDevTools/chrome-devtools-mcp`
 - Manifest: `agent/skills-manifest.chromedevtools.json`
 - MCP server: `chrome-devtools` in `.mcp.json`, started with `--memoryDebugging`
+
+### PStack and TStack
+
+- [PStack](https://github.com/cursor/plugins/tree/main/pstack) provides the principles under `agent/skills-manifest.pstack.json`. The local `pstack-work` skill adapts them for the available host tools.
+- [TStack](https://github.com/t3dotgg/tstack) provides `full-stop` and its dependencies under `agent/skills-manifest.tstack.json`. Use `full-stop` for GitHub PR handoff. The TStack manifest applies the review-thread pagination fix to its watcher. Review the repository rules before running upstream workflows.
 
 ## Vendored Skills
 
@@ -110,6 +115,8 @@ The last five skills are vendored because the core Addy skills refer to them by 
 | Session setup, test discipline, review rubric, security, ADR workflow, debugging, performance, observability | Addy process pack |
 | Architecture review, module depth, seams, testable interfaces, domain vocabulary | Matt architecture pack |
 | Frontend or Node.js memory leak triage and heap snapshot analysis | Chrome DevTools memory pack |
+| Building or verifying a change across agent hosts | Portable PStack workflow |
+| Reviewing and preparing a PR for handoff | TStack full-stop |
 | A task crosses multiple domains | Load the smallest relevant skill from each pack |
 
 ## What Stays Local

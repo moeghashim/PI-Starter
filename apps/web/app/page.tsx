@@ -14,8 +14,8 @@ const appCards = [
 	{
 		title: "Work with agents",
 		description:
-			"Repo skills load natively in Codex and Claude Code. Every push goes through a validation gate before it opens a pull request.",
-		accent: "Gated pushes",
+			"Repo skills load natively in Codex and Claude Code. GitHub checks each pull request before it can merge.",
+		accent: "Required PR checks",
 	},
 ];
 

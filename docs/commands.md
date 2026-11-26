@@ -13,6 +13,9 @@ Local workflow skills are stored under `.agents/skills/<name>/SKILL.md`, next to
 - `/handoff`: Structured handoff notes for the next agent.
 - `/build-feature`: Tracer-bullet workflow for net-new features, starting with one tiny end-to-end slice.
 - `/fix`: End-to-end issue fix workflow with tests and checks.
-- `/ship`: End-to-end solo shipping workflow through `git push no-mistakes` plus deploy/release follow-through. User-invoked only.
+- `/pstack-work` guides development and verification across agent hosts.
+- `/full-stop` runs the TStack PR workflow and leaves the PR open. Follow the repository rules in `docs/agent-workflow.md`.
+- `/ship` guides solo app deployment or package release. Invoke it explicitly.
+- `npm run pr:size -- origin/main` reports authored changed lines and warns above 1,500.
 
-These five directories are local, not vendored; edit them directly.
+TStack skills are vendored. Edit their manifest to update them. The repository owns the other workflow skills listed here.

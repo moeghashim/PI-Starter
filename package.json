@@ -13,6 +13,7 @@
 		"build": "npm run build --workspaces --if-present",
 		"test": "node --test scripts/test/*.test.mjs && npm run test --workspaces --if-present",
 		"pr:ready": "node scripts/pr-readiness.mjs",
+		"pr:size": "node scripts/pr-size.mjs",
 		"fallow:audit": "fallow audit --changed-since origin/main",
 		"preview:cloudflare": "npm run cf:preview -w @pi-starter/web",
 		"build:cloudflare": "npm run cf:build -w @pi-starter/web",

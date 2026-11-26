@@ -53,7 +53,7 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 ## Solo Shipping Flow
 
 1. Run the validation steps in `docs/agent-workflow.md`
-2. Push the committed feature branch with `git push no-mistakes`; the gate validates the branch and opens the pull request. Do not push directly to `origin`.
+2. Push the committed feature branch to `origin` and open a GitHub pull request.
 3. Wait for `Required checks` and `DCO` to pass, then merge to `main`
 4. If the change includes database work, run the project-specific database deploy or migration command
 5. Let Vercel Git integration build and deploy `apps/web`

@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { parse } from "yaml";
 
 const root = new URL("../../", import.meta.url);
-const gate = parse(readFileSync(new URL(".no-mistakes.yaml", root), "utf8"));
 const workflow = parse(readFileSync(new URL(".github/workflows/ci.yml", root), "utf8"));
 
 test("Fallow CI prepares generated Next.js types before auditing a clean checkout", () => {
@@ -25,16 +23,18 @@ test("validation runs only on GitHub-hosted Ubuntu and verifies pinned upstream 
 	assert.equal(upstream.if, undefined);
 });
 
-test("gate commands reach npm with the .nvmrc Node on PATH and no nvm", () => {
-	for (const command of [gate.commands.test, gate.commands.lint]) {
-		// Replace npm at the shell boundary to avoid installing during this test.
-		const result = spawnSync("sh", ["-c", `npm() { exit 42; }; ${command}`], {
-			cwd: root,
-			env: { ...process.env, NVM_DIR: "/nonexistent-pi-starter-nvm" },
-			encoding: "utf8",
-		});
-		assert.equal(result.status, 42, result.stderr);
-	}
+test("PR size is advisory and compares the exact base and head with full history", () => {
+	const steps = workflow.jobs["required-checks"].steps;
+	const checkout = steps.find((step) => step.uses?.startsWith("actions/checkout@"));
+	const size = steps.find((step) => step.name === "Warn about PR size");
+	assert.equal(checkout.with["fetch-depth"], 0);
+	assert.equal(size.if, "github.event_name == 'pull_request'");
+	assert.equal(size["continue-on-error"], true);
+	assert.deepEqual(size.env, {
+		PR_BASE: `\${{ github.event.pull_request.base.sha }}`,
+		PR_HEAD: `\${{ github.event.pull_request.head.sha }}`,
+	});
+	assert.equal(size.run, 'npm run pr:size -- "$PR_BASE" "$PR_HEAD"');
 });
 
 test("stable Required checks job requires every dependency to succeed, allowing only a skipped Fallow audit", () => {

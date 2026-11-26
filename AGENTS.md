@@ -32,7 +32,7 @@
 - Before handoff or ship, run `npm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
 - After changing bindings or `vars` in `apps/web/wrangler.jsonc`, run `npm run typegen:cloudflare` and commit the regenerated `apps/web/cloudflare-env.d.ts`.
-- Releases: `npm run release:<patch|minor|major> -- --learning "..."` on clean `main`, push the `release/vX.Y.Z` branch through the gate, then run `npm run release:tag` after it merges.
+- Releases: `npm run release:<patch|minor|major> -- --learning "..."` on clean `main`, open a pull request from the `release/vX.Y.Z` branch, then run `npm run release:tag` after it merges.
 
 ## Toolchain
 - Use the Node major in `.nvmrc`; `npm run check` fails on any other version.
@@ -58,7 +58,7 @@
 
 ## Git
 - Never commit unless explicitly requested.
-- Push branches with `git push no-mistakes`, never directly to `origin`. The gate reviews, tests, documents, and lints in a disposable worktree, then opens the PR only when everything passes. Use `/no-mistakes <task>` to do-and-gate, or bare `/no-mistakes` to gate committed work; it auto-applies safe mechanical fixes and escalates intent-level findings.
+- Use `/pstack-work` for development and verification. Use TStack `full-stop` for PR review and handoff. Push feature branches to `origin` and open a GitHub pull request. Never push to `main` directly. Run `npm run pr:ready` with the PR number before reporting readiness. Merge only with explicit authorization.
 - Keep commit subjects as normal, human-readable summaries (for example `feat(core): add retry guard`).
 - Every commit must carry a `Signed-off-by:` trailer matching the author for the DCO check; keep `DCO` required in branch protection so unsigned PRs cannot merge. Use `git commit -s`; the Husky `prepare-commit-msg` hook adds it automatically where hooks are installed.
 - Do not replace commit messages with prompt text.

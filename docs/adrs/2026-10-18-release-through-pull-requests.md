@@ -20,7 +20,7 @@ Accepted
 Releases become ordinary pull requests.
 
 - `npm run release:<patch|minor|major> -- --learning "..."` runs on clean `main` matching `origin/main`. It bumps versions, refuses a version whose tag already exists, starts a new changelog section, appends a `progress.md` entry, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit on a `release/vX.Y.Z` branch.
-- The branch is pushed with `git push no-mistakes` and merges after `Required checks` and `DCO` pass.
+- The release branch goes through a pull request and merges after `Required checks` and `DCO` pass. The [current PR workflow](2026-11-25-pstack-tstack-github-prs.md) describes how to publish it.
 - After the merge, `npm run release:tag` fetches `origin/main`, finds the latest commit on its first-parent history whose message has a `chore(release): vX.Y.Z` line, aborts unless that version matches the version in the commit's tree, creates the annotated tag there if it is missing, and pushes only the tag if the remote lacks it. The local checkout does not matter, and rerunning is safe. `-- --publish` additionally publishes the non-private packages that the registry does not already have at that version; it requires the checkout to be at the release commit, because npm publishes the working tree.
 
 ## Consequences

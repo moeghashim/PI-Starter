@@ -1,0 +1,51 @@
+{
+  "sourceRepo": "https://github.com/cursor/plugins",
+  "pinnedCommit": "41e400932eca14f289e7db717a70455256b6d388",
+  "files": [
+    {
+      "type": "directory",
+      "upstreamPath": "pstack/skills/principle-prove-it-works",
+      "localPath": ".agents/skills/principle-prove-it-works",
+      "strategy": "reference",
+      "sha256": "d5560f940c4855590f546a47cb063e7e5dac55a6edac334ff167a05ef3376003"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "pstack/skills/principle-fix-root-causes",
+      "localPath": ".agents/skills/principle-fix-root-causes",
+      "strategy": "reference",
+      "sha256": "a9f54351b6b2741d9487a4879e8c458598bfa85d813964af6d2efd1ef4d6bcbb"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "pstack/skills/principle-test-behavior-not-implementation",
+      "localPath": ".agents/skills/principle-test-behavior-not-implementation",
+      "strategy": "reference",
+      "sha256": "3c6c9917a1c618ef8b180d7495bb3e126cb9fd6c5346fff9f3a97b886eff972a"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "pstack/skills/principle-explain-the-number",
+      "localPath": ".agents/skills/principle-explain-the-number",
+      "strategy": "reference",
+      "sha256": "366dda13f7ee6de8937114913b823bae825fdbeddc30d2221b6f602e7bb88107"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "pstack/skills/principle-sequence-verifiable-units",
+      "localPath": ".agents/skills/principle-sequence-verifiable-units",
+      "strategy": "reference",
+      "sha256": "da1c1cc8dc2210684c429e975e74c37b0bacf749266933c5aca5c01a173d0020"
+    },
+    {
+      "upstreamPath": "pstack/LICENSE",
+      "localPath": "agent/upstream/pstack/LICENSE",
+      "strategy": "reference",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e"
+    }
+  ],
+  "localOverrides": [
+    ".agents/skills/pstack-work/**",
+    "docs/agent-skills.md"
+  ]
+}

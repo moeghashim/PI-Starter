@@ -16,10 +16,10 @@ Monorepo starter for solo maintainers shipping both deployable apps and publisha
 - Curated vendored Addy Osmani agent skills for context, testing, review, security, and ADR workflows
 - Curated vendored Matt Pocock skills for architecture review and domain vocabulary
 - Vendored Chrome DevTools memory-leak debugging skill
-- no-mistakes push gate for validated PR creation
+- Portable PStack skills for development and TStack skills for PR review and handoff
 - Weekly grouped Dependabot updates for npm and GitHub Actions
 
-Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/agent-scripts](https://github.com/steipete/agent-scripts), [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [mattpocock/skills](https://github.com/mattpocock/skills), [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp), [Fallow](https://github.com/fallow-rs/fallow), and [no-mistakes](https://github.com/kunchenguid/no-mistakes).
+Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/agent-scripts](https://github.com/steipete/agent-scripts), [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills), [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills), [mattpocock/skills](https://github.com/mattpocock/skills), [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp), [Fallow](https://github.com/fallow-rs/fallow), [TStack](https://github.com/t3dotgg/tstack), and [PStack](https://github.com/cursor/plugins/tree/main/pstack).
 
 ## Agent Rules
 
@@ -48,23 +48,7 @@ If you switch between `arm64` and `x64`, or between Rosetta and native Node, run
 
 This starter is used across `darwin-x64`, `darwin-arm64`, and Linux environments. Keep `node_modules` machine-local and rerun `npm install` or `npm run reinstall:clean` whenever native dependencies stop matching the current OS or CPU architecture.
 
-Initialize the push gate once per clone before shipping branches:
-
-```bash
-no-mistakes init
-```
-
-Push committed feature branches with `git push no-mistakes`. The gate validates the branch in a disposable worktree and opens the PR after local validation.
-
-The `no-mistakes` daemon resolves its PATH at startup. Make Node 26 from `.nvmrc` available in your login shell. On macOS with zsh, check which executables a fresh login shell resolves, then restart the daemon after changing PATH.
-
-```bash
-zsh -lic 'command -v node; node -v; command -v npm'
-no-mistakes daemon restart
-no-mistakes doctor
-```
-
-Check that Node reports `v26.x` and that `npm` comes from the same installation. If a gate run reports an expired reviewer login, check the configured CLI's auth status and sign in again before retrying.
+Use `/pstack-work` to build and verify a change. Use TStack `full-stop` for PR review and handoff. Authenticate GitHub CLI with `gh auth login`. The TStack watcher uses Python 3. See [the agent workflow](./docs/agent-workflow.md) for publishing and checking pull requests.
 
 ## Host The Web App
 
@@ -108,9 +92,9 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `scripts/native-deps.mjs` and `scripts/preflight-native-deps.mjs` fail fast when native dependencies do not match the current machine.
 - `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, Cloudflare binding type generation, the CI gate configuration, and repository automation (the `progress.md` append-only check, `scripts/sync-versions.js`, docs front-matter validation, `scripts/committer`, and the offline vendored-file verifier).
 - `apps/web/scripts/cloudflare-typegen.mjs` regenerates `apps/web/cloudflare-env.d.ts` from `apps/web/wrangler.jsonc` through `npm run typegen:cloudflare`.
-- `.agents/skills/` is the single skill directory that agent harnesses discover; `.claude/skills` is a tracked symlink to it. It holds the vendored packs plus the local workflow skills `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/ship`.
+- `.agents/skills/` is the single skill directory that agent harnesses discover; `.claude/skills` is a tracked symlink to it. It holds the vendored packs plus the local workflow skills `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/pstack-work`, and `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.
-- `.no-mistakes.yaml` pins the push-gate pipeline commands.
+- `scripts/pr-size.mjs` warns when a pull request changes more than 1,500 authored lines.
 - `.fallowrc.json` declares intentional indirect entry points and keeps pull-request auditing scoped to new findings.
 - `progress.md` is an append-only learning log for solo commits, releases, and deploys.
 - `docs/agent-skills.md` explains which upstream skills are vendored and how to update them.
@@ -152,13 +136,14 @@ npm run release:tag -- --publish
 
 `agent:check` and `skills:verify` work offline. `agent:check` validates the agent symlinks, checks that the npm scripts referenced in `AGENTS.md` exist, and verifies vendored files against the manifest hashes. `agent:verify-upstream` also checks those hashes against the pinned GitHub commits. `skills:sync` and `agent:verify-upstream` cover every manifest by default. Pass `-- --manifest <path>` to target one.
 
-Releases go through a pull request like any other change. On clean `main` matching `origin/main`, `npm run release:<patch|minor|major> -- --learning "..."` bumps versions on a `release/vX.Y.Z` branch, refuses a version whose tag already exists, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit. Push that branch with `git push no-mistakes`. After the pull request merges, run `npm run release:tag` from any clean checkout: it fetches `origin/main`, tags the merged `chore(release)` commit found there, and pushes only the tag. Rerunning it is safe. Add `-- --publish` to publish packages; that requires the checkout to be at the release commit. Nothing pushes `main` directly, so releases pass the same CI and DCO checks as every other change.
+Releases go through a pull request like any other change. On clean `main` matching `origin/main`, `npm run release:<patch|minor|major> -- --learning "..."` bumps versions on a `release/vX.Y.Z` branch, refuses a version whose tag already exists, validates the bumped tree, and makes one signed `chore(release): vX.Y.Z` commit. Push that branch to `origin` and open a pull request. After the pull request merges, run `npm run release:tag` from any clean checkout: it fetches `origin/main`, tags the merged `chore(release)` commit found there, and pushes only the tag. Rerunning it is safe. Add `-- --publish` to publish packages; that requires the checkout to be at the release commit. Nothing pushes `main` directly, so releases pass the same CI and DCO checks as every other change.
 
 ## Resources
 
 Tooling and vendored skills this starter builds on:
 
-- [no-mistakes](https://github.com/kunchenguid/no-mistakes) - AI-gated push proxy. All feature branch pushes go through `git push no-mistakes`, which validates the branch in a disposable worktree and opens the PR only when green. Pipeline commands are pinned in [`.no-mistakes.yaml`](./.no-mistakes.yaml).
+- [TStack](https://github.com/t3dotgg/tstack) provides PR review and monitoring skills.
+- [PStack](https://github.com/cursor/plugins/tree/main/pstack) provides engineering guidance for implementation and verification.
 - [Fallow](https://github.com/fallow-rs/fallow) - pinned Rust-native analysis for unused code, circular dependencies, duplication, and complexity. `npm run fallow:audit` gates only findings introduced relative to `origin/main`; GitHub Actions performs the equivalent pull-request-aware audit.
 - [OpenNext Cloudflare](https://opennext.js.org/cloudflare) - packages the Next.js workspace for Cloudflare Workers while leaving Vercel configuration independent.
 - [memory-leak-debugging skill](https://github.com/ChromeDevTools/chrome-devtools-mcp/tree/main/skills/memory-leak-debugging) from the Chrome DevTools team - vendored agent skill for diagnosing frontend and Node.js memory leaks with heap snapshots. It requires the [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) server configured in [`.mcp.json`](./.mcp.json).

@@ -1,0 +1,80 @@
+{
+  "sourceRepo": "https://github.com/t3dotgg/tstack",
+  "pinnedCommit": "11e37a74d0a6868c121cd0910ab2b3bd9873b92a",
+  "files": [
+    {
+      "type": "directory",
+      "upstreamPath": "skills/full-stop",
+      "localPath": ".agents/skills/full-stop",
+      "strategy": "reference",
+      "sha256": "964f41437a8dccb3283935ef0f086e061073d1f684e4ddf3edb3b95da91ae920"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/full-send",
+      "localPath": ".agents/skills/full-send",
+      "strategy": "reference",
+      "sha256": "829e3c0db35eb6bcb7e3e03325cbf738fd1c717092ba90aaa793a09054b21cdb"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/sol-loop",
+      "localPath": ".agents/skills/sol-loop",
+      "strategy": "reference",
+      "sha256": "3c8288e250964616482249182b174ef5a514945e771dc3109559f7f288db23f7"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/file-pr",
+      "localPath": ".agents/skills/file-pr",
+      "strategy": "reference",
+      "sha256": "f7af67bc09a2be42f7fb4b620cbdb9539419ef83fb090babb364f382fda3501a"
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/babysit-pr",
+      "localPath": ".agents/skills/babysit-pr",
+      "strategy": "reference",
+      "sha256": "fb6f6845c63361c41f33e0f76c445d188918851321d8e549d8bf4c2f8cc102de",
+      "rewrites": [
+        {
+          "path": "scripts/pr-wait",
+          "search": "query($owner: String!, $name: String!, $number: Int!) {",
+          "replace": "query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {"
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "      reviewThreads(last: 100) {",
+          "replace": "      reviewThreads(first: 100, after: $endCursor) {\n        pageInfo { hasNextPage endCursor }"
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "            \"api\", \"graphql\", \"-f\", f\"query={QUERY}\",",
+          "replace": "            \"api\", \"graphql\", \"--paginate\", \"--slurp\", \"-f\", f\"query={QUERY}\","
+        },
+        {
+          "path": "scripts/pr-wait",
+          "search": "        data = json.loads(proc.stdout)[\"data\"]\n        pr = data[\"repository\"][\"pullRequest\"]\n        pr[\"viewer\"] = data[\"viewer\"][\"login\"]",
+          "replace": "        pages = json.loads(proc.stdout)\n        if not pages or any(page.get(\"errors\") for page in pages):\n            raise GhError(\"GitHub could not list all review threads\", False)\n        data = pages[0][\"data\"]\n        pr = data[\"repository\"][\"pullRequest\"]\n        pr[\"viewer\"] = data[\"viewer\"][\"login\"]\n        pr[\"reviewThreads\"][\"nodes\"] = [\n            thread for page in pages\n            for thread in page[\"data\"][\"repository\"][\"pullRequest\"][\"reviewThreads\"][\"nodes\"]\n        ]"
+        }
+      ]
+    },
+    {
+      "type": "directory",
+      "upstreamPath": "skills/leaving-pr-comments",
+      "localPath": ".agents/skills/leaving-pr-comments",
+      "strategy": "reference",
+      "sha256": "465291908898533f3e763b87da2346b26406e1d5d4805a3593e3c5a9d8a6b5b5"
+    },
+    {
+      "upstreamPath": "LICENSE",
+      "localPath": "agent/upstream/tstack/LICENSE",
+      "strategy": "reference",
+      "sha256": "8095f9a9f97d074131f6a2ce09b952d12c18b36f09f4e5df0517c4e64e82c851"
+    }
+  ],
+  "localOverrides": [
+    ".agents/skills/ship/**",
+    "docs/agent-workflow.md"
+  ]
+}
