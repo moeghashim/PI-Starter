@@ -86,11 +86,11 @@ If you want to mark the fork boundary, append a new entry noting when the fork s
 - `scripts/agent-sync.mjs` syncs allowlisted upstream files, verifies them against the pinned upstream commit, or verifies them offline against the manifest hashes (`verify-local`). See `docs/agent-skills.md` for how `agent:check` and `agent:verify-upstream` use these modes.
 - `scripts/committer` provides safe path-scoped commits. It started from steipete/agent-scripts, which has since removed it, so it is now maintained here.
 - `scripts/commit-with-progress.mjs` wraps path-scoped commits and appends a required learning entry to `progress.md`.
-- `scripts/progress-log.mjs` appends structured learning entries to `progress.md`.
+- `scripts/progress-log.mjs` appends structured learning entries to `progress.md`, one line per entry so `.gitattributes` can union-merge entries from parallel branches. See `docs/adrs/2026-11-21-merge-append-only-progress.md`.
 - `scripts/progress-append-only-check.mjs` enforces append-only `progress.md` changes in pre-commit.
 - `scripts/docs-list.mjs` validates docs front matter (`summary`, `read_when`) and prints a docs index without depending on `tsx`.
 - `scripts/native-deps.mjs` and `scripts/preflight-native-deps.mjs` fail fast when native dependencies do not match the current machine.
-- `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, Cloudflare binding type generation, the CI gate configuration, and repository automation (the `progress.md` append-only check, `scripts/sync-versions.js`, docs front-matter validation, `scripts/committer`, and the offline vendored-file verifier).
+- `scripts/test/*.test.mjs` are root regression tests that `npm test` runs before workspace tests; they cover the pre-commit hook, version bumps, release safeguards, Cloudflare binding type generation, the CI gate configuration, and repository automation (the `progress.md` append-only check and parallel-branch merge, `scripts/sync-versions.js`, docs front-matter validation, `scripts/committer`, and the offline vendored-file verifier).
 - `apps/web/scripts/cloudflare-typegen.mjs` regenerates `apps/web/cloudflare-env.d.ts` from `apps/web/wrangler.jsonc` through `npm run typegen:cloudflare`.
 - `.agents/skills/` is the single skill directory that agent harnesses discover; `.claude/skills` is a tracked symlink to it. It holds the vendored packs plus the local workflow skills `/pickup`, `/handoff`, `/build-feature`, `/fix`, `/pstack-work`, and `/ship`.
 - `.mcp.json` configures the `chrome-devtools` MCP server with memory debugging enabled for heap-snapshot capture.

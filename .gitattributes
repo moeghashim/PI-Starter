@@ -17,3 +17,5 @@
 *.gz binary
 *.woff binary
 *.woff2 binary
+
+progress.md merge=union
