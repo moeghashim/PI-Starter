@@ -19,3 +19,6 @@
 *.woff2 binary
 
 progress.md merge=union
+
+apps/web/cloudflare-env.d.ts linguist-generated=true
+apps/web/src/routeTree.gen.ts linguist-generated=true

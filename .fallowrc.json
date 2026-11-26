@@ -5,11 +5,21 @@
 		"scripts/progress-append-only-check.mjs",
 		"scripts/progress-log.mjs"
 	],
-	"ignorePatterns": [".agents/skills/**", "agent/upstream/**", "apps/web/src/routeTree.gen.ts"],
+	"ignorePatterns": [
+		".agents/skills/**",
+		"agent/upstream/**",
+		"apps/web/src/routeTree.gen.ts",
+		"apps/web/cloudflare-env.d.ts"
+	],
 	"health": {
 		"ignore": ["scripts/agent-sync.mjs"]
 	},
-	"overrides": [{"files": ["apps/web/src/routeTree.gen.ts"], "rules": {"added-suppression": "off"}}],
+	"overrides": [
+		{
+			"files": ["apps/web/src/routeTree.gen.ts", "apps/web/cloudflare-env.d.ts"],
+			"rules": {"added-suppression": "off"}
+		}
+	],
 	"audit": {
 		"gate": "new-only"
 	}
