@@ -1,14 +1,15 @@
 {
 	"$schema": "./node_modules/fallow/schema.json",
 	"entry": [
-		"apps/web/lib/use-mount-effect.ts",
+		"apps/web/src/lib/use-mount-effect.ts",
 		"scripts/progress-append-only-check.mjs",
 		"scripts/progress-log.mjs"
 	],
-	"ignorePatterns": [".agents/skills/**", "agent/upstream/**"],
+	"ignorePatterns": [".agents/skills/**", "agent/upstream/**", "apps/web/src/routeTree.gen.ts"],
 	"health": {
 		"ignore": ["scripts/agent-sync.mjs"]
 	},
+	"overrides": [{"files": ["apps/web/src/routeTree.gen.ts"], "rules": {"added-suppression": "off"}}],
 	"audit": {
 		"gate": "new-only"
 	}

@@ -9,7 +9,7 @@ Purpose: rehydrate context quickly before doing implementation work.
 
 Checklist:
 1. Read `AGENTS.md` and any relevant docs under `docs/`.
-2. Read `docs/agent-skills.md` if the task touches React, Next.js, UI review, transitions, testing strategy, review rigor, security, ADR decisions, or memory-leak debugging.
+2. Read `docs/agent-skills.md` if the task touches React, UI review, transitions, testing strategy, review rigor, security, ADR decisions, or memory-leak debugging.
 3. If UI or interaction work is involved, load the relevant Vercel skill (`react-best-practices`, `composition-patterns`, `react-view-transitions`, `web-design-guidelines`).
 4. If process rigor, testing, review, security, or ADR work is involved, load the relevant Addy skill (`test-driven-development`, `code-review-and-quality`, `security-and-hardening`, `documentation-and-adrs`).
 5. Use the `context-engineering` skill to load only the minimum durable context needed for the current task.

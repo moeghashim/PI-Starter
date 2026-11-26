@@ -16,7 +16,11 @@ for (const workspaceRoot of ["apps", "packages"]) {
 			continue;
 		}
 		removablePaths.push(join(workspaceRoot, entry.name, "node_modules"));
-		removablePaths.push(join(workspaceRoot, entry.name, ".next"));
+		removablePaths.push(
+			join(workspaceRoot, entry.name, ".output"),
+			join(workspaceRoot, entry.name, ".nitro"),
+			join(workspaceRoot, entry.name, ".tanstack"),
+		);
 	}
 }
 

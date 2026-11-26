@@ -11,7 +11,7 @@ read_when:
 ## Start
 
 1. Read `AGENTS.md` and the relevant docs in this folder. `CLAUDE.md` is a compatibility symlink, not a separate instruction source.
-2. If the task touches React, Next.js, UI review, interaction patterns, test strategy, review rigor, security, architecture review, refactoring, ADR decisions, or memory-leak debugging, read `docs/agent-skills.md`.
+2. If the task touches React, UI review, interaction patterns, test strategy, review rigor, security, architecture review, refactoring, ADR decisions, or memory-leak debugging, read `docs/agent-skills.md`.
 3. Review recent entries in `progress.md` and capture relevant learnings for the task.
 4. Run `npm run docs:list` to confirm docs metadata is valid.
 5. Use the `/pickup` skill to rehydrate context.
@@ -39,7 +39,7 @@ read_when:
 2. Use TStack `full-stop` for proof, independent review, PR publication, and monitoring when authorized. Repository rules control when you may commit, push, rebase, delegate, use a tool, or merge. Use the workflow steps within those limits. Run `python3 .agents/skills/babysit-pr/scripts/pr-wait <number>` from the repo root, or use GitHub CLI to inspect checks and comments. The watcher reports events. Use the PR readiness command for the final decision. Use the watcher’s `--until green` mode when the repo has no Greptile or Macroscope.
 3. If the independent reviewer or model is unavailable, report that and ask for review on the PR. A self-review does not fill that gap. As part of this workflow, push the feature branch to `origin` and open the PR with `gh pr create` if one does not exist. Leave the PR open for handoff.
 4. Run `npm run pr:size -- origin/main` for a local warning. GitHub CI posts the same warning for a PR above 1,500 added and removed authored lines. Vendored, lock, and generated files are excluded.
-5. For app deploys, follow `docs/deploying-to-vercel.md` or `docs/deploying-to-cloudflare.md`. Cloudflare changes must pass the `Cloudflare build` in CI. For package releases, prepare the release branch as described in `README.md`, open a PR, then run `npm run release:tag` after merge.
+5. For app deploys, follow `docs/deploying-to-vercel.md`, `docs/deploying-to-cloudflare.md`, or `docs/deploying-to-other-hosts.md`. The `Web builds` job checks both Nitro and Cloudflare. For package releases, prepare the release branch as described in `README.md`, open a PR, then run `npm run release:tag` after merge.
 
 ### PR readiness and review feedback
 

@@ -26,15 +26,20 @@ function generate(directory, outputName, extraEnv = {}) {
 	return readFileSync(outputPath, "utf8");
 }
 
-test("cloudflare typegen output is identical with and without OpenNext build output", (t) => {
+test("cloudflare typegen output is identical with and without a built Worker entry", (t) => {
 	const directory = tempDir(t, "pi-cloudflare-typegen-");
-	copyFileSync(join(webRoot, "wrangler.jsonc"), join(directory, "wrangler.jsonc"));
+	// Point the real config at a local Worker entry, so wrangler would import it whenever the file exists.
+	const config = readFileSync(join(webRoot, "wrangler.jsonc"), "utf8");
+	writeFileSync(
+		join(directory, "wrangler.jsonc"),
+		config.replace(/"main": "[^"]+"/, '"main": "dist/server/index.js"'),
+	);
 
 	const withoutBuildOutput = generate(directory, "without-build.d.ts");
 
-	mkdirSync(join(directory, ".open-next"), { recursive: true });
+	mkdirSync(join(directory, "dist/server"), { recursive: true });
 	writeFileSync(
-		join(directory, ".open-next/worker.js"),
+		join(directory, "dist/server/index.js"),
 		'export default { fetch() { return new Response("ok"); } };\n',
 	);
 	const withBuildOutput = generate(directory, "with-build.d.ts");
@@ -42,11 +47,10 @@ test("cloudflare typegen output is identical with and without OpenNext build out
 	assert.equal(withBuildOutput, withoutBuildOutput);
 	assert.doesNotMatch(withoutBuildOutput, /import\(/);
 	assert.doesNotMatch(withoutBuildOutput, /GlobalProps/);
-	assert.match(withoutBuildOutput, /ASSETS: Fetcher;/);
 	assert.match(withoutBuildOutput, /interface CloudflareEnv extends __BaseEnv_CloudflareEnv \{\}/);
 	assert.equal(withoutBuildOutput, readFileSync(join(webRoot, "cloudflare-env.d.ts"), "utf8"));
 	assert.deepEqual(readdirSync(directory).sort(), [
-		".open-next",
+		"dist",
 		FIXTURE_TMP_DIRECTORY,
 		"with-build.d.ts",
 		"without-build.d.ts",
@@ -89,9 +93,9 @@ test("cloudflare typegen keeps bindings and vars declared in wrangler config", (
 		join(directory, "wrangler.jsonc"),
 		JSON.stringify({
 			name: "pi-starter-web-fixture",
-			main: ".open-next/worker.js",
+			main: "dist/server/index.js",
 			compatibility_date: "2026-07-22",
-			assets: { directory: ".open-next/assets", binding: "ASSETS" },
+			assets: { directory: "dist/client", binding: "ASSETS" },
 			vars: { FIXTURE_CONFIG_VAR: "from-config" },
 			kv_namespaces: [{ binding: "FIXTURE_KV", id: "00000000000000000000000000000000" }],
 		}),

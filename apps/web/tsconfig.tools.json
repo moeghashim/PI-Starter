@@ -1,0 +1,7 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"types": ["node", "vite/client"]
+	},
+	"include": ["vite.config.ts", "src/routeTree.gen.ts", "test/**/*.ts"]
+}

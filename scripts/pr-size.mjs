@@ -16,7 +16,6 @@ const excludes = [
 	"**/*.gen.*",
 	"**/generated/**",
 	"**/cloudflare-env.d.ts",
-	"**/next-env.d.ts",
 ];
 
 function vendoredPathspecs() {

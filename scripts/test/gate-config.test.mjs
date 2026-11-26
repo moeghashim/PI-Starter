@@ -6,12 +6,11 @@ import { parse } from "yaml";
 const root = new URL("../../", import.meta.url);
 const workflow = parse(readFileSync(new URL(".github/workflows/ci.yml", root), "utf8"));
 
-test("Fallow CI prepares generated Next.js types before auditing a clean checkout", () => {
+test("Fallow CI audits without a framework build step", () => {
 	const steps = workflow.jobs["fallow-audit"].steps;
 	const install = steps.findIndex((step) => step.run === "npm ci");
-	const typegen = steps.findIndex((step) => step.run === "npm exec -w @pi-starter/web -- next typegen");
 	const audit = steps.findIndex((step) => step.uses?.startsWith("fallow-rs/fallow@"));
-	assert.ok(install >= 0 && typegen > install && audit > typegen);
+	assert.ok(install >= 0 && audit > install);
 	assert.equal(steps[audit].with["no-cache"], true);
 });
 
@@ -43,11 +42,11 @@ test("stable Required checks job requires every dependency to succeed, allowing 
 	);
 	assert.ok(job, "branch protection needs a non-matrix Required checks job");
 	assert.equal(job.if, `\${{ always() }}`);
-	assert.deepEqual(new Set(job.needs), new Set(["required-checks", "cloudflare-build", "fallow-audit"]));
+	assert.deepEqual(new Set(job.needs), new Set(["required-checks", "web-builds", "fallow-audit"]));
 	assert.deepEqual(job.steps, [
 		{
 			name: "Require successful validation",
-			if: `\${{ needs.required-checks.result != 'success' || needs.cloudflare-build.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}`,
+			if: `\${{ needs.required-checks.result != 'success' || needs.web-builds.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}`,
 			run: "exit 1",
 		},
 	]);

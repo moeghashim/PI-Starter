@@ -1,11 +1,11 @@
 # pi-starter
 
 Monorepo starter for solo maintainers shipping both deployable apps and publishable packages:
-- Vercel-ready or Cloudflare Workers-ready Next.js app in `apps/web`
+- TanStack Start app in `apps/web` with Nitro and Cloudflare Workers builds
 - Shared package workspace in `packages/core`
 - Append-only `progress.md` learning log for solo task memory
 - Node 26 LTS, pinned by major in `.nvmrc`
-- ESM TypeScript with strict checking, compiled by the native TypeScript 7 compiler; `apps/web` stays on TypeScript 5 for Next.js
+- ESM TypeScript with strict checking, compiled by the native TypeScript 7 compiler in every workspace
 - Biome formatting/linting (tabs, indentWidth 3, lineWidth 120)
 - `npm run check` gates formatting, linting, and type checking
 - `npm run fix` explicitly applies formatting and lint fixes for review
@@ -55,11 +55,12 @@ Use `/pstack-work` to build and verify a change. Use TStack `full-stop` for PR r
 `apps/web` is the default app target. Choose one default host for a fork and keep provider settings separate.
 
 - Vercel: use `apps/web` as the Vercel root directory and `npm run build` as the build command. No custom `vercel.json` is required.
-- Cloudflare: use the repository root in Workers Builds and `npm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts`.
+- Cloudflare: use the repository root in Workers Builds and `npm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc`.
+- Other hosts: choose a Nitro preset and follow [the other hosts guide](./docs/deploying-to-other-hosts.md).
 
-GitHub Actions runs the required `Required checks` gate and the `Cloudflare build` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
+GitHub Actions runs the required `Required checks` gate and the `Web builds` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
 
-`Required checks` is the status used by branch protection. It requires validation on a GitHub-hosted `ubuntu-latest` runner and the Cloudflare build to succeed. Ubuntu is the only validation runner; the job also verifies vendored skills against pinned upstream sources. The Fallow audit runs on pull requests, and the summary accepts a skipped Fallow job. The Cloudflare job runs the only full Next.js production build. `npm run check` generates Next.js route types itself, so it works on a fresh checkout.
+`Required checks` is the status used by branch protection. It requires Ubuntu validation and both web builds. The validation job also verifies vendored skills against their pinned sources. Fallow runs on pull requests. The committed route tree lets `npm run check` run on a fresh checkout.
 
 In branch protection for `main`, require `Required checks` and `DCO`. Commits must carry a `Signed-off-by` trailer, and DCO only blocks merges once it is a required check.
 
@@ -104,7 +105,7 @@ Use `/build-feature` for tracer-bullet feature delivery, `/fix` for end-to-end i
 
 ### Skill Packs
 
-- Vercel (`react-best-practices`, `composition-patterns`, `react-view-transitions`, `web-design-guidelines`): UI-focused guidance for React, Next.js, composition, interaction design, and transitions.
+- Vercel (`react-best-practices`, `composition-patterns`, `react-view-transitions`, `web-design-guidelines`): UI-focused guidance for React, composition, interaction design, and transitions.
 - Addy Osmani (`context-engineering`, `test-driven-development`, `code-review-and-quality`, `documentation-and-adrs`, `security-and-hardening`, `debugging-and-error-recovery`, `performance-optimization`, `observability-and-instrumentation`, `constraint-driven-development`, `browser-testing-with-devtools`): process-focused guidance for context setup, test discipline, review rigor, security, ADRs, debugging, performance, and observability.
 - Matt Pocock (`improve-codebase-architecture`, `codebase-design`, `domain-modeling`, `grilling`): architecture-review guidance for module depth, seams, domain language, and testable interfaces.
 - Chrome DevTools (`memory-leak-debugging`): memory-leak debugging guidance using the Chrome DevTools MCP heap snapshot tools.
@@ -145,7 +146,7 @@ Tooling and vendored skills this starter builds on:
 - [TStack](https://github.com/t3dotgg/tstack) provides PR review and monitoring skills.
 - [PStack](https://github.com/cursor/plugins/tree/main/pstack) provides engineering guidance for implementation and verification.
 - [Fallow](https://github.com/fallow-rs/fallow) - pinned Rust-native analysis for unused code, circular dependencies, duplication, and complexity. `npm run fallow:audit` gates only findings introduced relative to `origin/main`; GitHub Actions performs the equivalent pull-request-aware audit.
-- [OpenNext Cloudflare](https://opennext.js.org/cloudflare) - packages the Next.js workspace for Cloudflare Workers while leaving Vercel configuration independent.
+- [TanStack Start hosting](https://tanstack.com/start/latest/docs/framework/react/guide/hosting) describes deployment options for the app.
 - [memory-leak-debugging skill](https://github.com/ChromeDevTools/chrome-devtools-mcp/tree/main/skills/memory-leak-debugging) from the Chrome DevTools team - vendored agent skill for diagnosing frontend and Node.js memory leaks with heap snapshots. It requires the [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) server configured in [`.mcp.json`](./.mcp.json).
 
 ## Workspaces

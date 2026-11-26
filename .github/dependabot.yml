@@ -16,7 +16,9 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - version-update:semver-major
-      # apps/web stays on TypeScript 5 until Next.js supports the TypeScript 7 compiler API.
+      # Keep the exact Nitro 3 prerelease until general availability.
+      - dependency-name: nitro
+      # TypeScript majors affect the whole repo; upgrade them deliberately.
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
