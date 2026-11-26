@@ -1,7 +1,7 @@
 ---
 summary: "Vendored and local agent skills and the policy for keeping them pinned"
 read_when:
-  - Working on React, Next.js, UI review, or interaction patterns in this starter.
+  - Working on React, UI review, or interaction patterns in this starter.
   - Working on context setup, testing strategy, review rigor, security checks, or ADRs in this starter.
   - Working on architecture review, refactoring, domain vocabulary, or testable module interfaces.
   - Diagnosing frontend or Node.js memory leaks with heap snapshots.
@@ -55,7 +55,9 @@ Every skill lives at `.agents/skills/<name>/SKILL.md`, one flat directory per sk
 - `.agents/skills/react-view-transitions`
 - `.agents/skills/web-design-guidelines`
 
-- building or refactoring React and Next.js code
+Use the framework-independent React and UI guidance. The web app uses TanStack Start. Do not use Next.js APIs such as `next/image` or `next/link`, App Router conventions, or the `"use client"` directive.
+
+- building or refactoring React code
 - reviewing UI code for accessibility or web interaction issues
 - designing component APIs that should avoid prop sprawl
 - adding view transitions or route-level motion
@@ -111,7 +113,7 @@ The last five skills are vendored because the core Addy skills refer to them by 
 
 | Need | Prefer |
 | --- | --- |
-| React, Next.js, UI, interaction, transitions, composition | Vercel UI pack |
+| React, UI, interaction, transitions, composition | Vercel UI pack |
 | Session setup, test discipline, review rubric, security, ADR workflow, debugging, performance, observability | Addy process pack |
 | Architecture review, module depth, seams, testable interfaces, domain vocabulary | Matt architecture pack |
 | Frontend or Node.js memory leak triage and heap snapshot analysis | Chrome DevTools memory pack |

@@ -1,7 +1,7 @@
 # Development Rules
 
 ## Layout
-- `apps/web`: Next.js app, deployable to Vercel or to Cloudflare Workers through OpenNext.
+- `apps/web`: TanStack Start app on Vite. Nitro builds the default server, and Cloudflare’s Vite plugin builds the Worker.
 - `packages/core`: publishable library; public API re-exported from `src/index.ts`.
 - `scripts/`: repo automation; regression tests live in `scripts/test/`.
 - `agent/`: manifests that pin vendored skills to upstream commits.
@@ -22,6 +22,7 @@
 - No emojis in commit messages or code comments.
 
 ## React App Rules
+- Use the React and UI guidance in the vendored Vercel skills. Do not add Next.js imports such as `next/image` or `next/link`, App Router conventions, or the `"use client"` directive.
 - In `apps/web`, do not import `useEffect` directly.
 - Prefer render-time derivation, event handlers, and framework data loading over effects.
 - `useMountEffect` is the only allowed mount-only escape hatch for synchronizing with an external system.
@@ -36,7 +37,7 @@
 
 ## Toolchain
 - Use the Node major in `.nvmrc`; `npm run check` fails on any other version.
-- The root and `packages/core` compile with TypeScript 7. `apps/web` stays on TypeScript 5.9 until Next.js supports 7, so do not bump its `typescript`.
+- Use TypeScript 7 in all workspaces. Commit `apps/web/src/routeTree.gen.ts` after route changes. Vite regenerates it during development and builds. Keep Node ambient types in the tooling TypeScript project.
 - Keep `node_modules` machine-local. After moving between `darwin-x64`, `darwin-arm64`, Linux, or Rosetta/native modes, run `npm install` or `npm run reinstall:clean` before using native-tooling commands.
 
 ## Database Deployments

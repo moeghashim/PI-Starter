@@ -26,4 +26,5 @@ Validation is enforced by `npm run docs:list`.
 - `docs/commands.md`: index of the local workflow skills.
 - `docs/deploying-to-cloudflare.md`: Cloudflare Workers deployment path for `apps/web`.
 - `docs/deploying-to-vercel.md`: minimal Vercel deployment path for `apps/web`.
+- `docs/deploying-to-other-hosts.md`: Nitro deployment paths for other hosts.
 - `docs/adrs/`: accepted architecture and workflow decisions.

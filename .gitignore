@@ -1,6 +1,10 @@
 node_modules/
 .next/
 .open-next/
+.output/
+.nitro/
+.tanstack/
+.vercel/
 .wrangler/
 dist/
 packages/*/node_modules/

@@ -10,7 +10,7 @@ read_when:
 
 ## Status
 
-Accepted
+Superseded by [TanStack Start Web Framework](2026-11-11-tanstack-start-web-framework.md).
 
 ## Context
 

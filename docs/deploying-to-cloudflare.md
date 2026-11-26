@@ -1,28 +1,20 @@
 ---
-summary: "Cloudflare Workers deployment path for the default Next.js app workspace"
+summary: "Cloudflare Workers deployment path for the TanStack Start app workspace"
 read_when:
   - Setting up the starter on Cloudflare for the first time.
-  - Choosing between Vercel and Cloudflare Workers for `apps/web`.
+  - Choosing or adding hosts for `apps/web`.
   - Shipping `apps/web` through Workers Builds or Wrangler.
 ---
 
 # Deploying To Cloudflare
 
-Use Cloudflare Workers with the OpenNext adapter for the default Next.js app.
+Deploy `apps/web` to Cloudflare Workers with Cloudflare's Vite plugin, the officially supported path for TanStack Start. `vite build --mode cloudflare` selects that plugin in `apps/web/vite.config.ts`; other builds use Nitro.
 
-## Hosting Selection
+The same app can deploy to Cloudflare, Vercel (`docs/deploying-to-vercel.md`), and other hosts (`docs/deploying-to-other-hosts.md`) at the same time. The Cloudflare commands are:
 
-Choose exactly one default host for a fork:
-
-- Vercel: follow `docs/deploying-to-vercel.md` and use Vercel Git integration.
-- Cloudflare: follow this document and use Workers Builds or Wrangler.
-
-The provider commands remain separate so the choice is reversible:
-
-- Vercel build command: `npm run build`
-- Cloudflare deploy command: `npm run deploy:cloudflare`
-- Cloudflare preview command: `npm run preview:cloudflare`
-- Cloudflare build-only command: `npm run build:cloudflare`
+- Deploy: `npm run deploy:cloudflare`
+- Preview in the Workers runtime: `npm run preview:cloudflare`
+- Build only: `npm run build:cloudflare`
 
 There is intentionally no generic root `deploy` script.
 
@@ -38,11 +30,11 @@ Cloudflare Workers Builds should run from the repository root so npm workspaces 
 
 The Worker name configured in the Cloudflare dashboard must match `pi-starter-web` from `apps/web/wrangler.jsonc`. Forks should rename both together.
 
-The Wrangler configuration points Workers at the OpenNext worker and static assets, enables `nodejs_compat`, and enables observability. `apps/web/open-next.config.ts` holds adapter-specific configuration.
+`apps/web/wrangler.jsonc` points Workers at TanStack Start's server entry, enables `nodejs_compat`, and enables observability. The Vite plugin writes the deployable Worker and its static assets to `apps/web/dist` and generates the configuration `wrangler deploy` reads, so do not pass `--config` to it. For named Wrangler environments, set `CLOUDFLARE_ENV` at build time instead of using `wrangler deploy --env`.
 
 ## Local Commands
 
-Use the normal Next.js server for daily development:
+Use the Vite dev server for daily development:
 
 ```bash
 npm run dev -w @pi-starter/web
@@ -66,17 +58,15 @@ Regenerate binding types after changing `apps/web/wrangler.jsonc`:
 npm run typegen:cloudflare
 ```
 
-`npm run typegen:cloudflare` runs `apps/web/scripts/cloudflare-typegen.mjs`, which generates `apps/web/cloudflare-env.d.ts` through the Wrangler type-generation API from the bindings in `apps/web/wrangler.jsonc` while ignoring the `main` entrypoint. Plain `wrangler types` would embed a `GlobalProps` import of the gitignored `.open-next/worker.js` whenever build output exists, so the wrapper keeps the committed file identical whether or not `npm run build:cloudflare` or `npm run preview:cloudflare` ran first. The wrapper also generates from an isolated temporary copy of the config with Wrangler's `.env` and `process.env` secret inference disabled, so local `.dev.vars`, `.env`, and shell secrets never appear in the committed file; only bindings and `vars` declared in `apps/web/wrangler.jsonc` are typed. `npm test` regenerates the types with and without build output, with synthetic `.dev.vars`, `.env`, and process-environment secrets, and with fixture bindings and `vars`, and fails when the output differs, imports build output, leaks a secret name, drops a declared binding, or drifts from the committed file.
+`npm run typegen:cloudflare` runs `apps/web/scripts/cloudflare-typegen.mjs`, which generates `apps/web/cloudflare-env.d.ts` through the Wrangler type-generation API from the bindings in `apps/web/wrangler.jsonc` while ignoring the `main` entrypoint. Plain `wrangler types` embeds a `GlobalProps` import of the Worker entry whenever it resolves, so the wrapper drops `main` and keeps the committed file identical whether or not a build ran first. The wrapper also generates from an isolated temporary copy of the config with Wrangler's `.env` and `process.env` secret inference disabled, so local `.dev.vars`, `.env`, and shell secrets never appear in the committed file; only bindings and `vars` declared in `apps/web/wrangler.jsonc` are typed. `npm test` regenerates the types with and without build output, with synthetic `.dev.vars`, `.env`, and process-environment secrets, and with fixture bindings and `vars`, and fails when the output differs, imports build output, leaks a secret name, drops a declared binding, or drifts from the committed file.
 
-The generated `apps/web/cloudflare-env.d.ts` omits runtime types, so binding names such as `Fetcher`, `KVNamespace`, and `D1Database` resolve through `@cloudflare/workers-types`, which `apps/web/tsconfig.json` lists in `types` and `apps/web/package.json` pins alongside Wrangler. Keep `compatibility_date` no newer than the bundled `workerd` supports. Security updates to Wrangler and its matching types do not require opting into newer compatibility behavior: this starter retains its existing compatibility date. Change that date deliberately and verify local preview when adopting a newer runtime baseline.
+The generated `apps/web/cloudflare-env.d.ts` contains binding declarations only. Shared app code uses browser types. Node tooling has a separate TypeScript project. If a fork adds Worker-only source, check that code in a separate TypeScript project with runtime types generated from its Wrangler configuration. Test changes to the compatibility date or flags in Workers preview.
 
 ## Build Quality Gates
 
-Cloudflare deploys are packaging steps. Workers Builds automatically sets `WORKERS_CI=1`, so `apps/web/next.config.ts` skips duplicate production TypeScript validation after GitHub Actions has checked the branch.
+Cloudflare deploys are packaging steps. `vite build` does not type-check or lint; keep formatting, linting, types, tests, agent checks, and Fallow auditing in the repository validation flow.
 
-Next.js does not run repository linting during `next build`. Keep formatting, linting, types, tests, agent checks, and Fallow auditing in the repository validation flow.
-
-CI builds the OpenNext Worker on Ubuntu with `npm run build:cloudflare`; this does not deploy or require Cloudflare credentials. Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`. The packaging check does not replace local Workers-runtime preview when changing runtime behavior.
+CI's `Web builds` job runs `npm run build:cloudflare` on Ubuntu; this does not deploy or require Cloudflare credentials. Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` aggregates the validation, web build, and Fallow jobs. The packaging check does not replace local Workers-runtime preview when changing runtime behavior.
 
 ## Environment Variables And Bindings
 
@@ -101,6 +91,6 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 
 ## References
 
-- [Cloudflare Next.js guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/)
-- [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare)
+- [Cloudflare TanStack Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/)
+- [TanStack Start hosting guide](https://tanstack.com/start/latest/docs/framework/react/guide/hosting)
 - [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/)

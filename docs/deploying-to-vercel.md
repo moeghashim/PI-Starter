@@ -1,44 +1,29 @@
 ---
-summary: "Minimal Vercel deployment path for the default Next.js app workspace"
+summary: "Vercel deployment path for the TanStack Start app workspace, built through Nitro"
 read_when:
   - Setting up the starter on Vercel for the first time.
-  - Choosing between Vercel and Cloudflare Workers for `apps/web`.
+  - Choosing or adding hosts for `apps/web`.
   - Shipping changes from `apps/web`.
 ---
 
 # Deploying To Vercel
 
-Use Vercel Git integration as the default deployment path for this starter.
+Deploy `apps/web` with Vercel Git integration. The app is TanStack Start built with Vite; its default build uses Nitro, which detects Vercel and writes Vercel's Build Output API. No `vercel.json` is needed.
 
-This document remains the canonical PI Starter Vercel deployment baseline even if you vendor additional upstream Vercel deployment skills later.
-
-For Cloudflare Workers hosting, use `docs/deploying-to-cloudflare.md` instead. The provider paths remain intentionally separate.
-
-## Hosting Selection
-
-Choose exactly one default host for a fork:
-
-- Vercel: follow this document and keep Vercel Git integration responsible for deploy packaging.
-- Cloudflare: follow `docs/deploying-to-cloudflare.md` and keep Workers Builds or Wrangler responsible for deploy packaging.
-
-There is intentionally no generic root `deploy` script. Do not point Vercel at Cloudflare commands or Cloudflare at Vercel project settings.
+The same app can deploy to Vercel, Cloudflare Workers (`docs/deploying-to-cloudflare.md`), and other hosts (`docs/deploying-to-other-hosts.md`) at the same time. Each host runs its own build; there is intentionally no generic root `deploy` script.
 
 ## Project Settings
 
-- Framework preset: Next.js
+- Framework preset: detected automatically (TanStack Start with Nitro)
 - Root directory: `apps/web`
 - Install command: `npm install`
 - Build command: `npm run build`
 
 ## Build Quality Gates
 
-Vercel builds are deploy packaging only. When Vercel sets `VERCEL=1`, `apps/web/next.config.ts` skips Next.js production TypeScript validation so type errors do not block deployment after CI has already checked the branch.
+Vercel builds are deploy packaging only. `vite build` does not type-check or lint; GitHub Actions owns those through `npm run check`, `npm test`, `npm run agent:check`, and a Fallow audit on pull requests. CI also runs `npm run build -w @pi-starter/web`, the same Nitro build Vercel runs.
 
-Next.js 16 does not run linting during `next build`; keep linting and type checking in CI with `npm run check`.
-
-Image optimization uses the patched Sharp range declared by Next.js itself; no Next.js-specific Sharp override is needed. See the Dependency Overrides section in `CONTRIBUTING.md` for the current override policy.
-
-GitHub Actions owns the required quality gate. The `CI` workflow runs `npm run check`, `npm test`, and `npm run agent:check` on pull requests and pushes to `main`, runs `npm run agent:verify-upstream` in the Ubuntu validation job, plus a Fallow new-code audit on pull requests. It also runs the `Cloudflare build` packaging job so the Cloudflare path stays buildable; Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` already aggregates `Cloudflare build` and `Fallow audit`.
+Protect `main` by requiring `Required checks` and `DCO` before merge; `Required checks` aggregates the validation, web build, and Fallow jobs.
 
 ## Environment Variables
 
@@ -59,6 +44,7 @@ Before shipping `apps/web`, inspect the diff for schema, migration, ORM configur
 5. Let Vercel Git integration build and deploy `apps/web`
 6. Verify the deployed app and database are compatible
 
-This starter does not require a custom `vercel.json`.
+## References
 
-The Cloudflare-specific `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts` files are not used by Vercel.
+- [TanStack Start on Vercel](https://vercel.com/docs/frameworks/full-stack/tanstack-start)
+- [TanStack Start hosting guide](https://tanstack.com/start/latest/docs/framework/react/guide/hosting)

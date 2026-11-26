@@ -32,9 +32,9 @@
 		"commit:with-progress": "node scripts/commit-with-progress.mjs",
 		"reinstall:clean": "node scripts/reinstall-clean.mjs",
 		"version:sync": "node scripts/sync-versions.js && npm install --package-lock-only --ignore-scripts --no-audit --no-fund",
-		"version:patch": "npm version patch -ws --no-git-tag-version && npm run version:sync",
-		"version:minor": "npm version minor -ws --no-git-tag-version && npm run version:sync",
-		"version:major": "npm version major -ws --no-git-tag-version && npm run version:sync",
+		"version:patch": "npm version patch --workspaces --no-workspaces-update --no-git-tag-version && npm run version:sync",
+		"version:minor": "npm version minor --workspaces --no-workspaces-update --no-git-tag-version && npm run version:sync",
+		"version:major": "npm version major --workspaces --no-workspaces-update --no-git-tag-version && npm run version:sync",
 		"release:patch": "node scripts/release.mjs patch",
 		"release:minor": "node scripts/release.mjs minor",
 		"release:major": "node scripts/release.mjs major",
@@ -49,11 +49,6 @@
 		"tsx": "^4.23.15",
 		"typescript": "7.0.2",
 		"yaml": "2.9.1"
-	},
-	"overrides": {
-		"@node-minify/core": {
-			"glob": "12.0.0"
-		}
 	},
 	"engines": {
 		"node": "26.x"

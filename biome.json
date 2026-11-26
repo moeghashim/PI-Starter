@@ -32,7 +32,9 @@
 			"packages/*/src/**/*.ts",
 			"packages/*/test/**/*.ts",
 			"scripts/**/*.js",
-			"scripts/**/*.mjs"
+			"scripts/**/*.mjs",
+			"!**/routeTree.gen.ts",
+			"!**/cloudflare-env.d.ts"
 		]
 	},
 	"overrides": [

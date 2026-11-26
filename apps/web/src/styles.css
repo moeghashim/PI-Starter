@@ -1,13 +1,14 @@
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/space-grotesk/latin-400.css";
+@import "@fontsource/space-grotesk/latin-700.css";
+
 :root {
 	--font-display: "Instrument Serif", serif;
 	--font-sans: "Space Grotesk", sans-serif;
 	--ink: #1f2b23;
 	--muted: #5d6c63;
-	--paper: #f8f4ea;
-	--paper-strong: #efe3cc;
 	--line: rgba(31, 43, 35, 0.14);
 	--accent: #be5b2d;
-	--accent-soft: rgba(190, 91, 45, 0.12);
 	--shadow: 0 24px 80px rgba(43, 33, 17, 0.12);
 }
 

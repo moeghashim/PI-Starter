@@ -20,17 +20,17 @@ jobs:
   required-checks-summary:
     name: Required checks
     if: ${{ always() }}
-    needs: [required-checks, cloudflare-build, fallow-audit]
+    needs: [required-checks, web-builds, fallow-audit]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       # Every job must succeed; only fallow-audit may also be skipped (on non-PR events).
       - name: Require successful validation
-        if: ${{ needs.required-checks.result != 'success' || needs.cloudflare-build.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}
+        if: ${{ needs.required-checks.result != 'success' || needs.web-builds.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}
         run: exit 1
 
-  cloudflare-build:
-    name: Cloudflare build
+  web-builds:
+    name: Web builds
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -40,6 +40,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - run: npm run build -w @pi-starter/web
       - run: npm run build:cloudflare
 
   fallow-audit:
@@ -63,16 +64,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Next.js types
-        run: npm exec -w @pi-starter/web -- next typegen
-
       - name: Audit changed code
         uses: fallow-rs/fallow@34269241152fa2e7e6a9de1aba698dcae93035b3 # v3.41.0
         with:
           command: audit
           gate: new-only
           fail-on-issues: true
-          # Re-resolve generated types instead of restoring stale missing-import results.
+          # Keep the audit based on the current route tree.
           no-cache: true
 
   required-checks:
@@ -108,7 +106,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The Cloudflare build job runs the full Next.js production build once; check generates route types.
+      # The web builds run separately. Build only publishable packages in this job.
       - name: Build packages
         run: npm run build -w packages --if-present
 
