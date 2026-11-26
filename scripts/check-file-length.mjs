@@ -11,6 +11,8 @@ const EXCLUDE_DIR_NAMES = new Set([
 	"dist",
 	"build",
 	".git",
+	".next",
+	".open-next",
 	".output",
 	".nitro",
 	".tanstack",

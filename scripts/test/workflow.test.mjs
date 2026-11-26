@@ -36,7 +36,7 @@ test("version bump preserves external resolutions and installed dependencies", (
 		JSON.stringify({
 			type: "module",
 			private: true,
-			workspaces: ["packages/*"],
+			workspaces: ["apps/*", "packages/*"],
 			scripts: {
 				"version:patch": manifest.scripts["version:patch"],
 				"version:sync": manifest.scripts["version:sync"],
@@ -51,6 +51,14 @@ test("version bump preserves external resolutions and installed dependencies", (
 			dependencies: { "fixture-external": "file:../../external" },
 		}),
 	);
+	f.write(
+		"apps/web/package.json",
+		JSON.stringify({
+			name: "fixture-web",
+			version: "1.0.0",
+			dependencies: { "fixture-core": "1.0.0" },
+		}),
+	);
 	f.write("external/package.json", JSON.stringify({ name: "fixture-external", version: "1.0.0" }));
 	f.copy("scripts/sync-versions.js");
 	f.run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"]);
@@ -60,6 +68,8 @@ test("version bump preserves external resolutions and installed dependencies", (
 	f.run("npm", ["run", "version:patch"]);
 	const after = JSON.parse(readFileSync(join(f.directory, "package-lock.json")));
 	assert.equal(after.packages["packages/core"].version, "1.0.1");
+	assert.equal(after.packages["apps/web"].version, "1.0.1");
+	assert.equal(after.packages["apps/web"].dependencies["fixture-core"], "^1.0.1");
 	assert.equal(statSync(join(f.directory, "node_modules")).ino, installedDirectory);
 	assert.deepEqual(after.packages.external, before.packages.external);
 	assert.deepEqual(after.packages["node_modules/fixture-external"], before.packages["node_modules/fixture-external"]);
