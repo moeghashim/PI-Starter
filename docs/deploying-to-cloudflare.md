@@ -52,15 +52,15 @@ Deploy manually when Workers Builds is not responsible for deployment:
 npm run deploy:cloudflare
 ```
 
-Regenerate binding types after changing `apps/web/wrangler.jsonc`:
+Regenerate binding and runtime types after changing `apps/web/wrangler.jsonc` or upgrading Wrangler:
 
 ```bash
 npm run typegen:cloudflare
 ```
 
-`npm run typegen:cloudflare` runs `apps/web/scripts/cloudflare-typegen.mjs`, which generates `apps/web/cloudflare-env.d.ts` through the Wrangler type-generation API from the bindings in `apps/web/wrangler.jsonc` while ignoring the `main` entrypoint. Plain `wrangler types` embeds a `GlobalProps` import of the Worker entry whenever it resolves, so the wrapper drops `main` and keeps the committed file identical whether or not a build ran first. The wrapper also generates from an isolated temporary copy of the config with Wrangler's `.env` and `process.env` secret inference disabled, so local `.dev.vars`, `.env`, and shell secrets never appear in the committed file; only bindings and `vars` declared in `apps/web/wrangler.jsonc` are typed. `npm test` regenerates the types with and without build output, with synthetic `.dev.vars`, `.env`, and process-environment secrets, and with fixture bindings and `vars`, and fails when the output differs, imports build output, leaks a secret name, drops a declared binding, or drifts from the committed file.
+`npm run typegen:cloudflare` writes `apps/web/cloudflare-env.d.ts`. Commit the generated file so `npm run check` works on a fresh checkout. Wrangler reads binding declarations from the config and generates runtime types from the Worker's compatibility date and flags. The web TypeScript project includes the generated file, so Worker code can use `CloudflareEnv` and binding types such as `KVNamespace` and `D1Database`. The tooling project loads Node globals separately. Use Worker bindings only in code that runs on Cloudflare.
 
-The generated `apps/web/cloudflare-env.d.ts` contains binding declarations only. Shared app code uses browser types. Node tooling has a separate TypeScript project. If a fork adds Worker-only source, check that code in a separate TypeScript project with runtime types generated from its Wrangler configuration. Test changes to the compatibility date or flags in Workers preview.
+The wrapper generates from an isolated temporary config. It drops the `main` entrypoint so adding build output does not create a `GlobalProps` import. It also disables secret inference from local `.dev.vars`, `.env`, and the shell environment. Tests check output stability and secret isolation. They compile a KV and D1 fixture with the web TypeScript config and verify that `process` and `Buffer` stay out of app scope. Test changes to the compatibility date or flags in Workers preview.
 
 ## Build Quality Gates
 

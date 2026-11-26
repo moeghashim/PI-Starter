@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -45,8 +45,9 @@ test("cloudflare typegen output is identical with and without a built Worker ent
 	const withBuildOutput = generate(directory, "with-build.d.ts");
 
 	assert.equal(withBuildOutput, withoutBuildOutput);
-	assert.doesNotMatch(withoutBuildOutput, /import\(/);
-	assert.doesNotMatch(withoutBuildOutput, /GlobalProps/);
+	const bindings = withoutBuildOutput.split("// Begin runtime types")[0];
+	assert.doesNotMatch(bindings, /import\(/);
+	assert.doesNotMatch(bindings, /GlobalProps/);
 	assert.match(withoutBuildOutput, /interface CloudflareEnv extends __BaseEnv_CloudflareEnv \{\}/);
 	assert.equal(withoutBuildOutput, readFileSync(join(webRoot, "cloudflare-env.d.ts"), "utf8"));
 	assert.deepEqual(readdirSync(directory).sort(), [
@@ -108,4 +109,53 @@ test("cloudflare typegen keeps bindings and vars declared in wrangler config", (
 	assert.match(output, /FIXTURE_KV: KVNamespace;/);
 	assert.match(output, /FIXTURE_CONFIG_VAR: "from-config";/);
 	assert.doesNotMatch(output, /FIXTURE_DEV_VARS_SECRET/);
+});
+
+test("web TypeScript resolves generated KV and D1 bindings without Node globals", (t) => {
+	const directory = tempDir(t, "pi-cloudflare-typegen-");
+	const fixtureWebRoot = join(directory, "apps/web");
+	mkdirSync(join(fixtureWebRoot, "src"), { recursive: true });
+	symlinkSync(join(root, "node_modules"), join(directory, "node_modules"), "junction");
+	copyFileSync(join(root, "tsconfig.base.json"), join(directory, "tsconfig.base.json"));
+	copyFileSync(join(webRoot, "tsconfig.json"), join(fixtureWebRoot, "tsconfig.json"));
+	writeFileSync(
+		join(fixtureWebRoot, "wrangler.jsonc"),
+		JSON.stringify({
+			name: "pi-starter-web-fixture",
+			compatibility_date: "2026-07-22",
+			compatibility_flags: ["nodejs_compat"],
+			kv_namespaces: [{ binding: "CACHE", id: "00000000000000000000000000000000" }],
+			d1_databases: [
+				{
+					binding: "DB",
+					database_name: "fixture-db",
+					database_id: "00000000-0000-0000-0000-000000000000",
+				},
+			],
+		}),
+	);
+	generate(fixtureWebRoot, "cloudflare-env.d.ts");
+	writeFileSync(
+		join(fixtureWebRoot, "src/bindings.ts"),
+		`export async function readBindings(env: CloudflareEnv) {
+	const cache: KVNamespace = env.CACHE;
+	const db: D1Database = env.DB;
+	const value: string | null = await env.CACHE.get("key");
+	const row = await env.DB.prepare("SELECT 1").first<number>();
+	// @ts-expect-error KV keys must be strings.
+	env.CACHE.get(123);
+	// @ts-expect-error D1 statements must be SQL strings.
+	env.DB.prepare(123);
+	return { cache, db, value, row };
+}
+// @ts-expect-error Shared app code has no ambient Node process.
+void process;
+// @ts-expect-error Shared app code has no ambient Node Buffer.
+void Buffer;
+`,
+	);
+	execFileSync(process.execPath, [join(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json"], {
+		cwd: fixtureWebRoot,
+		encoding: "utf8",
+	});
 });

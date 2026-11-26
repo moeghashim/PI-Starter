@@ -6,7 +6,7 @@ const MAX_LINES = Number(process.env.MAX_FILE_LINES ?? 600);
 const ROOT = process.cwd();
 const INCLUDE_DIRS = ["apps", "packages"];
 const INCLUDE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".mjs"]);
-const EXCLUDE_DIR_NAMES = new Set([
+const EXCLUDE_NAMES = new Set([
 	"node_modules",
 	"dist",
 	"build",
@@ -18,11 +18,12 @@ const EXCLUDE_DIR_NAMES = new Set([
 	".tanstack",
 	".vercel",
 	".wrangler",
+	"cloudflare-env.d.ts",
 ]);
 
 function walk(dir, out = []) {
 	for (const name of readdirSync(dir)) {
-		if (EXCLUDE_DIR_NAMES.has(name)) {
+		if (EXCLUDE_NAMES.has(name)) {
 			continue;
 		}
 
