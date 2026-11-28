@@ -43,12 +43,12 @@ const REQUIRED_AGENTS_SNIPPETS = [
 	"docs/agent-workflow.md",
 	"docs/agent-skills.md",
 	"docs/commands.md",
-	"npm run docs:list",
-	"npm run agent:check",
-	"npm run agent:verify-upstream",
-	"npm run fallow:audit",
+	"pnpm run docs:list",
+	"pnpm run agent:check",
+	"pnpm run agent:verify-upstream",
+	"pnpm run fallow:audit",
 	"full-stop",
-	"npm run pr:ready",
+	"pnpm run pr:ready",
 	"useMountEffect",
 	"CLAUDE.md",
 ];
@@ -97,12 +97,12 @@ for (const entry of readdirSync(SKILLS_DIR, { withFileTypes: true })) {
 	}
 }
 
-// Every root `npm run <script>` that AGENTS.md tells agents to use must exist. Workspace (-w) commands and
+// Every root `pnpm run <script>` that AGENTS.md tells agents to use must exist. Workspace (--filter) commands and
 // placeholders such as `release:<bump>` are skipped.
 const { scripts = {} } = JSON.parse(readFileSync("package.json", "utf8"));
-for (const [, scriptName, workspace] of agents.matchAll(/npm run ([a-z][\w:-]*)( -w)?(?=[\s`"])/g)) {
-	if (!workspace && !scripts[scriptName]) {
-		fail(`AGENTS.md references missing script: npm run ${scriptName}`);
+for (const [, scriptName] of agents.matchAll(/pnpm run ([a-z][\w:-]*)(?=[\s`"])/g)) {
+	if (!scripts[scriptName]) {
+		fail(`AGENTS.md references missing script: pnpm run ${scriptName}`);
 	}
 }
 

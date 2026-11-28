@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -20,13 +22,12 @@ jobs:
   required-checks-summary:
     name: Required checks
     if: ${{ always() }}
-    needs: [required-checks, web-builds, fallow-audit]
+    needs: [required-checks, web-builds]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      # Every job must succeed; only fallow-audit may also be skipped (on non-PR events).
       - name: Require successful validation
-        if: ${{ needs.required-checks.result != 'success' || needs.web-builds.result != 'success' || (needs.fallow-audit.result != 'success' && needs.fallow-audit.result != 'skipped') }}
+        if: ${{ needs.required-checks.result != 'success' || needs.web-builds.result != 'success' }}
         run: exit 1
 
   web-builds:
@@ -34,53 +35,56 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run build -w @pi-starter/web
-      - run: npm run build:cloudflare
-
-  fallow-audit:
-    name: Fallow audit
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          filter: blob:none
+
+      - name: Check if web build inputs changed
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$PR_BASE"..."$PR_HEAD" | grep -qE '^(apps/|packages/|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig.*\.json|\.github/workflows/ci\.yml)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up pnpm
+        if: steps.changes.outputs.run == 'true'
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
       - name: Set up Node
+        if: steps.changes.outputs.run == 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        if: steps.changes.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
 
-      - name: Audit changed code
-        uses: fallow-rs/fallow@34269241152fa2e7e6a9de1aba698dcae93035b3 # v3.41.0
-        with:
-          command: audit
-          gate: new-only
-          fail-on-issues: true
-          # Keep the audit based on the current route tree.
-          no-cache: true
+      # Nitro output covers Vercel, Node, and other hosts; the Cloudflare build targets Workers.
+      - name: Build web app (Nitro)
+        if: steps.changes.outputs.run == 'true'
+        run: pnpm --filter @pi-starter/web run build
+
+      - name: Build web app (Cloudflare)
+        if: steps.changes.outputs.run == 'true'
+        run: pnpm run build:cloudflare
 
   required-checks:
-    name: Required checks
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-    runs-on: ${{ matrix.os }}
+    name: Validation
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -88,12 +92,33 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          filter: blob:none
+
+      - name: Detect upstream skill changes
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "upstream=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$PR_BASE"..."$PR_HEAD" | grep -qE '^(agent/|\.agents/skills/|scripts/agent-sync\.mjs)'; then
+            echo "upstream=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "upstream=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Warn about PR size
         if: github.event_name == 'pull_request'
@@ -101,25 +126,18 @@ jobs:
         env:
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
-        run: npm run pr:size -- "$PR_BASE" "$PR_HEAD"
+        run: pnpm run pr:size -- "$PR_BASE" "$PR_HEAD"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      # The web builds run separately. Build only publishable packages in this job.
-      - name: Build packages
-        run: npm run build -w packages --if-present
-
-      - name: Check formatting, linting, and types
-        run: npm run check
-
-      - name: Run tests
-        run: npm test
-
-      - name: Run agent guardrails
-        run: npm run agent:check
+      - name: Run checks, tests, guardrails, and Fallow in parallel
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: pnpm run ci:validate
 
       - name: Verify vendored files against pinned upstream
-        run: npm run agent:verify-upstream
+        if: steps.changes.outputs.upstream == 'true'
+        run: pnpm run agent:verify-upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

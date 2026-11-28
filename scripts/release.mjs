@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Prepares a release as a pull request: bumps versions on a release branch, validates, and commits.
-// After the pull request merges, `npm run release:tag` tags main and optionally publishes.
+// After the pull request merges, `pnpm run release:tag` tags main and optionally publishes.
 
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -20,7 +20,7 @@ const VALID_BUMPS = new Set(["patch", "minor", "major"]);
 const UNRELEASED_HEADING = "## [Unreleased]";
 
 function usage() {
-	console.error('Usage: npm run release:<patch|minor|major> -- --learning "<text>"');
+	console.error('Usage: pnpm run release:<patch|minor|major> -- --learning "<text>"');
 }
 
 function parseArgs(argv) {
@@ -91,10 +91,10 @@ ensureBranchIsFree(branch);
 const changelogs = readUnreleasedChangelogs();
 
 run("git", ["switch", "-c", branch]);
-run("npm", ["run", `version:${bump}`]);
+run("pnpm", ["run", `version:${bump}`]);
 const bumped = readReleaseVersion();
 if (bumped !== version) {
-	abort(`npm run version:${bump} produced ${bumped}, expected ${version}.`);
+	abort(`pnpm run version:${bump} produced ${bumped}, expected ${version}.`);
 }
 startNewVersionSection(changelogs, version);
 run("node", [
@@ -111,7 +111,7 @@ run("node", [
 ]);
 
 for (const script of ["build", "check", "test", "agent:check", "fallow:audit"]) {
-	run("npm", ["run", script]);
+	run("pnpm", ["run", script]);
 }
 
 run("git", ["add", "--update"]);
@@ -121,5 +121,5 @@ console.log(
 	`\nPrepared ${tag} on ${branch}. Push it and open a pull request:\n\n  git push -u origin ${branch}\n  gh pr create --base main --head ${branch}\n`,
 );
 console.log(
-	"After the pull request merges, update main and run `npm run release:tag` (add `-- --publish` to publish).",
+	"After the pull request merges, update main and run `pnpm run release:tag` (add `-- --publish` to publish).",
 );

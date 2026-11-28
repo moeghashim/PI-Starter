@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 
 function usage() {
 	console.error(
-		'Usage: npm run commit:with-progress -- "<type(scope): summary>" --learning "<learning>" -- <path1> <path2> ...',
+		'Usage: pnpm run commit:with-progress -- "<type(scope): summary>" --learning "<learning>" -- <path1> <path2> ...',
 	);
 }
 

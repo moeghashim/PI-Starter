@@ -12,6 +12,7 @@ packages/*/dist/
 apps/*/node_modules/
 *.log
 *.tsbuildinfo
+.cache/
 .DS_Store
 
 .env

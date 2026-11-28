@@ -28,7 +28,7 @@ for (const relativePath of removablePaths) {
 	rmSync(join(process.cwd(), relativePath), { recursive: true, force: true });
 }
 
-const install = spawnSync("npm", ["install"], { stdio: "inherit" });
+const install = spawnSync("pnpm", ["install"], { stdio: "inherit" });
 if (install.status !== 0) {
 	process.exit(install.status ?? 1);
 }

@@ -25,7 +25,19 @@ function platformArchSuffix() {
 	return `${platform}-${arch}`;
 }
 
-function scanInstalledVariants(scopeName, expectedPrefix) {
+function hasInstalledPackage(packageName) {
+	if (existsSync(join(process.cwd(), "node_modules", ...packageName.split("/")))) {
+		return true;
+	}
+	const pnpmDir = join(process.cwd(), "node_modules", ".pnpm");
+	if (!existsSync(pnpmDir)) {
+		return false;
+	}
+	const escapedPrefix = `${packageName.replace("/", "+")}@`;
+	return readdirSync(pnpmDir).some((entry) => entry.startsWith(escapedPrefix));
+}
+
+function scanDirectVariants(scopeName, expectedPrefix) {
 	const scopePath = join(process.cwd(), "node_modules", scopeName);
 	if (!existsSync(scopePath)) {
 		return [];
@@ -33,6 +45,24 @@ function scanInstalledVariants(scopeName, expectedPrefix) {
 	return readdirSync(scopePath)
 		.map((entry) => `${scopeName}/${entry}`)
 		.filter((name) => name.startsWith(expectedPrefix));
+}
+
+function scanPnpmVariants(expectedPrefix) {
+	const pnpmDir = join(process.cwd(), "node_modules", ".pnpm");
+	if (!existsSync(pnpmDir)) {
+		return [];
+	}
+	const escapedPrefix = expectedPrefix.replace("/", "+");
+	return readdirSync(pnpmDir)
+		.filter((entry) => entry.startsWith(escapedPrefix))
+		.map((entry) => {
+			const atIndex = entry.indexOf("@", 1);
+			return (atIndex > 0 ? entry.slice(0, atIndex) : entry).replace("+", "/");
+		});
+}
+
+function scanInstalledVariants(scopeName, expectedPrefix) {
+	return [...new Set([...scanDirectVariants(scopeName, expectedPrefix), ...scanPnpmVariants(expectedPrefix)])];
 }
 
 function collectNativePackageIssue(label, expectedPackage) {
@@ -45,7 +75,7 @@ function collectNativePackageIssue(label, expectedPackage) {
 	}
 
 	const expected = expectedPackage(suffix);
-	if (existsSync(join(process.cwd(), "node_modules", ...expected.split("/")))) {
+	if (hasInstalledPackage(expected)) {
 		return { issue: null, warning: null };
 	}
 
@@ -54,7 +84,7 @@ function collectNativePackageIssue(label, expectedPackage) {
 	const installedVariants = scanInstalledVariants(scopeName, variantPrefix);
 	if (installedVariants.length === 0) {
 		return {
-			issue: `${label}: expected ${expected} but it is not installed. Run npm install or npm run reinstall:clean.`,
+			issue: `${label}: expected ${expected} but it is not installed. Run pnpm install or pnpm run reinstall:clean.`,
 			warning: null,
 		};
 	}
@@ -69,23 +99,23 @@ export function getEnvironmentReport() {
 	const issues = [];
 	const warnings = [];
 	const nodeVersion = process.version;
-	const npmVersion = readCommand("npm", ["-v"]);
+	const pnpmVersion = readCommand("pnpm", ["-v"]);
 
 	if (Number(process.versions.node.split(".")[0]) !== EXPECTED_NODE_MAJOR) {
 		issues.push(`Expected Node ${EXPECTED_NODE_MAJOR}.x, found ${nodeVersion}.`);
 	}
 
-	if (!npmVersion) {
-		issues.push("npm is not available on PATH.");
+	if (!pnpmVersion) {
+		issues.push("pnpm is not available on PATH.");
 	}
 
 	if (!existsSync(join(process.cwd(), "node_modules"))) {
-		warnings.push("Dependencies are not installed yet. Run npm install after fixing any Node/npm mismatch.");
+		warnings.push("Dependencies are not installed yet. Run pnpm install after fixing any Node/pnpm mismatch.");
 		return {
 			issues,
 			warnings,
 			nodeVersion,
-			npmVersion,
+			pnpmVersion,
 			platform: process.platform,
 			architecture: process.arch,
 		};
@@ -109,15 +139,15 @@ export function getEnvironmentReport() {
 		issues,
 		warnings,
 		nodeVersion,
-		npmVersion,
+		pnpmVersion,
 		platform: process.platform,
 		architecture: process.arch,
 	};
 }
 
-export function printEnvironmentReport({ issues, warnings, nodeVersion, npmVersion, platform, architecture }) {
+export function printEnvironmentReport({ issues, warnings, nodeVersion, pnpmVersion, platform, architecture }) {
 	console.log(`Node: ${nodeVersion}`);
-	console.log(`npm: ${npmVersion ?? "not found"}`);
+	console.log(`pnpm: ${pnpmVersion ?? "not found"}`);
 	console.log(`Platform: ${platform}`);
 	console.log(`Architecture: ${architecture}`);
 
@@ -134,7 +164,7 @@ export function printEnvironmentReport({ issues, warnings, nodeVersion, npmVersi
 			console.error(`- ${issue}`);
 		}
 		console.error(
-			`\nSuggested fix: use Node ${EXPECTED_NODE_MAJOR} on this machine, then run npm install or npm run reinstall:clean so native dependencies match the current OS and CPU architecture.`,
+			`\nSuggested fix: use Node ${EXPECTED_NODE_MAJOR} on this machine, then run pnpm install or pnpm run reinstall:clean so native dependencies match the current OS and CPU architecture.`,
 		);
 	}
 }

@@ -9,8 +9,8 @@
 		"build": "vite build",
 		"start": "node .output/server/index.mjs",
 		"cf:build": "vite build --mode cloudflare",
-		"cf:preview": "npm run cf:build && vite preview --mode cloudflare",
-		"cf:deploy": "npm run cf:build && wrangler deploy",
+		"cf:preview": "pnpm run cf:build && vite preview --mode cloudflare",
+		"cf:deploy": "pnpm run cf:build && wrangler deploy",
 		"cf:typegen": "node scripts/cloudflare-typegen.mjs",
 		"check": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
 		"test": "tsx --tsconfig tsconfig.json --test \"test/**/*.test.ts\""
@@ -18,7 +18,7 @@
 	"dependencies": {
 		"@fontsource/instrument-serif": "5.3.0",
 		"@fontsource/space-grotesk": "5.3.0",
-		"@pi-starter/core": "0.0.2",
+		"@pi-starter/core": "workspace:^",
 		"@tanstack/react-router": "1.170.46",
 		"@tanstack/react-start": "1.169.5",
 		"react": "19.3.1",
@@ -32,7 +32,7 @@
 		"@vitejs/plugin-react": "6.3.0",
 		"nitro": "3.0.261103-rc",
 		"vite": "8.3.8",
-		"wrangler": "4.158.0"
+		"wrangler": "4.160.0"
 	},
 	"engines": {
 		"node": "26.x"

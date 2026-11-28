@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Tags the latest merged release on origin/main and optionally publishes it. Run after the release
-// pull request from `npm run release:<bump>` merges. Only the tag is pushed; main itself is never
+// pull request from `pnpm run release:<bump>` merges. Only the tag is pushed; main itself is never
 // pushed here. Every step is idempotent, so a failed run can be resumed by rerunning.
 
 import { spawnSync } from "node:child_process";
@@ -23,7 +23,7 @@ const RELEASE_SUBJECT = /^chore\(release\): v(\d+\.\d+\.\d+)( \(#\d+\))?$/m;
 
 const args = process.argv.slice(2);
 if (args.some((arg) => arg !== "--publish")) {
-	console.error("Usage: npm run release:tag [-- --publish]");
+	console.error("Usage: pnpm run release:tag [-- --publish]");
 	process.exit(1);
 }
 const publish = args.includes("--publish");
@@ -85,5 +85,5 @@ for (const pkg of publishablePackages()) {
 		console.log(`${pkg.name}@${version} is already published.`);
 		continue;
 	}
-	run("npm", ["publish", "--workspace", pkg.name, "--access", "public"]);
+	run("pnpm", ["--filter", pkg.name, "publish", "--access", "public", "--no-git-checks"]);
 }

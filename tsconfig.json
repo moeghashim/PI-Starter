@@ -2,6 +2,8 @@
 	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"noEmit": true,
+		"incremental": true,
+		"tsBuildInfoFile": "./.cache/tsbuildinfo/root.tsbuildinfo",
 		"paths": {
 			"@pi-starter/*": [
 				"./packages/*/src/index.ts"

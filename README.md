@@ -7,8 +7,8 @@ Monorepo starter for solo maintainers shipping both deployable apps and publisha
 - Node 26 LTS, pinned by major in `.nvmrc`
 - ESM TypeScript with strict checking, compiled by the native TypeScript 7 compiler in every workspace
 - Biome formatting/linting (tabs, indentWidth 3, lineWidth 120)
-- `npm run check` gates formatting, linting, and type checking
-- `npm run fix` explicitly applies formatting and lint fixes for review
+- `pnpm run check` gates formatting, linting, and incremental type checking in parallel
+- `pnpm run fix` explicitly applies formatting and lint fixes for review
 - Fallow changed-code auditing for dead code, duplication, circular dependencies, and complexity regressions
 - Optional max-lines-per-file check
 - Harness-native agent skills in `.agents/skills/` (also exposed as `.claude/skills`) with vendored guardrail scripts
@@ -36,17 +36,18 @@ Inspired by [badlogic/pi-mono](https://github.com/badlogic/pi-mono), [steipete/a
 ```bash
 nvm install
 nvm use
-npm run doctor
-npm install
-npm run check
-npm test
-npm run fallow:audit
-npm run agent:check
+pnpm run doctor
+pnpm install
+pnpm run check
+pnpm run test:app
+pnpm test
+pnpm run fallow:audit
+pnpm run agent:check
 ```
 
-If you switch between `arm64` and `x64`, or between Rosetta and native Node, run `npm run reinstall:clean` to refresh native dependencies.
+If you switch between `arm64` and `x64`, or between Rosetta and native Node, run `pnpm run reinstall:clean` to refresh native dependencies.
 
-This starter is used across `darwin-x64`, `darwin-arm64`, and Linux environments. Keep `node_modules` machine-local and rerun `npm install` or `npm run reinstall:clean` whenever native dependencies stop matching the current OS or CPU architecture.
+This starter is used across `darwin-x64`, `darwin-arm64`, and Linux environments. Keep `node_modules` machine-local and rerun `pnpm install` or `pnpm run reinstall:clean` whenever native dependencies stop matching the current OS or CPU architecture.
 
 Use `/pstack-work` to build and verify a change. Use TStack `full-stop` for PR review and handoff. Authenticate GitHub CLI with `gh auth login`. The TStack watcher uses Python 3. See [the agent workflow](./docs/agent-workflow.md) for publishing and checking pull requests.
 
@@ -54,18 +55,18 @@ Use `/pstack-work` to build and verify a change. Use TStack `full-stop` for PR r
 
 `apps/web` is the default app target. Choose one default host for a fork and keep provider settings separate.
 
-- Vercel: use `apps/web` as the Vercel root directory and `npm run build` as the build command. No custom `vercel.json` is required.
-- Cloudflare: use the repository root in Workers Builds and `npm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc`.
+- Vercel: use `apps/web` as the Vercel root directory and `pnpm run build` as the build command. No custom `vercel.json` is required.
+- Cloudflare: use the repository root in Workers Builds and `pnpm run deploy:cloudflare` as the deploy command. Cloudflare configuration lives in `apps/web/wrangler.jsonc`.
 - Other hosts: choose a Nitro preset and follow [the other hosts guide](./docs/deploying-to-other-hosts.md).
 
-GitHub Actions runs the required `Required checks` gate and the `Web builds` packaging job for pull requests and pushes to `main`, plus the `Fallow audit` check on pull requests; hosting providers remain responsible for deployment packaging only.
+GitHub Actions runs the required `Required checks` gate for pull requests and pushes to `main`. `Validation` runs checks, tests, agent guardrails, inline pull-request Fallow auditing, and path-gated upstream skill verification. `Web builds` builds both Nitro and Cloudflare outputs when app or package inputs change; hosting providers remain responsible for deployment packaging only.
 
-`Required checks` is the status used by branch protection. It requires Ubuntu validation and both web builds. The validation job also verifies vendored skills against their pinned sources. Fallow runs on pull requests. The committed route tree lets `npm run check` run on a fresh checkout.
+`Required checks` is the status used by branch protection. It requires Ubuntu validation and web builds (when applicable). The committed route tree lets `pnpm run check` run on a fresh checkout.
 
 In branch protection for `main`, require `Required checks` and `DCO`. Commits must carry a `Signed-off-by` trailer, and DCO only blocks merges once it is a required check.
 
 ```bash
-npm run dev -w @pi-starter/web
+pnpm run dev
 ```
 
 See `docs/deploying-to-vercel.md` and `docs/deploying-to-cloudflare.md` for provider-specific setup.
@@ -76,9 +77,7 @@ Shared package code lives in `packages/core`. Release scripts still default to b
 
 ## Fork Workflow
 
-When you fork this starter, `progress.md` comes with it. Keep that file in the fork so both humans and agents have a shared append-only learning log for commits, releases, deploys, and handoffs.
-
-If you want to mark the fork boundary, append a new entry noting when the fork started and continue from there. Do not rewrite earlier entries.
+When you fork or create a repo from this template, run `pnpm run init:project --name <your-slug>` to rename the workspace packages, Worker name, and starter title, refresh `pnpm-lock.yaml`, and append a fork-boundary entry to `progress.md`. Keep `progress.md` tracked and continue appending project learnings instead of rewriting earlier entries.
 
 ## Agent Layer
 
