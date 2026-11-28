@@ -3,8 +3,23 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const rootPackageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8"));
-const workspacePatterns = Array.isArray(rootPackageJson.workspaces) ? rootPackageJson.workspaces : [];
+function readPnpmWorkspaces(filePath) {
+	if (!existsSync(filePath)) {
+		return [];
+	}
+	return [...readFileSync(filePath, "utf8").matchAll(/^\s*-\s*["']?([^"'\s#]+)["']?/gm)].map((match) => match[1]);
+}
+
+function readWorkspacePatterns() {
+	const pnpmPatterns = readPnpmWorkspaces(join(process.cwd(), "pnpm-workspace.yaml"));
+	if (pnpmPatterns.length > 0) {
+		return pnpmPatterns;
+	}
+	const rootPackageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8"));
+	return Array.isArray(rootPackageJson.workspaces) ? rootPackageJson.workspaces : [];
+}
+
+const workspacePatterns = readWorkspacePatterns();
 
 function resolveWorkspaceDirs() {
 	const dirs = [];
@@ -55,6 +70,9 @@ for (const { packagePath, data } of packages.values()) {
 		for (const dependencyName of Object.keys(deps)) {
 			const dependencyVersion = versionMap.get(dependencyName);
 			if (!dependencyVersion) {
+				continue;
+			}
+			if (typeof deps[dependencyName] === "string" && deps[dependencyName].startsWith("workspace:")) {
 				continue;
 			}
 

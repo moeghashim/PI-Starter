@@ -16,7 +16,7 @@
 		"build": "tsc -p tsconfig.build.json",
 		"dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
 		"test": "tsx --test \"test/**/*.test.ts\"",
-		"prepublishOnly": "npm run clean && npm run build"
+		"prepublishOnly": "pnpm run clean && pnpm run build"
 	},
 	"engines": {
 		"node": ">=22"

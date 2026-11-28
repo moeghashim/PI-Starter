@@ -25,7 +25,7 @@ function vendoredPathspecs() {
 }
 
 try {
-	if (!base) throw new Error("Usage: npm run pr:size -- <base> [head]");
+	if (!base) throw new Error("Usage: pnpm run pr:size -- <base> [head]");
 	const sha = (ref) =>
 		execFileSync("git", ["rev-parse", "--verify", "--end-of-options", `${ref}^{commit}`], {
 			encoding: "utf8",

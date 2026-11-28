@@ -31,12 +31,12 @@ test("pre-commit preserves partial staging, including paths with spaces", (t) =>
 
 test("version bump preserves external resolutions and installed dependencies", (t) => {
 	const f = sandbox(t);
+	f.write("pnpm-workspace.yaml", 'packages:\n  - "apps/*"\n  - "packages/*"\n');
 	f.write(
 		"package.json",
 		JSON.stringify({
 			type: "module",
 			private: true,
-			workspaces: ["apps/*", "packages/*"],
 			scripts: {
 				"version:patch": manifest.scripts["version:patch"],
 				"version:sync": manifest.scripts["version:sync"],
@@ -56,24 +56,25 @@ test("version bump preserves external resolutions and installed dependencies", (
 		JSON.stringify({
 			name: "fixture-web",
 			version: "1.0.0",
-			dependencies: { "fixture-core": "1.0.0" },
+			dependencies: { "fixture-core": "workspace:^" },
 		}),
 	);
 	f.write("external/package.json", JSON.stringify({ name: "fixture-external", version: "1.0.0" }));
 	f.copy("scripts/sync-versions.js");
-	f.run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"]);
-	f.write("node_modules/fixture-core/preserve.txt", "installed state");
+	f.run("pnpm", ["install", "--ignore-scripts"]);
+	f.write("node_modules/preserve.txt", "installed state");
 	const installedDirectory = statSync(join(f.directory, "node_modules")).ino;
-	const before = JSON.parse(readFileSync(join(f.directory, "package-lock.json")));
-	f.run("npm", ["run", "version:patch"]);
-	const after = JSON.parse(readFileSync(join(f.directory, "package-lock.json")));
-	assert.equal(after.packages["packages/core"].version, "1.0.1");
-	assert.equal(after.packages["apps/web"].version, "1.0.1");
-	assert.equal(after.packages["apps/web"].dependencies["fixture-core"], "^1.0.1");
+	const beforeLock = readFileSync(join(f.directory, "pnpm-lock.yaml"), "utf8");
+	f.run("pnpm", ["run", "version:patch"]);
+	const corePkg = JSON.parse(readFileSync(join(f.directory, "packages/core/package.json"), "utf8"));
+	const webPkg = JSON.parse(readFileSync(join(f.directory, "apps/web/package.json"), "utf8"));
+	assert.equal(corePkg.version, "1.0.1");
+	assert.equal(webPkg.version, "1.0.1");
+	assert.equal(webPkg.dependencies["fixture-core"], "workspace:^");
 	assert.equal(statSync(join(f.directory, "node_modules")).ino, installedDirectory);
-	assert.deepEqual(after.packages.external, before.packages.external);
-	assert.deepEqual(after.packages["node_modules/fixture-external"], before.packages["node_modules/fixture-external"]);
-	assert.equal(readFileSync(join(f.directory, "node_modules/fixture-core/preserve.txt"), "utf8"), "installed state");
+	assert.equal(readFileSync(join(f.directory, "node_modules/preserve.txt"), "utf8"), "installed state");
+	assert.ok(beforeLock.includes("fixture-external"));
+	assert.ok(readFileSync(join(f.directory, "pnpm-lock.yaml"), "utf8").includes("fixture-external"));
 });
 
 test("prepare-commit-msg adds a DCO sign-off without duplicating an existing one", (t) => {

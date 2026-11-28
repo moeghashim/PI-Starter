@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Running formatting, linting, and type checking..."
-npm run check
+pnpm run check
 if [ $? -ne 0 ]; then
 	echo "Checks failed. Please fix the errors before committing."
 	exit 1

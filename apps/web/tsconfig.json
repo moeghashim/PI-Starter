@@ -12,6 +12,8 @@
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
 		"noEmit": true,
+		"incremental": true,
+		"tsBuildInfoFile": "../../.cache/tsbuildinfo/web.tsbuildinfo",
 		"verbatimModuleSyntax": false,
 		"types": [
 			"vite/client"
