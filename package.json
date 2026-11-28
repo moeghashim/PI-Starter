@@ -20,6 +20,7 @@
 		"typegen:cloudflare": "pnpm --filter @pi-starter/web run cf:typegen",
 		"preflight:native-deps": "node scripts/preflight-native-deps.mjs",
 		"check": "node scripts/check.mjs",
+		"ci:validate": "node scripts/ci-validate.mjs",
 		"fix": "pnpm run preflight:native-deps && biome check --write --error-on-warnings .",
 		"doctor": "node scripts/doctor.mjs",
 		"docs:list": "node scripts/docs-list.mjs",
