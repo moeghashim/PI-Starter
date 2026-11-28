@@ -43,9 +43,9 @@
 		"prepare": "node scripts/prepare.mjs"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.6",
+		"@biomejs/biome": "2.6.9",
 		"@types/node": "^26.6.6",
-		"fallow": "3.41.0",
+		"fallow": "3.48.0",
 		"husky": "^9.1.7",
 		"tsx": "^4.23.15",
 		"typescript": "7.0.2",
