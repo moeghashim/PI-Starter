@@ -77,7 +77,7 @@ Shared package code lives in `packages/core`. Release scripts still default to b
 
 ## Fork Workflow
 
-When you fork or create a repo from this template, run `pnpm run init:project -- --name <your-slug>` to rename the workspace packages, Worker name, and starter title and append a fork-boundary entry to `progress.md`. Keep `progress.md` tracked and continue appending project learnings instead of rewriting earlier entries.
+When you fork or create a repo from this template, run `pnpm run init:project --name <your-slug>` to rename the workspace packages, Worker name, and starter title, refresh `pnpm-lock.yaml`, and append a fork-boundary entry to `progress.md`. Keep `progress.md` tracked and continue appending project learnings instead of rewriting earlier entries.
 
 ## Agent Layer
 

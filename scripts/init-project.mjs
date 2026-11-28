@@ -18,8 +18,26 @@ function toTitle(slug) {
 		.join(" ");
 }
 
+function normalizeArgs(argv) {
+	return argv[0] === "--" ? argv.slice(1) : argv;
+}
+
+function refreshLockfile(root) {
+	if (!existsSync(join(root, "pnpm-lock.yaml"))) {
+		return false;
+	}
+	const install = spawnSync("pnpm", ["install", "--lockfile-only", "--ignore-scripts"], {
+		cwd: root,
+		stdio: "inherit",
+	});
+	if (install.status !== 0) {
+		process.exit(install.status ?? 1);
+	}
+	return true;
+}
+
 const { values } = parseArgs({
-	args: process.argv.slice(2),
+	args: normalizeArgs(process.argv.slice(2)),
 	options: {
 		name: { type: "string" },
 		scope: { type: "string" },
@@ -30,7 +48,7 @@ const { values } = parseArgs({
 
 const name = values.name?.trim();
 if (!name || !/^[a-z0-9][a-z0-9-]*$/.test(name)) {
-	fail("pass a lowercase slug via --name (for example: pnpm run init:project -- --name my-saas).");
+	fail("pass a lowercase slug via --name (for example: pnpm run init:project --name my-saas).");
 }
 
 const scope = (values.scope?.trim() || `@${name}`).replace(/^@?/, "@");
@@ -87,6 +105,10 @@ for (const [relativePath, pairs] of replacements) {
 		writeFileSync(fullPath, updated);
 		changed.push(relativePath);
 	}
+}
+
+if (refreshLockfile(root)) {
+	changed.push("pnpm-lock.yaml");
 }
 
 if (!values["skip-progress"] && existsSync(join(root, "scripts/progress-log.mjs"))) {

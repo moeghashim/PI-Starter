@@ -29,7 +29,7 @@
 
 ## Commands
 - Dev server: `pnpm run dev`. App tests: `pnpm run test:app`. Repo tests: `pnpm run test:repo`. Full tests: `pnpm test`. Worker build: `pnpm run build:cloudflare`.
-- Fork initialization: `pnpm run init:project -- --name <slug>`.
+- Fork initialization: `pnpm run init:project --name <slug>`.
 - After code changes (not docs changes): `pnpm run check`. It never applies fixes; run `pnpm run fix` explicitly, then review its changes.
 - Before handoff or ship, run `pnpm run fallow:audit` to block newly introduced dead code, duplication, and complexity findings against `origin/main`.
 - Fix all errors, warnings, and infos before committing.
